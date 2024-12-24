@@ -1,43 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Leaf } from "lucide-react";
 
-const products = [
-  {
-    id: 1,
-    name: "3 Minutes",
-    price: "$299.99",
-    image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690697/v3_rdam3n.jpg",
-    tag: "Sale!",
-  },
-  {
-    id: 2,
-    name: "6 Minutes",
-    price: "$199.99",
-    image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690697/v3_rdam3n.jpg",
-    tag: "10% off",
-  },
-  {
-    id: 3,
-    name: "10 Minutes",
-    price: "$149.99",
-    image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690697/v3_rdam3n.jpg",
-    tag: "New Arrival",
-  },
-];
-
 export default function Products() {
+  const [products, setProducts] = useState([]);
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("/api/products/get_available_products");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        setProducts(data.data || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
   }, []);
+
+  const handleSelectProduct = (product) => {
+    // Navigate to /cart with query parameters
+    const query = new URLSearchParams({
+      id: product._id,
+      name: product.name,
+      image: product.image,
+      cost: product.cost,
+      minutes: product.minutes,
+    }).toString();
+    router.push(`/cart?${query}`);
+  };
 
   return (
     <section className="py-12 bg-stone-100 relative overflow-hidden">
@@ -46,25 +48,25 @@ export default function Products() {
           Featured Products
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <motion.div
-              key={product.id}
+              key={product._id || index}
               initial={mounted ? { opacity: 0, y: 50 } : false}
               animate={mounted ? { opacity: 1, y: 0 } : false}
-              transition={{ duration: 0.5, delay: product.id * 0.2 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
               className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 relative"
             >
               <div className="relative w-full h-64">
                 <Image
                   src={product.image}
                   alt={product.name}
-                  layout="fill" // Ensure the image takes full container space
-                  objectFit="cover" // Ensure the image covers the container while maintaining aspect ratio
+                  layout="fill"
+                  objectFit="cover"
                   className="transition-transform duration-300 hover:scale-110"
                 />
-                {product.tag && (
+                {product.tags && product.tags.length > 0 && (
                   <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full">
-                    {product.tag}
+                    {product.tags[0]}
                   </div>
                 )}
               </div>
@@ -72,13 +74,16 @@ export default function Products() {
                 <h3 className="text-xl font-semibold text-stone-800 mb-2">
                   {product.name}
                 </h3>
-                <p className="text-stone-600 mb-4">{product.price}</p>
+                <p className="text-stone-600 mb-4">
+                  ${product.cost.toFixed(2)}
+                </p>
                 <button
+                  onClick={() => handleSelectProduct(product)} // Handle product selection
                   className="w-full bg-stone-800 text-white py-2 px-4 rounded transition duration-300 hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-opacity-50 flex items-center justify-center"
                   aria-label={`Add ${product.name} to cart`}
                 >
                   <Leaf className="w-4 h-4 mr-2" />
-                  Add to Cart
+                  Select to Edit
                 </button>
               </div>
             </motion.div>

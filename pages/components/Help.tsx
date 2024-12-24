@@ -35,12 +35,12 @@ export default function Help() {
     <section className="py-12 bg-gradient-to-b from-white to-gray-100">
       <div className="container mx-auto px-4">
         <motion.h2
-          className="text-3xl md:text-4xl text-center mb-8"
+          className="text-3xl md:text-4xl font-serif text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          Wondering How?
+          In 3 Easy Steps !
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
