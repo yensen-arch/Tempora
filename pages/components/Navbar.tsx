@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -23,10 +24,12 @@ const NavItem = ({
   href,
   icon: Icon,
   text,
+  onClick,
 }: {
-  href: string;
+  href?: string;
   icon: React.ElementType | string;
   text: string;
+  onClick?: () => void;
 }) => {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -34,7 +37,13 @@ const NavItem = ({
   return (
     <motion.li className="w-full mb-4 lg:mb-0 lg:mr-6">
       <Link
-        href={href}
+        href={href || "#"}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+        }}
         className={`flex items-center text-gray-800 hover:text-black transition-colors duration-300 px-3 py-2 rounded-md ${
           isActive ? "bg-[#E0B780]" : "hover:bg-[#F0D29A]"
         }`}
@@ -65,10 +74,13 @@ const SocialIcon = ({
   </Link>
 );
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
+  productsRef,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoading, error } = useUser();
   const [userSaved, setUserSaved] = useState(false); //to avoid unnecessary save calls
+  const router = useRouter();
 
   useEffect(() => {
     const saveUser = async () => {
@@ -113,7 +125,31 @@ const Navbar: React.FC = () => {
           <div className="hidden lg:flex lg:items-center">
             <ul className="flex space-x-4">
               <NavItem href="/" icon={Home} text="Home" />
-              <NavItem href="/products" icon={ShoppingBag} text="Products" />
+              <NavItem
+                icon={ShoppingBag}
+                text="Products"
+                onClick={() => {
+                  if (router.pathname !== "/") {
+                    // Navigate to the home page, then scroll
+                    router.push("/").then(() => {
+                      // Delay to ensure navigation is complete before scrolling
+                      setTimeout(() => {
+                        // Access the productsRef on the home page
+                        const productsSection =
+                          document.getElementById("products-section");
+                        if (productsSection) {
+                          productsSection.scrollIntoView({
+                            behavior: "smooth",
+                          });
+                        }
+                      }, 200); // Adjust the delay as needed
+                    });
+                  } else {
+                    // If already on the home page, just scroll
+                    productsRef.current?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+              />
               <NavItem href="/memories" icon={Disc} text="Memories" />
             </ul>
           </div>
@@ -200,9 +236,26 @@ const Navbar: React.FC = () => {
                 <ul className="flex flex-col items-start space-y-2">
                   <NavItem href="/" icon={Home} text="Home" />
                   <NavItem
-                    href="/products"
                     icon={ShoppingBag}
                     text="Products"
+                    onClick={() => {
+                      if (router.pathname !== "/") {
+                        // Navigate to the home page, then scroll
+                        router.push("/").then(() => {
+                          // Delay to ensure navigation is complete before scrolling
+                          setTimeout(() => {
+                            productsRef.current?.scrollIntoView({
+                              behavior: "smooth",
+                            });
+                          }, 500); // Adjust the delay as needed
+                        });
+                      } else {
+                        // If already on the home page, just scroll
+                        productsRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                        });
+                      }
+                    }}
                   />
                   <NavItem href="/memories" icon={Disc} text="Memories" />
                   <NavItem href="/cart" icon={ShoppingCart} text="Cart" />

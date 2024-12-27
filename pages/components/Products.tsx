@@ -1,12 +1,11 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import React, { forwardRef, useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Leaf } from "lucide-react";
 
-export default function Products() {
+const Products = forwardRef((props, ref) => {
   const [products, setProducts] = useState([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -30,7 +29,6 @@ export default function Products() {
   }, []);
 
   const handleSelectProduct = (product) => {
-    // Navigate to /cart with query parameters
     const query = new URLSearchParams({
       id: product._id,
       name: product.name,
@@ -42,7 +40,7 @@ export default function Products() {
   };
 
   return (
-    <section className="py-12 bg-stone-100 relative overflow-hidden">
+    <section ref={ref} className="py-12 bg-stone-100 relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
         <h2 className="text-3xl md:text-4xl font-serif text-stone-800 mb-8 text-center">
           Featured Products
@@ -108,4 +106,6 @@ export default function Products() {
       </div>
     </section>
   );
-}
+});
+
+export default Products;

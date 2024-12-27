@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import Navbar from "./components/Navbar";
 import Carousel from "./components/Carousel";
@@ -9,9 +9,10 @@ import Testimonials from "./components/Testimonials";
 import Products from "./components/Products";
 import Seasons from "./components/Seasons";
 
+
 function Index() {
   const { user, error, isLoading } = useUser();
-
+  const productsRef = useRef(null);
   if (isLoading)
     return (
       <div className="flex items-center justify-center h-screen bg-[#f5f0eb] text-[#9a8576]">
@@ -26,11 +27,12 @@ function Index() {
       </div>
     );
 
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f0eb]">
       <div>
-        <div className="absolute inset-0 bg-[url('/texture.png')] opacity-5 pointer-events-none"></div>
-        <Navbar />
+        <div className="absolute inset-0  opacity-5 pointer-events-none"></div>
+        <Navbar productsRef={productsRef} />
         <main className="relative">
           {/* Carousel Section with Overlay */}
           <section className="relative overflow-hidden">
@@ -57,10 +59,10 @@ function Index() {
           </section>
 
           {/* Products Section */}
-          <section className="relative my-24 px-6 md:px-12 overflow-hidden">
+          <section  id="products-section" className="relative my-24 px-6 md:px-12 overflow-hidden">
             <div className=" mx-auto">
               <div className="relative z-10">
-                <Products />
+              <Products ref={productsRef} />
               </div>
             </div>
           </section>
