@@ -43,7 +43,7 @@ const TestimonialCard: React.FC<{
 }> = ({ testimonial, isExpanded, onClick }) => {
   return (
     <motion.div
-      className={`rounded-lg shadow-xl p-6 flex flex-col items-center text-center ${
+      className={`rounded-lg shadow-xl p-6 flex flex-col items-center text-center bg-white ${
         isExpanded ? "scale-105" : "scale-100"
       } transition-transform duration-300`}
       initial={{ opacity: 0, y: 20 }}

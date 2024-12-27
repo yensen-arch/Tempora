@@ -36,7 +36,7 @@ const NavItem = ({
       <Link
         href={href}
         className={`flex items-center text-gray-800 hover:text-black transition-colors duration-300 px-3 py-2 rounded-md ${
-          isActive ? "bg-stone-200" : "hover:bg-stone-100"
+          isActive ? "bg-[#E0B780]" : "hover:bg-[#F0D29A]"
         }`}
       >
         {typeof Icon === "string" ? (
@@ -68,12 +68,13 @@ const SocialIcon = ({
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoading, error } = useUser();
+  const [userSaved, setUserSaved] = useState(false); //to avoid unnecessary save calls
 
   useEffect(() => {
     const saveUser = async () => {
-      if (user) {
+      if (user && !userSaved) {
         try {
-          await fetch("/api/users/saveUser", {
+          const response = await fetch("/api/users/saveUser", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -83,12 +84,14 @@ const Navbar: React.FC = () => {
               family_name: user.family_name,
             }),
           });
+          if (response.status === 200) {
+            setUserSaved(true);
+          }
         } catch (error) {
           console.error("Error saving user:", error);
         }
       }
     };
-
     saveUser();
   }, [user]);
 
@@ -103,9 +106,9 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <motion.div className="text-2xl font-serif text-black">
+            <Link href="/" className="text-2xl text-black cursor-pointer">
               Tempora
-            </motion.div>
+            </Link>
           </div>
           <div className="hidden lg:flex lg:items-center">
             <ul className="flex space-x-4">
@@ -127,20 +130,20 @@ const Navbar: React.FC = () => {
 
             <Link
               href="/cart"
-              className="text-black hover:text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-full transition-colors duration-300"
+              className="text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300"
             >
               <ShoppingCart className="w-5 h-5" />
             </Link>
             <div className="relative">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-black hover:text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-full transition-colors duration-300"
+                className="text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300"
               >
                 <User className="w-5 h-5" />
               </button>
               {isOpen && (
                 <div
-                  className="absolute right-0 mt-2 p-4 bg-white border rounded-lg shadow-lg cursor-pointer"
+                  className="absolute right-0 mt-2 px-4 bg-white cursor-pointer"
                   onClick={() => {
                     window.location.href = user
                       ? "/api/auth/logout"
@@ -156,7 +159,6 @@ const Navbar: React.FC = () => {
           </div>
           <div className="flex items-center lg:hidden">
             <motion.button
-              whileTap={{ scale: 0.95 }}
               onClick={() => setIsOpen(!isOpen)}
               className="text-black hover:text-gray-600 focus:outline-none"
             >
