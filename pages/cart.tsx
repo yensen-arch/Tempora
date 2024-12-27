@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, DollarSign } from "lucide-react";
@@ -13,6 +13,8 @@ export default function Cart() {
   const router = useRouter();
   const [product, setProduct] = useState([]);
   const { user, isLoading } = useUser();
+  const hasFetchedData = useRef(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const productFromQuery = {
@@ -24,10 +26,12 @@ export default function Cart() {
     };
 
     const fetchCartData = async () => {
-      if (isLoading) return; // Wait until user data is loaded
+      if (isLoading || hasFetchedData.current) return; // Wait for loading or skip if already fetched
+      hasFetchedData.current = true; // Mark as fetched
 
-      if (user) {
-        try {
+      setLoading(true); // Set loading state
+      try {
+        if (user) {
           const response = await fetch("/api/cart/get_items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -38,30 +42,32 @@ export default function Cart() {
 
           const cartData = await response.json();
           if (response.status === 201) {
-            //this adds the items to cart is the cart was initially empty
-            const addResponse = await fetch("/api/cart/add_items", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: user.email,
-                product: productFromQuery,
-              }),
-            });
-            if (addResponse.ok) {
-              setProduct(productFromQuery);
-              localStorage.removeItem("cartProduct");
+            let updatedCart = cartData || [];
+            if (productFromQuery.id) {
+              const isAlreadyInCart = updatedCart.some(
+                (item) => item.id === productFromQuery.id
+              );
+              if (!isAlreadyInCart) {
+                updatedCart = [...updatedCart, productFromQuery];
+
+                // Add the new product to the backend cart
+                await fetch("/api/cart/add_items", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    email: user.email,
+                    product: productFromQuery,
+                  }),
+                });
+              }
             }
+            setProduct(updatedCart);
           } else if (Array.isArray(cartData)) {
-            //if the cart was'nt empty, this'll check for the same item and add if !there
             const existingProduct = cartData.find(
               (item) => item?.id === productFromQuery?.id
             );
-
-            if (existingProduct) {
-              setProduct(cartData); // Display the entire cart data
-            } else if (productFromQuery.id) {
-              // Add the new product to the cart
-              const addResponse = await fetch("/api/cart/add_items", {
+            if (!existingProduct && productFromQuery.id) {
+              await fetch("/api/cart/add_items", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -69,44 +75,39 @@ export default function Cart() {
                   product: productFromQuery,
                 }),
               });
-
-              if (addResponse.ok) {
-                // Fetch the updated cart data from the database
-                const updatedResponse = await fetch("/api/cart/get_items", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email: user.email }),
-                });
-
-                if (updatedResponse.ok) {
-                  const updatedCartData = await updatedResponse.json();
-                  setProduct(updatedCartData); // Display updated cart data
-                }
-
-                localStorage.removeItem("cartProduct");
-              }
+              setProduct((prev) =>
+                [...prev, productFromQuery].filter(
+                  (item, index, arr) =>
+                    arr.findIndex((i) => i.id === item.id) === index
+                )
+              );
+            } else {
+              setProduct(cartData);
             }
-          } else {
-            console.error("Invalid cart data format");
           }
-        } catch (error) {
-          console.error("Error fetching cart data:", error);
-        }
-      } else {
-        // Not logged in, use query/localStorage
-        if (productFromQuery.id) {
-          localStorage.setItem("cartProduct", JSON.stringify(productFromQuery));
-          setProduct([productFromQuery]);
+          console.log(cartData);
         } else {
-          const savedProduct = localStorage.getItem("cartProduct");
-          if (savedProduct) setProduct([JSON.parse(savedProduct)]);
+          if (productFromQuery.id) {
+            localStorage.setItem(
+              "cartProduct",
+              JSON.stringify(productFromQuery)
+            );
+            setProduct([productFromQuery]);
+          } else {
+            const savedProduct = localStorage.getItem("cartProduct");
+            if (savedProduct) setProduct([JSON.parse(savedProduct)]);
+          }
         }
+      } catch (error) {
+        console.error("Error fetching cart data:", error);
+      } finally {
+        setLoading(false); // End loading state
       }
     };
-
     fetchCartData();
   }, [router.query, user, isLoading]);
-  if (isLoading) {
+
+  if (loading || isLoading) {
     return <div>Loading...</div>;
   }
 
@@ -120,6 +121,7 @@ export default function Cart() {
       </div>
     );
   }
+
   return (
     <div className="flex flex-col bg-stone-100">
       {/* Navbar */}
