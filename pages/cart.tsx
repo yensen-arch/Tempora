@@ -18,18 +18,18 @@ export default function Cart() {
 
   useEffect(() => {
     const productFromQuery = {
-      id: router.query.id,
-      name: router.query.name,
-      image: router.query.image,
-      cost: router.query.cost,
-      minutes: router.query.minutes,
+      id: router.query.id || "empty",
+      name: router.query.name || "",
+      image: router.query.image || "",
+      cost: router.query.cost || "",
+      minutes: router.query.minutes || "",
     };
 
     const fetchCartData = async () => {
-      if (isLoading || hasFetchedData.current) return; // Wait for loading or skip if already fetched
-      hasFetchedData.current = true; // Mark as fetched
+      if (isLoading || hasFetchedData.current) return;
+      hasFetchedData.current = true;
 
-      setLoading(true); // Set loading state
+      setLoading(true);
       try {
         if (user) {
           const response = await fetch("/api/cart/get_items", {
@@ -41,32 +41,16 @@ export default function Cart() {
           if (!response.ok) throw new Error("Failed to fetch cart data");
 
           const cartData = await response.json();
-          if (response.status === 201) {
-            let updatedCart = cartData || [];
-            if (productFromQuery.id) {
-              const isAlreadyInCart = updatedCart.some(
-                (item) => item.id === productFromQuery.id
-              );
-              if (!isAlreadyInCart) {
-                updatedCart = [...updatedCart, productFromQuery];
+          let updatedCart = Array.isArray(cartData) ? cartData : [];
 
-                // Add the new product to the backend cart
-                await fetch("/api/cart/add_items", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    email: user.email,
-                    product: productFromQuery,
-                  }),
-                });
-              }
-            }
-            setProduct(updatedCart);
-          } else if (Array.isArray(cartData)) {
-            const existingProduct = cartData.find(
-              (item) => item?.id === productFromQuery?.id
+          if (productFromQuery.id) {
+            const isAlreadyInCart = updatedCart.some(
+              (item) => item.id === productFromQuery.id
             );
-            if (!existingProduct && productFromQuery.id) {
+            if (!isAlreadyInCart) {
+              updatedCart = [...updatedCart, productFromQuery];
+
+              // Add the new product to the backend cart
               await fetch("/api/cart/add_items", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -75,43 +59,47 @@ export default function Cart() {
                   product: productFromQuery,
                 }),
               });
-              setProduct((prev) =>
-                [...prev, productFromQuery].filter(
-                  (item, index, arr) =>
-                    arr.findIndex((i) => i.id === item.id) === index
-                )
-              );
-            } else {
-              setProduct(cartData);
             }
           }
-          console.log(cartData);
+
+          setProduct(updatedCart.length > 0 ? updatedCart : [productFromQuery]);
         } else {
+          const savedProduct = localStorage.getItem("cartProduct");
+          const parsedProduct = savedProduct ? JSON.parse(savedProduct) : null;
+
           if (productFromQuery.id) {
             localStorage.setItem(
               "cartProduct",
               JSON.stringify(productFromQuery)
             );
-            setProduct([productFromQuery]);
+            setProduct(
+              parsedProduct
+                ? [parsedProduct, productFromQuery]
+                : [productFromQuery]
+            );
           } else {
-            const savedProduct = localStorage.getItem("cartProduct");
-            if (savedProduct) setProduct([JSON.parse(savedProduct)]);
+            setProduct(parsedProduct ? [parsedProduct] : []);
           }
         }
       } catch (error) {
         console.error("Error fetching cart data:", error);
       } finally {
-        setLoading(false); // End loading state
+        setLoading(false);
       }
     };
+
     fetchCartData();
   }, [router.query, user, isLoading]);
 
   if (loading || isLoading) {
     return <div>Loading...</div>;
   }
-
-  if (!product) {
+  if (
+    !product ||
+    !Array.isArray(product) ||
+    product.length === 0 ||
+    product[0].id === "empty"
+  ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h1 className="text-lg text-stone-600">No product in the cart.</h1>
