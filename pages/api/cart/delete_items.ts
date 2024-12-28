@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import mongoose from "mongoose";
 import Cart from "../../models/Cart";
+import { em } from "framer-motion/client";
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) {
@@ -20,9 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectDB();
-
     const { email, productId } = req.body;
-
     // Validate email and productId
     if (!email || typeof email !== "string") {
       return res.status(400).json({ error: "Valid email is required" });
@@ -31,18 +30,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Valid productId is required" });
     }
 
-    // Find the cart and remove the specific item
-    const result = await Cart.findOneAndUpdate(
-      { email },
-      { $pull: { items: { productId } } }, // Remove the item with the matching productId
-      { new: true } // Return the updated document
-    );
-
-    if (!result) {
-      return res.status(404).json({ error: "Cart or product not found" });
+    // Find the cart
+    const cart = await Cart.findOne({ email });
+    if (!cart) {
+      return res.status(404).json({ error: "Cart not found" });
     }
 
-    return res.status(200).json({ message: "Cart item deleted successfully", cart: result });
+    // Check if the product exists in the cart
+    const itemIndex = cart.items.findIndex((item) => item.productId === productId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ error: "Product not found in the cart" });
+    }
+
+    // Remove the product
+    cart.items.splice(itemIndex, 1);
+    await cart.save();
+
+    return res.status(200).json({ message: "Cart item deleted successfully", cart });
   } catch (error) {
     console.error("Error deleting cart item:", error);
     return res.status(500).json({ error: "Internal server error" });

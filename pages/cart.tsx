@@ -1,4 +1,3 @@
-"use client";
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
@@ -24,17 +23,16 @@ export default function Cart() {
       cost: router.query.cost || "",
       minutes: router.query.minutes || "",
     };
-  
+
     const fetchCartData = async () => {
       if (isLoading || hasFetchedData.current) return;
       hasFetchedData.current = true;
-  
+
       setLoading(true);
       try {
         if (user) {
           let updatedCart = [];
-  
-          // Add product from query to the database (if it exists)
+
           if (productFromQuery.id !== "empty") {
             const addProductResponse = await fetch("/api/cart/add_items", {
               method: "POST",
@@ -44,30 +42,28 @@ export default function Cart() {
                 product: productFromQuery,
               }),
             });
-  
+
             if (!addProductResponse.ok) {
               throw new Error("Failed to add product from query to the cart");
             }
           }
-  
-          // Fetch updated cart data from the database
+
           const response = await fetch("/api/cart/get_items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: user.email }),
           });
-  
+
           if (!response.ok) throw new Error("Failed to fetch cart data");
-  
+
           const cartData = await response.json();
           updatedCart = Array.isArray(cartData) ? cartData : [];
-  
-          // Update the state with the fetched cart data
+
           setProduct(updatedCart);
         } else {
           const savedProduct = localStorage.getItem("cartProduct");
           const parsedProduct = savedProduct ? JSON.parse(savedProduct) : null;
-  
+
           if (productFromQuery.id !== "empty") {
             localStorage.setItem(
               "cartProduct",
@@ -88,10 +84,31 @@ export default function Cart() {
         setLoading(false);
       }
     };
-  
+
     fetchCartData();
   }, [router.query, user, isLoading]);
-  
+
+  const handleDelete = async (productId) => {
+    try {
+      const response = await fetch("/api/cart/delete_items", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          productId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product from cart");
+      }
+
+      const updatedCart = product.filter((item) => item.productId !== productId);
+      setProduct(updatedCart);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
 
   if (loading || isLoading) {
     return <div>Loading...</div>;
@@ -165,10 +182,18 @@ export default function Cart() {
                     </div>
                   </div>
 
-                  {/* Checkout Button */}
-                  <button className="bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-stone-700 transition focus:outline-none mt-4 md:mt-0">
-                    Edit
-                  </button>
+                  {/* Buttons */}
+                  <div className="flex flex-col gap-2 mt-4 md:mt-0">
+                    <button className="bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-stone-700 transition focus:outline-none">
+                      Edit
+                    </button>
+                    <button
+                      className="bg-red-600 text-white text-sm px-6 py-3 rounded-md hover:bg-red-500 transition focus:outline-none"
+                      onClick={() => handleDelete(item.productId)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))
