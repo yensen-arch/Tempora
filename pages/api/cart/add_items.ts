@@ -37,19 +37,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const existingItem = cart.items.find((item) => item.productId === product.id);
 
     if (existingItem) {
-      // If the product exists, you can update quantity or other info as needed
-      existingItem.quantity += 1; // Increment quantity
-    } else {
-      // Add the new product to the cart
-      cart.items.push({
-        productId: product.id,
-        name: product.name,
-        image: product.image,
-        cost: product.cost,
-        minutes: product.minutes,
-        quantity: 1, // Default quantity
-      });
+      // If the product already exists, return without making changes
+      return res.status(200).json({ message: "Product already exists in the cart", cart });
     }
+
+    // Add the new product to the cart
+    cart.items.push({
+      productId: product.id,
+      name: product.name,
+      image: product.image,
+      cost: product.cost,
+      minutes: product.minutes,
+      quantity: 1, // Default quantity
+    });
 
     await cart.save();
 
