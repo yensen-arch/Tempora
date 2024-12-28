@@ -112,6 +112,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
     stiffness: 300,
     damping: 30,
   };
+  const pathname = usePathname();
 
   return (
     <nav className="relative z-50">
@@ -166,7 +167,9 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
 
             <Link
               href="/cart"
-              className="text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300"
+              className={`text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300 ${
+                pathname === "/cart" ? "bg-[#E0B780]" : ""
+              }`}
             >
               <ShoppingCart className="w-5 h-5" />
             </Link>

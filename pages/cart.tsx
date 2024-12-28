@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, DollarSign } from "lucide-react";
+import { ArrowLeft, Clock, DollarSign, Edit3, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -103,7 +103,9 @@ export default function Cart() {
         throw new Error("Failed to delete product from cart");
       }
 
-      const updatedCart = product.filter((item) => item.productId !== productId);
+      const updatedCart = product.filter(
+        (item) => item.productId !== productId
+      );
       setProduct(updatedCart);
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -184,14 +186,17 @@ export default function Cart() {
 
                   {/* Buttons */}
                   <div className="flex flex-col gap-2 mt-4 md:mt-0">
-                    <button className="bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-stone-700 transition focus:outline-none">
-                      Edit
+                    {/* Edit Button */}
+                    <button className=" flex items-center justify-center gap-2 bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-transparent hover:border-2  hover:border-black hover:text-black transition focus:outline-none">
+                      <span>Edit</span>
                     </button>
+
+                    {/* Delete Button */}
                     <button
-                      className="bg-red-600 text-white text-sm px-6 py-3 rounded-md hover:bg-red-500 transition focus:outline-none"
-                      onClick={() => handleDelete(item.productId)}
+                      className="flex items-center justify-center gap-2 text-white text-sm px-6 py-3 rounded-md hover:bg-gray-200 transition focus:outline-none"
+                      onClick={() => handleDelete(item.id)}
                     >
-                      Delete
+                      <Trash2 className="w-4 h-4 text-black" />
                     </button>
                   </div>
                 </div>
