@@ -24,50 +24,51 @@ export default function Cart() {
       cost: router.query.cost || "",
       minutes: router.query.minutes || "",
     };
-
+  
     const fetchCartData = async () => {
       if (isLoading || hasFetchedData.current) return;
       hasFetchedData.current = true;
-
+  
       setLoading(true);
       try {
         if (user) {
+          let updatedCart = [];
+  
+          // Add product from query to the database (if it exists)
+          if (productFromQuery.id !== "empty") {
+            const addProductResponse = await fetch("/api/cart/add_items", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: user.email,
+                product: productFromQuery,
+              }),
+            });
+  
+            if (!addProductResponse.ok) {
+              throw new Error("Failed to add product from query to the cart");
+            }
+          }
+  
+          // Fetch updated cart data from the database
           const response = await fetch("/api/cart/get_items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: user.email }),
           });
-
+  
           if (!response.ok) throw new Error("Failed to fetch cart data");
-
+  
           const cartData = await response.json();
-          let updatedCart = Array.isArray(cartData) ? cartData : [];
-
-          if (productFromQuery.id) {
-            const isAlreadyInCart = updatedCart.some(
-              (item) => item.id === productFromQuery.id
-            );
-            if (!isAlreadyInCart) {
-              updatedCart = [...updatedCart, productFromQuery];
-
-              // Add the new product to the backend cart
-              await fetch("/api/cart/add_items", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email: user.email,
-                  product: productFromQuery,
-                }),
-              });
-            }
-          }
-
-          setProduct(updatedCart.length > 0 ? updatedCart : [productFromQuery]);
+          updatedCart = Array.isArray(cartData) ? cartData : [];
+  
+          // Update the state with the fetched cart data
+          setProduct(updatedCart);
         } else {
           const savedProduct = localStorage.getItem("cartProduct");
           const parsedProduct = savedProduct ? JSON.parse(savedProduct) : null;
-
-          if (productFromQuery.id) {
+  
+          if (productFromQuery.id !== "empty") {
             localStorage.setItem(
               "cartProduct",
               JSON.stringify(productFromQuery)
@@ -87,9 +88,10 @@ export default function Cart() {
         setLoading(false);
       }
     };
-
+  
     fetchCartData();
   }, [router.query, user, isLoading]);
+  
 
   if (loading || isLoading) {
     return <div>Loading...</div>;
