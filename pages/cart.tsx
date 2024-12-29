@@ -187,9 +187,14 @@ export default function Cart() {
                   {/* Buttons */}
                   <div className="flex flex-col gap-2 mt-4 md:mt-0">
                     {/* Edit Button */}
-                    <button className=" flex items-center justify-center gap-2 bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-transparent hover:border-2  hover:border-black hover:text-black transition focus:outline-none">
-                      <span>Edit</span>
-                    </button>
+                    <Link
+                      href="/editor"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <button className="flex items-center justify-center gap-2 bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-transparent hover:border-2 hover:border-black hover:text-black transition focus:outline-none">
+                        <span>Edit</span>
+                      </button>
+                    </Link>
 
                     {/* Delete Button */}
                     <button

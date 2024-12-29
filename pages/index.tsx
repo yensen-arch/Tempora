@@ -29,7 +29,7 @@ function Index() {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f5f0eb]">
+    <div className="flex flex-col min-h-screen">
       <div>
         <div className="absolute inset-0  opacity-5 pointer-events-none"></div>
         <Navbar productsRef={productsRef} />
