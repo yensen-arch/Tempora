@@ -7,7 +7,6 @@ function Editor({ user }: { user: any }) {
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [audioUrls, setAudioUrls] = useState<string[]>([]);
-
   const email = user.email;
 
   const handleUpload = async () => {
@@ -22,13 +21,15 @@ function Editor({ user }: { user: any }) {
     for (let i = 0; i < files.length; i++) {
       const formData = new FormData();
       formData.append("file", files[i]);
-      formData.append("email", email);
 
       try {
-        const res = await fetch("/api/cart/upload_items", {
-          method: "POST",
-          body: formData,
-        });
+        const res = await fetch(
+          `/api/cart/upload_items?email=${encodeURIComponent(email)}`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         const data = await res.json();
         if (data.audioUrl) {
