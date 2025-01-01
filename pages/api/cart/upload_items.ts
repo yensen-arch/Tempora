@@ -5,7 +5,7 @@ import formidable from "formidable";
 
 export const config = {
   api: {
-    bodyParser: false, // Disable bodyParser for file handling
+    bodyParser: false,
   },
 };
 
@@ -41,22 +41,38 @@ export default async function handler(
       const fileUrls: string[] = [];
 
       for (const file of uploadedFiles) {
-        // Directly upload the file to Cloudinary
-        const result = await cloudinary.uploader.upload(file.filepath, {
-          resource_type: "video", // Handles video uploads
-          quality: "auto", // Compress the video
-          format: "mp4", // Convert to MP4
-        });
+        // Validate MIME type for video and audio
+        const fileType = file.mimetype;
+        if (!fileType.startsWith("video/") && !fileType.startsWith("audio/")) {
+          return res
+            .status(400)
+            .json({ error: `Unsupported file type: ${fileType}` });
+        }
 
-        // Save video URL and email to MongoDB
-        const newMedia = new Media({
-          email,
-          fileUrl: result.secure_url,
-          mediaType: "video", // Specify media type
+        const resourceType = fileType.startsWith("audio/") ? "audio" : "video";
+
+        const result = await cloudinary.uploader.upload(file.filepath, {
+          resource_type: resourceType, 
+          quality: "50", 
+          bitrate: "500k",
+          fps: "20",
+          format: resourceType === "audio" ? "mp3" : "mp4",
         });
-        await newMedia.save();
 
         fileUrls.push(result.secure_url);
+
+        await Media.findOneAndUpdate(
+          { email },
+          {
+            $push: {
+              files: {
+                fileUrl: result.secure_url,
+                mediaType: resourceType,
+              },
+            },
+          },
+          { upsert: true, new: true }
+        );
       }
 
       return res.status(200).json({ fileUrls });
