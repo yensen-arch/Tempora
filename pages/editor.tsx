@@ -31,7 +31,7 @@ function Editor() {
 
       try {
         const res = await fetch(
-          `/api/cart/upload_items?email=${encodeURIComponent(email)}`,
+          `/api/cart/upload_media?email=${encodeURIComponent(email)}`,
           {
             method: "POST",
             body: formData,
@@ -55,7 +55,7 @@ function Editor() {
 
   const fetchMediaUrls = async () => {
     try {
-      const res = await fetch(`/api/cart/get_uploaded_items`, {
+      const res = await fetch(`/api/cart/get_uploaded_media`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
