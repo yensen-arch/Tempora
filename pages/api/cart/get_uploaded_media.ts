@@ -22,9 +22,12 @@ export default async function handler(
       return res.status(404).json({ error: "No files found for the given email" });
     }
 
-    const fileUrls = media.files.map((file) => file.fileUrl);
+    const fileDetails = media.files.map((file) => ({
+      url: file.fileUrl,
+      resourceType: file.mediaType,
+    }));
 
-    return res.status(200).json({ fileUrls });
+    return res.status(200).json({ fileDetails });
   } catch (error) {
     console.error("Error fetching media:", error);
     return res.status(500).json({ error: "Failed to fetch media" });
