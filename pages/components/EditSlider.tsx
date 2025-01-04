@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
-import { X, ChevronLeft, ChevronRight, Upload, Trash2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Upload, Trash2 } from "lucide-react";
 
 interface Media {
   url: string;
@@ -113,12 +113,19 @@ const EditSlider: React.FC<EditSliderProps> = ({ email }) => {
     setActiveIndex((prev) => (prev < mediaUrls.length - 1 ? prev + 1 : 0));
   };
 
+  const handleSliderClick = (index: number) => {
+    setActiveIndex(index);
+  };
+
   return (
     <div className="w-full min-h-screen bg-stone-100 p-6 flex flex-col items-center">
       <div className="w-full max-w-2xl">
         <h1 className="text-2xl font-bold mb-4 text-stone-800">Upload Media</h1>
         <div className="mb-6">
-          <label htmlFor="file-upload" className="block text-sm font-medium text-stone-700 mb-2">
+          <label
+            htmlFor="file-upload"
+            className="block text-sm font-medium text-stone-700 mb-2"
+          >
             Select video/audio files:
           </label>
           <input
@@ -134,7 +141,7 @@ const EditSlider: React.FC<EditSliderProps> = ({ email }) => {
         <button
           onClick={handleUpload}
           className={`flex items-center justify-center px-4 py-2 bg-stone-700 text-white rounded-md hover:bg-stone-600 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 ${
-            uploading ? 'opacity-50 cursor-not-allowed' : ''
+            uploading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={uploading}
         >
@@ -142,65 +149,82 @@ const EditSlider: React.FC<EditSliderProps> = ({ email }) => {
           <Upload className="ml-2 h-4 w-4" />
         </button>
 
-        <h2 className="text-xl font-bold mt-6 mb-4 text-stone-800">Uploaded Media</h2>
+        <h2 className="text-xl font-bold mt-6 mb-4 text-stone-800">
+          Uploaded Media
+        </h2>
       </div>
 
       {mediaUrls.length === 0 ? (
         <p className="text-stone-600">No media found.</p>
       ) : (
-        <div className="relative w-full max-w-2xl aspect-video bg-white rounded-lg shadow-lg overflow-hidden">
-          <div
-            ref={sliderRef}
-            className="absolute top-0 left-0 w-full h-full flex transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-          >
-            {mediaUrls.map(({ url, resourceType }, index) => (
-              <div key={index} className="w-full flex-shrink-0 flex items-center justify-center bg-black">
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <button
-                    onClick={() => handleDelete(url, resourceType)}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 z-10"
-                    aria-label="Delete media"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                  {resourceType === "audio" ? (
-                    <audio
-                      controls
-                      src={url}
-                      className="w-full max-w-md"
-                      autoPlay={index === activeIndex}
+        <div className="relative w-full max-w-2xl">
+          <div className="aspect-video bg-white rounded-lg shadow-lg overflow-hidden mb-4">
+            <div
+              ref={sliderRef}
+              className="w-full h-full flex transition-transform duration-300 ease-in-out"
+              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+            >
+              {mediaUrls.map(({ url, resourceType }, index) => (
+                <div
+                  key={index}
+                  className="w-full flex-shrink-0 flex items-center justify-center bg-black"
+                >
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <button
+                      onClick={() => handleDelete(url, resourceType)}
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 z-10"
+                      aria-label="Delete media"
                     >
-                      Your browser does not support the audio element.
-                    </audio>
-                  ) : (
-                    <video
-                      controls
-                      src={url}
-                      className="w-full h-full object-contain"
-                      autoPlay={index === activeIndex}
-                    >
-                      Your browser does not support the video element.
-                    </video>
-                  )}
+                      <Trash2 size={14} />
+                    </button>
+                    {resourceType === "audio" ? (
+                      <audio
+                        controls={index === activeIndex}
+                        src={url}
+                        className="w-full max-w-md"
+                      >
+                        Your browser does not support the audio element.
+                      </audio>
+                    ) : (
+                      <video
+                        controls={index === activeIndex}
+                        src={url}
+                        className="w-full h-full object-contain"
+                      >
+                        Your browser does not support the video element.
+                      </video>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          <button
-            onClick={handlePrev}
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-stone-700 hover:bg-stone-600 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 z-10"
-            aria-label="Previous media"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={handleNext}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-stone-700 hover:bg-stone-600 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 z-10"
-            aria-label="Next media"
-          >
-            <ChevronRight size={20} />
-          </button>
+          <div className="flex justify-center items-center space-x-2 mb-4">
+            <button
+              onClick={handlePrev}
+              className="bg-stone-700 hover:bg-stone-600 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2"
+              aria-label="Previous media"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            {mediaUrls.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => handleSliderClick(index)}
+                className={`w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 ${
+                  index === activeIndex ? "bg-stone-700" : "bg-stone-300"
+                }`}
+                aria-label={`Go to media ${index + 1}`}
+              />
+            ))}
+            <button
+              onClick={handleNext}
+              className="bg-stone-700 hover:bg-stone-600 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2"
+              aria-label="Next media"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -208,4 +232,3 @@ const EditSlider: React.FC<EditSliderProps> = ({ email }) => {
 };
 
 export default EditSlider;
-

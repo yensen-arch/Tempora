@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import EditSlider from "../pages/components/EditSlider";
+import EditingWindow from "./components/EditingWindow";
 
 function Editor() {
   const { user, isLoading } = useUser();
@@ -17,6 +18,7 @@ function Editor() {
         )}
         {!isLoading && user && <EditSlider email={user.email} />}
       </main>
+      <EditingWindow />
       <Footer />
     </div>
   );
