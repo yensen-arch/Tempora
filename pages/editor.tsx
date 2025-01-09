@@ -3,7 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import EditSlider from "../pages/components/EditSlider";
-import EditingWindow from "./components/EditingWindow";
+import VideoEditor from "./components/VideoEditor/VideoEditor";
 
 function Editor() {
   const { user, isLoading } = useUser();
@@ -27,7 +27,7 @@ function Editor() {
           <EditSlider email={user.email} setSelectedMedia={setSelectedMedia} />
         )}
       </main>
-      <EditingWindow selectedMedia={selectedMedia} />
+      <VideoEditor selectedMedia={selectedMedia} />
       <Footer />
     </div>
   );
