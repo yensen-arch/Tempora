@@ -11,9 +11,10 @@ interface Media {
 
 interface EditSliderProps {
   email: string | undefined;
+  setSelectedMedia: (media: Media | null) => void; // New prop
 }
 
-const EditSlider: React.FC<EditSliderProps> = ({ email }) => {
+const EditSlider: React.FC<EditSliderProps> = ({ email, setSelectedMedia }) => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [mediaUrls, setMediaUrls] = useState<Media[]>([]);
@@ -106,16 +107,30 @@ const EditSlider: React.FC<EditSliderProps> = ({ email }) => {
   };
 
   const handlePrev = () => {
-    setActiveIndex((prev) => (prev > 0 ? prev - 1 : mediaUrls.length - 1));
+    setActiveIndex((prev) => {
+      const newIndex = prev > 0 ? prev - 1 : mediaUrls.length - 1;
+      setSelectedMedia(mediaUrls[newIndex]); // Pass the selected media
+      return newIndex;
+    });
   };
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev < mediaUrls.length - 1 ? prev + 1 : 0));
+    setActiveIndex((prev) => {
+      const newIndex = prev < mediaUrls.length - 1 ? prev + 1 : 0;
+      setSelectedMedia(mediaUrls[newIndex]); // Pass the selected media
+      return newIndex;
+    });
   };
 
   const handleSliderClick = (index: number) => {
     setActiveIndex(index);
+    setSelectedMedia(mediaUrls[index]); // Pass the selected media
   };
+  useEffect(() => {
+    if (mediaUrls.length > 0) {
+      setSelectedMedia(mediaUrls[0]); // Select the first media by default
+    }
+  }, [mediaUrls]);  
 
   return (
     <div className="w-full min-h-screen bg-stone-100 p-6 flex flex-col items-center">
