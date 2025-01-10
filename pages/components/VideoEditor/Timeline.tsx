@@ -1,12 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
-import { motion, PanInfo } from "framer-motion";
 
 interface TimelineProps {
-  duration: number; // Total video duration in seconds
-  startTime: number; // Current start time in seconds
-  endTime: number; // Current end time in seconds
-  onStartTimeChange: (time: number) => void; // Callback for updating start time
-  onEndTimeChange: (time: number) => void; // Callback for updating end time
+  duration: number;
+  startTime: number;
+  endTime: number;
+  onStartTimeChange: (time: number) => void;
+  onEndTimeChange: (time: number) => void;
 }
 
 const Timeline: React.FC<TimelineProps> = ({
@@ -17,31 +16,42 @@ const Timeline: React.FC<TimelineProps> = ({
   onEndTimeChange,
 }) => {
   const timelineRef = useRef<HTMLDivElement>(null);
-  const [isTimelineReady, setIsTimelineReady] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, left: 0 });
 
   useEffect(() => {
     if (timelineRef.current) {
-      setIsTimelineReady(true);
+      const updateDimensions = () => {
+        const rect = timelineRef.current?.getBoundingClientRect();
+        if (rect) {
+          setDimensions({
+            width: rect.width,
+            left: rect.left,
+          });
+        }
+      };
+
+      updateDimensions();
+      window.addEventListener("resize", updateDimensions);
+      return () => window.removeEventListener("resize", updateDimensions);
     }
-  }, [timelineRef]);
+  }, []);
 
-  const handleDrag = (info: PanInfo, type: "start" | "end") => {
-    if (timelineRef.current) {
-      const timelineWidth = timelineRef.current.offsetWidth;
-      const timelineLeft = timelineRef.current.getBoundingClientRect().left;
+  const calculateTime = (position: number) => {
+    return Math.round((position / dimensions.width) * duration);
+  };
 
-      // Get the new position in pixels and calculate time as a percentage of duration
-      const newPosition = Math.max(
-        0,
-        Math.min(info.point.x - timelineLeft, timelineWidth)
-      );
-      const newTime = (newPosition / timelineWidth) * duration;
+  const handleTimelineClick = (event: React.MouseEvent) => {
+    if (!dimensions.width) return;
 
-      if (type === "start") {
-        onStartTimeChange(Math.min(newTime, endTime - 1)); // Prevent overlapping with endTime
-      } else {
-        onEndTimeChange(Math.max(newTime, startTime + 1)); // Prevent overlapping with startTime
-      }
+    const clickX = event.clientX - dimensions.left;
+    const clickedTime = calculateTime(clickX);
+
+    // Determine whether to adjust the start or end time
+    const midPoint = (startTime + endTime) / 2;
+    if (clickedTime < midPoint) {
+      onStartTimeChange(Math.max(0, Math.min(clickedTime, endTime - 1)));
+    } else {
+      onEndTimeChange(Math.min(duration, Math.max(clickedTime, startTime + 1)));
     }
   };
 
@@ -55,65 +65,21 @@ const Timeline: React.FC<TimelineProps> = ({
 
   return (
     <div
-      className="relative w-full h-20 bg-gray-200 rounded-lg overflow-hidden"
+      className="relative w-full h-20 bg-gray-100 rounded-lg overflow-hidden"
       ref={timelineRef}
+      onClick={handleTimelineClick} // Handle timeline click
     >
+      {/* Timeline track */}
+      <div className="absolute top-0 left-0 w-full h-8 bg-gray-200 mt-2" />
+
       {/* Highlighted portion */}
       <div
-        className="absolute top-0 left-0 h-8 bg-blue-500 opacity-50 mt-2"
+        className="absolute top-0 h-8 bg-indigo-200 mt-2"
         style={{
           left: `${(startTime / duration) * 100}%`,
           width: `${((endTime - startTime) / duration) * 100}%`,
         }}
       />
-
-      {isTimelineReady && (
-        <>
-          {/* Start time point */}
-          <motion.div
-            className="absolute w-6 h-6 bg-blue-600 rounded-full cursor-pointer"
-            style={{
-              left: `${(startTime / duration) * 100}%`,
-              top: "6px",
-              transform: "translateX(-50%)",
-            }}
-            drag="x"
-            dragMomentum={false}
-            dragElastic={0}
-            dragConstraints={{
-              left: 0, // Start slider can't go before the timeline start
-              right: (endTime / duration) * (timelineRef.current?.offsetWidth || 0), // Can't go beyond the end slider
-            }}
-            onDrag={(_, info) => handleDrag(info, "start")}
-          >
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-blue-600 text-white text-xs px-1 rounded">
-              {formatTime(startTime)}
-            </div>
-          </motion.div>
-
-          {/* End time point */}
-          <motion.div
-            className="absolute w-6 h-6 bg-blue-600 rounded-full cursor-pointer"
-            style={{
-              left: `${(endTime / duration) * 100}%`,
-              top: "6px",
-              transform: "translateX(-50%)",
-            }}
-            drag="x"
-            dragMomentum={false}
-            dragElastic={0}
-            dragConstraints={{
-              left: (startTime / duration) * (timelineRef.current?.offsetWidth || 0), // Can't go before the start slider
-              right: (timelineRef.current?.offsetWidth || 0), // Can't go beyond the timeline end
-            }}
-            onDrag={(_, info) => handleDrag(info, "end")}
-          >
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 bg-blue-600 text-white text-xs px-1 rounded">
-              {formatTime(endTime)}
-            </div>
-          </motion.div>
-        </>
-      )}
 
       {/* Time labels */}
       <div className="absolute bottom-0 left-0 w-full flex justify-between px-2 text-xs text-gray-600">
