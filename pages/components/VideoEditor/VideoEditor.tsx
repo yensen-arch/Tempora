@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import ffmpeg from "@ffmpeg/ffmpeg";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
 import VideoPlayer from "./VideoPlayer";
 import TrimControls from "./TrimControls";
 import TrimButton from "./TrimButton";
 import EditedVideoSection from "./EditedVideoSection";
-import { formatTime } from "./utils";
 
 interface EditingWindowProps {
   selectedMedia: {
@@ -21,7 +20,7 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
   const [duration, setDuration] = useState<number>(0);
   const [editedMedia, setEditedMedia] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [ffmpegInstance, setFFmpeg] = useState<any>(null);
+  const [ffmpegInstance, setFFmpeg] = useState<FFmpeg | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -34,7 +33,6 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
   
     loadFFmpeg();
   }, []);
-  
   
   useEffect(() => {
     if (videoRef.current) {
@@ -53,7 +51,7 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
     try {
       setLoading(true);
 
-      const inputData = await ffmpegInstance.fetchFile(selectedMedia.url);  // Correct way to fetch the file
+      const inputData = await ffmpegInstance.fetchFile(selectedMedia.url);
       ffmpegInstance.FS("writeFile", "input.mp4", inputData);
 
       await ffmpegInstance.run(
@@ -86,13 +84,14 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-4">Video Editor</h2>
         <VideoPlayer videoRef={videoRef} src={selectedMedia?.url || ""} />
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4">
           <TrimControls
             startTime={startTime}
             endTime={endTime}
             duration={duration}
             setStartTime={setStartTime}
             setEndTime={setEndTime}
+            videoRef={videoRef}
           />
           <TrimButton onClick={handleTrim} loading={loading} disabled={!ffmpegInstance} />
         </div>
@@ -103,3 +102,4 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
 };
 
 export default VideoEditor;
+

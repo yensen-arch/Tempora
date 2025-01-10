@@ -1,6 +1,5 @@
 import React from "react";
-import TimeInput from "./TimeInput";
-import { formatTime } from "./utils";
+import Timeline from "./Timeline";
 
 interface TrimControlsProps {
   startTime: number;
@@ -8,6 +7,7 @@ interface TrimControlsProps {
   duration: number;
   setStartTime: (time: number) => void;
   setEndTime: (time: number) => void;
+  videoRef: React.RefObject<HTMLVideoElement>;
 }
 
 const TrimControls: React.FC<TrimControlsProps> = ({
@@ -16,54 +16,31 @@ const TrimControls: React.FC<TrimControlsProps> = ({
   duration,
   setStartTime,
   setEndTime,
+  videoRef,
 }) => {
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <>
-      <div className="relative pt-1">
-        <div className="flex justify-between text-sm text-gray-500 mb-1">
-          <span>{formatTime(startTime)}</span>
-          <span>{formatTime(endTime)}</span>
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={duration}
-          step={0.1}
-          value={startTime}
-          onChange={(e) => setStartTime(Number(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <input
-          type="range"
-          min={0}
-          max={duration}
-          step={0.1}
-          value={endTime}
-          onChange={(e) => setEndTime(Number(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2"
-        />
+    <div className="space-y-4">
+      <Timeline
+        duration={duration}
+        startTime={startTime}
+        endTime={endTime}
+        onStartTimeChange={setStartTime}
+        onEndTimeChange={setEndTime}
+        videoRef={videoRef}
+      />
+      <div className="flex justify-between text-sm text-gray-600">
+        <span>Start: {formatTime(startTime)}</span>
+        <span>Trimmed Duration: {formatTime(endTime - startTime)}</span>
+        <span>End: {formatTime(endTime)}</span>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <TimeInput
-          id="startTime"
-          label="Start Time"
-          value={startTime}
-          onChange={setStartTime}
-          min={0}
-          max={endTime}
-        />
-        <TimeInput
-          id="endTime"
-          label="End Time"
-          value={endTime}
-          onChange={setEndTime}
-          min={startTime}
-          max={duration}
-        />
-      </div>
-    </>
+    </div>
   );
 };
 
 export default TrimControls;
-
