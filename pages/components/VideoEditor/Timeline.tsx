@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useRef, useState, useEffect } from "react";
 
@@ -19,7 +19,6 @@ const Timeline: React.FC<TimelineProps> = ({
 }) => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, left: 0 });
-  const [dragging, setDragging] = useState<"start" | "end" | null>(null);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -41,38 +40,50 @@ const Timeline: React.FC<TimelineProps> = ({
     return Math.round((position / dimensions.width) * duration);
   };
 
-  const handleMove = (clientX: number) => {
-    if (!dragging || dimensions.width === 0) return;
+  const handleMove = (clientX: number, handle: "start" | "end") => {
+    if (dimensions.width === 0) return;
 
     const positionX = clientX - dimensions.left;
     const time = Math.max(0, Math.min(calculateTime(positionX), duration));
 
-    if (dragging === "start") {
+    if (handle === "start") {
       onStartTimeChange(Math.min(time, endTime - 1));
-    } else if (dragging === "end") {
+    } else if (handle === "end") {
       onEndTimeChange(Math.max(time, startTime + 1));
     }
   };
 
-  const handleMouseMove = (event: MouseEvent) => handleMove(event.clientX);
-  const handleTouchMove = (event: TouchEvent) => {
-    event.preventDefault(); // Prevents scrolling during touch drag
-    handleMove(event.touches[0].clientX);
+  const handleMouseMove = (event: MouseEvent, handle: "start" | "end") => {
+    event.preventDefault();
+    handleMove(event.clientX, handle);
+  };
+
+  const handleTouchMove = (event: TouchEvent, handle: "start" | "end") => {
+    event.preventDefault();
+    handleMove(event.touches[0].clientX, handle);
   };
 
   const handleEnd = () => {
-    setDragging(null);
-    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mousemove", handleMouseMoveStart);
+    window.removeEventListener("mousemove", handleMouseMoveEnd);
+    window.removeEventListener("touchmove", handleTouchMoveStart);
+    window.removeEventListener("touchmove", handleTouchMoveEnd);
     window.removeEventListener("mouseup", handleEnd);
-    window.removeEventListener("touchmove", handleTouchMove);
     window.removeEventListener("touchend", handleEnd);
   };
 
+  const handleMouseMoveStart = (e: MouseEvent) => handleMouseMove(e, "start");
+  const handleMouseMoveEnd = (e: MouseEvent) => handleMouseMove(e, "end");
+  const handleTouchMoveStart = (e: TouchEvent) => handleTouchMove(e, "start");
+  const handleTouchMoveEnd = (e: TouchEvent) => handleTouchMove(e, "end");
+
   const handleStart = (handle: "start" | "end") => {
-    setDragging(handle);
-    window.addEventListener("mousemove", handleMouseMove);
+    const moveHandler = handle === "start" ? handleMouseMoveStart : handleMouseMoveEnd;
+    const touchMoveHandler = handle === "start" ? handleTouchMoveStart : handleTouchMoveEnd;
+
+    window.addEventListener("mousemove", moveHandler);
+    window.addEventListener("touchmove", touchMoveHandler, { passive: false });
     window.addEventListener("mouseup", handleEnd);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleEnd);
   };
 
@@ -108,8 +119,15 @@ const Timeline: React.FC<TimelineProps> = ({
           left: `${(startTime / duration) * 100}%`,
           transform: "translateX(-50%)",
         }}
-        onMouseDown={() => handleStart("start")}
-        onTouchStart={() => handleStart("start")}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          handleStart("start");
+          handleMouseMoveStart(e.nativeEvent);
+        }}
+        onTouchStart={(e) => {
+          handleStart("start");
+          handleTouchMoveStart(e.nativeEvent);
+        }}
       >
         <div className="w-1 h-6 bg-white rounded-full" />
       </div>
@@ -121,8 +139,15 @@ const Timeline: React.FC<TimelineProps> = ({
           left: `${(endTime / duration) * 100}%`,
           transform: "translateX(-50%)",
         }}
-        onMouseDown={() => handleStart("end")}
-        onTouchStart={() => handleStart("end")}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          handleStart("end");
+          handleMouseMoveEnd(e.nativeEvent);
+        }}
+        onTouchStart={(e) => {
+          handleStart("end");
+          handleTouchMoveEnd(e.nativeEvent);
+        }}
       >
         <div className="w-1 h-6 bg-white rounded-full" />
       </div>
@@ -137,3 +162,4 @@ const Timeline: React.FC<TimelineProps> = ({
 };
 
 export default Timeline;
+
