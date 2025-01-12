@@ -97,15 +97,15 @@ const Timeline: React.FC<TimelineProps> = ({
 
   return (
     <div
-      className="relative w-full h-24 bg-gray-100 rounded-lg overflow-hidden"
+      className="relative w-full h-28 bg-gray-100 rounded-lg overflow-hidden"
       ref={timelineRef}
     >
       {/* Timeline track */}
-      <div className="absolute top-0 left-0 w-full h-12 bg-gray-200 mt-2" />
+      <div className="absolute top-0 left-0 w-full h-12 bg-gray-200 mt-4" />
 
       {/* Highlighted portion */}
       <div
-        className="absolute top-0 h-12 bg-indigo-200 mt-2"
+        className="absolute top-0 h-12 bg-indigo-200 mt-4"
         style={{
           left: `${(startTime / duration) * 100}%`,
           width: `${((endTime - startTime) / duration) * 100}%`,
@@ -114,7 +114,7 @@ const Timeline: React.FC<TimelineProps> = ({
 
       {/* Start handle */}
       <div
-        className="absolute top-0 w-6 h-12 bg-indigo-500 rounded-full cursor-ew-resize mt-2 flex items-center justify-center"
+        className="absolute top-0 w-6 h-12 bg-indigo-500 rounded-full cursor-ew-resize mt-4 flex items-center justify-center"
         style={{
           left: `${(startTime / duration) * 100}%`,
           transform: "translateX(-50%)",
@@ -134,7 +134,7 @@ const Timeline: React.FC<TimelineProps> = ({
 
       {/* End handle */}
       <div
-        className="absolute top-0 w-6 h-12 bg-indigo-500 rounded-full cursor-ew-resize mt-2 flex items-center justify-center"
+        className="absolute top-0 w-6 h-12 bg-indigo-500 rounded-full cursor-ew-resize mt-4 flex items-center justify-center"
         style={{
           left: `${(endTime / duration) * 100}%`,
           transform: "translateX(-50%)",
@@ -152,10 +152,26 @@ const Timeline: React.FC<TimelineProps> = ({
         <div className="w-1 h-6 bg-white rounded-full" />
       </div>
 
-      {/* Time labels */}
-      <div className="absolute bottom-0 left-0 w-full flex justify-between px-2 text-sm text-gray-600">
-        <span>{formatTime(startTime)}</span>
-        <span>{formatTime(endTime)}</span>
+      {/* Start time label */}
+      <div
+        className="absolute bottom-0 text-sm text-gray-600"
+        style={{
+          left: `${(startTime / duration) * 100}%`,
+          transform: 'translateX(-50%)',
+        }}
+      >
+        {formatTime(startTime)}
+      </div>
+
+      {/* End time label */}
+      <div
+        className="absolute bottom-0 text-sm text-gray-600"
+        style={{
+          left: `${(endTime / duration) * 100}%`,
+          transform: 'translateX(-50%)',
+        }}
+      >
+        {formatTime(endTime)}
       </div>
     </div>
   );
