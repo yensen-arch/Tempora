@@ -137,7 +137,11 @@
             setEndTime(totalDuration);
             setDuration(totalDuration);
             setSavedSelections([]);
-            setIsTrimmed(true);
+            setVideoSelections((prev) => ({
+              ...prev,
+              [currentVideoId]: [], // Reset selections for the current video
+            }));
+            setIsTrimmed(false);
           }
         };
         
