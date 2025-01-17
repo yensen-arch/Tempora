@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Timeline from "./Timeline";
 
 interface TrimControlsProps {
@@ -18,8 +18,6 @@ const TrimControls: React.FC<TrimControlsProps> = ({
   setEndTime,
   videoRef,
 }) => {
-  const [currentDuration, setDuration] = useState(duration); // Add this state
-
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -28,16 +26,30 @@ const TrimControls: React.FC<TrimControlsProps> = ({
       .padStart(2, "0")}`;
   };
 
+  // Keep the currentDuration in sync with the duration prop
+  useEffect(() => {
+    setDuration(duration);
+  }, [duration]);
+
+  const [currentDuration, setDuration] = useState(duration);
+
   return (
     <div className="space-y-4">
       <Timeline
-        duration={currentDuration} // Pass current duration
-        currentVideoId="id"
-        setDuration={setDuration} // Pass the setter
+        duration={currentDuration}
+        setDuration={setDuration}
         startTime={startTime}
         endTime={endTime}
-        onStartTimeChange={setStartTime}
-        onEndTimeChange={setEndTime}
+        onStartTimeChange={(time) => {
+          if (time >= 0 && time <= endTime) {
+            setStartTime(time);
+          }
+        }}
+        onEndTimeChange={(time) => {
+          if (time >= startTime && time <= currentDuration) {
+            setEndTime(time);
+          }
+        }}
         videoRef={videoRef}
       />
       <div className="flex justify-between text-sm text-gray-600">
