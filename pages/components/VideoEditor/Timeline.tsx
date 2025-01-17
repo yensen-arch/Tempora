@@ -128,14 +128,19 @@
 
         const handleTrimVideo = () => {
           if (savedSelections.length > 0) {
-            const lastSelection = savedSelections[savedSelections.length - 1];
+            const totalDuration = savedSelections.reduce(
+              (sum, selection) => sum + (selection.end - selection.start),
+              0
+            );
+        
             setStartTime(0);
-            setEndTime(lastSelection.end - lastSelection.start);
-            setDuration(lastSelection.end - lastSelection.start);
+            setEndTime(totalDuration);
+            setDuration(totalDuration);
             setSavedSelections([]);
             setIsTrimmed(true);
           }
         };
+        
 
         return (
           <div className="relative w-full">

@@ -9,11 +9,6 @@ function Editor() {
   const { user, isLoading } = useUser();
   const [selectedMedia, setSelectedMedia] = useState(null);
 
-  useEffect(() => {
-    if (selectedMedia) {
-      console.log("Selected Media:", selectedMedia);
-    }
-  }, [selectedMedia]);
 
   return (
     <div className="flex flex-col min-h-screen">
