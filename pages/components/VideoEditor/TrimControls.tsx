@@ -41,16 +41,6 @@ const TrimControls: React.FC<TrimControlsProps> = ({
 
   const [currentDuration, setDuration] = useState(duration);
 
-  const addSelection = () => {
-    const newSelection: Selection = { start: startTime, end: endTime };
-    setSelections([...selections, newSelection]);
-  };
-
-  const removeSelection = (index: number) => {
-    const updatedSelections = selections.filter((_, i) => i !== index);
-    setSelections(updatedSelections);
-  };
-
   return (
     <div className="space-y-4">
       <Timeline
@@ -70,27 +60,6 @@ const TrimControls: React.FC<TrimControlsProps> = ({
         }}
         videoRef={videoRef}
       />
-      <button
-        onClick={addSelection}
-        className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
-      >
-        Save Selection
-      </button>
-      <ul className="space-y-2">
-        {selections.map((selection, index) => (
-          <li key={index} className="flex items-center justify-between">
-            <span>
-              {formatTime(selection.start)} - {formatTime(selection.end)}
-            </span>
-            <button
-              onClick={() => removeSelection(index)}
-              className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-            >
-              Remove
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };
