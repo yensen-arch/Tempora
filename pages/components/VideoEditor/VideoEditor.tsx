@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import VideoPlayer from "./VideoPlayer";
 import TrimControls from "./TrimControls";
-import TrimButton from "./TrimButton";
 import EditedVideoSection from "./EditedVideoSection";
 
 interface Selection {
@@ -117,7 +116,6 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
             selections={selections}
             setSelections={setSelections}
           />
-          <TrimButton onClick={handleCompile} loading={loading} disabled={!ffmpegInstance || selections.length === 0} />
         </div>
         {editedMedia && <EditedVideoSection src={editedMedia} />}
       </div>
