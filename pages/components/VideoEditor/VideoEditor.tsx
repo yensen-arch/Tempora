@@ -7,6 +7,11 @@ import TrimControls from "./TrimControls";
 import TrimButton from "./TrimButton";
 import EditedVideoSection from "./EditedVideoSection";
 
+interface Selection {
+  start: number;
+  end: number;
+}
+
 interface EditingWindowProps {
   selectedMedia: {
     resourceType: string;
@@ -18,6 +23,7 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(10);
   const [duration, setDuration] = useState<number>(0);
+  const [selections, setSelections] = useState<Selection[]>([]);
   const [editedMedia, setEditedMedia] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [ffmpegInstance, setFFmpeg] = useState<FFmpeg | null>(null);
@@ -30,10 +36,10 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
       await ffmpegInstance.load();
       setFFmpeg(ffmpegInstance);
     };
-  
+
     loadFFmpeg();
   }, []);
-  
+
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.onloadedmetadata = () => {
@@ -45,8 +51,8 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
     }
   }, [selectedMedia]);
 
-  const handleTrim = async () => {
-    if (!ffmpegInstance) return;
+  const handleCompile = async () => {
+    if (!ffmpegInstance || selections.length === 0) return;
 
     try {
       setLoading(true);
@@ -54,26 +60,42 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
       const inputData = await ffmpegInstance.fetchFile(selectedMedia.url);
       ffmpegInstance.FS("writeFile", "input.mp4", inputData);
 
+      for (const [index, { start, end }] of selections.entries()) {
+        await ffmpegInstance.run(
+          "-i",
+          "input.mp4",
+          "-ss",
+          `${start}`,
+          "-to",
+          `${end}`,
+          "-c",
+          "copy",
+          `output_${index}.mp4`
+        );
+      }
+
+      const mergedFile = "output_merged.mp4";
+      const filterComplex = selections
+        .map((_, index) => `[${index}:v:0][${index}:a:0]`)
+        .join("");
       await ffmpegInstance.run(
         "-i",
-        "input.mp4",
-        "-ss",
-        `${startTime}`,
-        "-to",
-        `${endTime}`,
+        `concat:${selections
+          .map((_, index) => `output_${index}.mp4`)
+          .join("|")}`,
         "-c",
         "copy",
-        "output.mp4"
+        mergedFile
       );
 
-      const data = ffmpegInstance.FS("readFile", "output.mp4");
-      const trimmedURL = URL.createObjectURL(
+      const data = ffmpegInstance.FS("readFile", mergedFile);
+      const compiledURL = URL.createObjectURL(
         new Blob([data.buffer], { type: "video/mp4" })
       );
 
-      setEditedMedia(trimmedURL);
+      setEditedMedia(compiledURL);
     } catch (error) {
-      console.error("Error during video trimming:", error);
+      console.error("Error during video compilation:", error);
     } finally {
       setLoading(false);
     }
@@ -92,8 +114,10 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
             setStartTime={setStartTime}
             setEndTime={setEndTime}
             videoRef={videoRef}
+            selections={selections}
+            setSelections={setSelections}
           />
-          <TrimButton onClick={handleTrim} loading={loading} disabled={!ffmpegInstance} />
+          <TrimButton onClick={handleCompile} loading={loading} disabled={!ffmpegInstance || selections.length === 0} />
         </div>
         {editedMedia && <EditedVideoSection src={editedMedia} />}
       </div>
@@ -102,4 +126,3 @@ const VideoEditor: React.FC<EditingWindowProps> = ({ selectedMedia }) => {
 };
 
 export default VideoEditor;
-
