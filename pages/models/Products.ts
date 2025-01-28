@@ -1,14 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, model, models } from 'mongoose';
 
 export interface IProduct extends Document {
-  minutes: number; 
-  cost: number; 
-  name: string; 
-  description?: string; 
-  image: string; 
-  tags?: string[]; 
-  createdAt: Date; 
-  updatedAt: Date; 
+  minutes: number;
+  cost: number;
+  name: string;
+  description?: string;
+  image: string;
+  tags?: string[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ProductSchema: Schema = new Schema<IProduct>(
@@ -25,5 +25,7 @@ const ProductSchema: Schema = new Schema<IProduct>(
   }
 );
 
-const Product = mongoose.model<IProduct>('Product', ProductSchema);
+// Ensure the model is defined only once
+const Product = models.Product || model<IProduct>('Product', ProductSchema);
+
 export default Product;
