@@ -38,28 +38,29 @@ export default async function handler(
     }
 
     try {
-      const fileUrls: string[] = [];
-
-      for (const file of uploadedFiles) {
-        // Validate MIME type for video and audio
+      const uploadPromises = uploadedFiles.map(async (file) => {
         const fileType = file.mimetype;
         if (!fileType.startsWith("video/") && !fileType.startsWith("audio/")) {
-          return res
-            .status(400)
-            .json({ error: `Unsupported file type: ${fileType}` });
+          throw new Error(`Unsupported file type: ${fileType}`);
         }
 
         const resourceType = fileType.startsWith("audio/") ? "audio" : "video";
+        const format = resourceType === "audio" ? "mp3" : "mp4";
 
-        const result = await cloudinary.uploader.upload(file.filepath, {
-          resource_type: resourceType, 
-          quality: "50", 
-          bitrate: "500k",
-          fps: "20",
-          format: resourceType === "audio" ? "mp3" : "mp4",
-        });
+        const uploadOptions = resourceType === "audio" ? {
+          resource_type: resourceType,
+          format,
+          quality: "auto:low",
+        } : {
+          resource_type: resourceType,
+          transformation: [
+            { width: 640, height: 360, crop: "limit" },
+            { quality: "auto:low" },
+            { format }
+          ],
+        };
 
-        fileUrls.push(result.secure_url);
+        const result = await cloudinary.uploader.upload(file.filepath, uploadOptions);
 
         await Media.findOneAndUpdate(
           { email },
@@ -73,12 +74,17 @@ export default async function handler(
           },
           { upsert: true, new: true }
         );
-      }
 
+        return result.secure_url;
+      });
+
+      const fileUrls = await Promise.all(uploadPromises);
       return res.status(200).json({ fileUrls });
     } catch (error) {
       console.error("Error processing files:", error);
-      return res.status(500).json({ error: "Failed to process the files" });
+      return res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Failed to process the files" 
+      });
     }
   });
 }
