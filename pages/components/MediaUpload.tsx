@@ -3,12 +3,23 @@
 import React, { useState, type ChangeEvent } from "react";
 import { Music, Video, X, Loader2 } from "lucide-react";
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { toast } from "react-hot-toast";
+
 function MediaUpload() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const { user, isLoading } = useUser();
   const email = user?.email;
+
+  const allowedFormats = [
+    "audio/mp3",
+    "audio/mpeg",
+    "audio/wav",
+    "video/mp4",
+    "video/mpeg",
+    "video/webm",
+  ];
 
   if (isLoading) {
     return (
@@ -26,8 +37,18 @@ function MediaUpload() {
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles((prevFiles) => [...prevFiles, ...Array.from(e.target.files)]);
-      setUploadProgress(new Array(e.target.files.length).fill(0));
+      const validFiles = Array.from(e.target.files).filter((file) =>
+        allowedFormats.includes(file.type)
+      );
+
+      if (validFiles.length !== e.target.files.length) {
+        toast.error(
+          "Invalid file format. Please upload MP3, MP4, or other major audio/video formats."
+        );
+      }
+
+      setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+      setUploadProgress(new Array(validFiles.length).fill(0));
     }
   };
 
@@ -45,25 +66,27 @@ function MediaUpload() {
       files.forEach((file) => {
         formData.append("file", file);
       });
-      const response = await fetch(`/api/upload?email=${email}`, {
+      const response = await fetch(`/api/cart/upload_media?email=${email}`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Upload failed");
+        let errorMessage = "Upload failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          errorMessage = "Server error, please try again.";
+        }
+        throw new Error(errorMessage);
       }
-
-      const { fileUrls } = await response.json();
-      console.log("Uploaded files:", fileUrls);
-
-      // Clear files after successful upload
+      toast.success("Files uploaded successfully!");
       setFiles([]);
       setUploadProgress([]);
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Failed to upload files. Please try again.");
+      toast.error("Failed to upload files. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -73,12 +96,7 @@ function MediaUpload() {
     <div className="pt-4 flex items-center justify-center">
       <div className="w-full">
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div
-            className="h-40 bg-cover bg-center"
-            style={{
-              backgroundImage: "url('/placeholder.svg?height=160&width=640')",
-            }}
-          ></div>
+          <div className="h-40 bg-cover bg-center"></div>
           <div className="p-6">
             <h2 className="text-2xl font-serif text-amber-800 mb-4">
               Upload Your Media
@@ -86,7 +104,7 @@ function MediaUpload() {
             <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
               <input
                 type="file"
-                accept="audio/*,video/*"
+                accept={allowedFormats.join(",")}
                 multiple
                 onChange={handleFileChange}
                 className="hidden"
