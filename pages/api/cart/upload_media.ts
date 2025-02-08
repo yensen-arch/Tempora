@@ -63,7 +63,7 @@ export default async function handler(
         // Cloudinary upload options
         const uploadOptions = {
           resource_type: resourceType,
-          timeout: 120000, // 120 seconds timeout
+          timeout: 240000, // 4 min timeout
           chunk_size: 10000000, // 10MB chunk size for large files
           transformation: [
             { width: 640, height: 360, crop: "limit", quality: "auto:low" }

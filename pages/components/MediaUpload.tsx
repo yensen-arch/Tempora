@@ -60,7 +60,7 @@ function MediaUpload() {
   const handleUpload = async () => {
     if (files.length === 0) return;
     setUploading(true);
-
+  
     try {
       const formData = new FormData();
       files.forEach((file) => {
@@ -70,7 +70,7 @@ function MediaUpload() {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) {
         let errorMessage = "Upload failed";
         try {
@@ -81,7 +81,40 @@ function MediaUpload() {
         }
         throw new Error(errorMessage);
       }
-      toast.success("Files uploaded successfully!");
+  
+      const data = await response.json();
+      console.log("Upload successful:", data.fileUrls);
+  
+      // Only concatenate if there are multiple videos
+      if (data.fileUrls && data.fileUrls.length > 1) {
+        setUploading(true); // Keep loading state for concatenation
+        try {
+          const concatenateResponse = await fetch('/api/cart/concatenate_media', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              videoUrls: data.fileUrls,
+              email: email
+            }),
+          });
+  
+          if (!concatenateResponse.ok) {
+            throw new Error('Concatenation failed');
+          }
+  
+          const concatenateData = await concatenateResponse.json();
+          console.log("Concatenation successful:", concatenateData.concatenatedUrl);
+          toast.success("Files uploaded and concatenated successfully!");
+        } catch (concatenateError) {
+          console.error("Concatenation error:", concatenateError);
+          toast.error("Files uploaded but concatenation failed. Please try again.");
+        }
+      } else {
+        toast.success("File uploaded successfully!");
+      }
+  
       setFiles([]);
       setUploadProgress([]);
     } catch (error) {

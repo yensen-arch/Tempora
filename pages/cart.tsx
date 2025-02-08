@@ -89,13 +89,13 @@ export default function Cart() {
     fetchCartData();
   }, [router.query, user, isLoading]);
 
-  const handleDelete = async (productId) => {
+  const handleDelete = async (productId?: string) => {
     try {
       const response = await fetch("/api/cart/delete_items", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: user.email,
+          email: user?.email,
           productId,
         }),
       });
