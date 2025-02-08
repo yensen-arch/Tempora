@@ -11,6 +11,7 @@ function MediaUpload() {
   const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const { user, isLoading } = useUser();
   const email = user?.email;
+  const [concatenatedUrl, setConcatenatedUrl] = useState<string | null>(null);
 
   const allowedFormats = [
     "audio/mp3",
@@ -60,18 +61,18 @@ function MediaUpload() {
   const handleUpload = async () => {
     if (files.length === 0) return;
     setUploading(true);
-  
+
     try {
       const formData = new FormData();
       files.forEach((file) => {
         formData.append("file", file);
       });
-  
+
       const response = await fetch(`/api/cart/upload_media?email=${email}`, {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         let errorMessage = "Upload failed";
         try {
@@ -82,66 +83,76 @@ function MediaUpload() {
         }
         throw new Error(errorMessage);
       }
-  
+
       const data = await response.json();
       console.log("Upload successful:", data.fileUrls);
-  
+
       // Only concatenate if there are multiple videos
       if (data.fileUrls && data.fileUrls.length > 1) {
         setUploading(true); // Keep loading state for concatenation
         try {
-          const concatenateResponse = await fetch('/api/cart/concatenate_media', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              videoUrls: data.fileUrls,
-              email: email
-            }),
-          });
-  
-          if (!concatenateResponse.ok) {
-            throw new Error('Concatenation failed');
-          }
-  
-          const concatenateData = await concatenateResponse.json();
-          console.log("Concatenation successful:", concatenateData.concatenatedUrl);
-          toast.success("Files uploaded and concatenated successfully!");
-  
-          // Call delete API for original uploaded files
-          await Promise.all(data.fileUrls.map(async (fileUrl) => {
-            try {
-              const deleteResponse = await fetch('/api/cart/delete_media', {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  email: email,
-                  fileUrl: fileUrl,
-                  resourceType: "video"
-                }),
-              });
-  
-              if (!deleteResponse.ok) {
-                console.error(`Failed to delete file: ${fileUrl}`);
-              } else {
-                console.log(`Deleted successfully: ${fileUrl}`);
-              }
-            } catch (deleteError) {
-              console.error(`Error deleting file ${fileUrl}:`, deleteError);
+          const concatenateResponse = await fetch(
+            "/api/cart/concatenate_media",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                videoUrls: data.fileUrls,
+                email: email,
+              }),
             }
-          }));
-  
+          );
+
+          if (!concatenateResponse.ok) {
+            throw new Error("Concatenation failed");
+          }
+
+          const concatenateData = await concatenateResponse.json();
+          setConcatenatedUrl(concatenateData.concatenatedUrl);
+          console.log(
+            "Concatenation successful:",
+            concatenateData.concatenatedUrl
+          );
+          toast.success("Files uploaded and concatenated successfully!");
+
+          // Call delete API for original uploaded files
+          await Promise.all(
+            data.fileUrls.map(async (fileUrl) => {
+              try {
+                const deleteResponse = await fetch("/api/cart/delete_media", {
+                  method: "DELETE",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    email: email,
+                    fileUrl: fileUrl,
+                    resourceType: "video",
+                  }),
+                });
+
+                if (!deleteResponse.ok) {
+                  console.error(`Failed to delete file: ${fileUrl}`);
+                } else {
+                  console.log(`Deleted successfully: ${fileUrl}`);
+                }
+              } catch (deleteError) {
+                console.error(`Error deleting file ${fileUrl}:`, deleteError);
+              }
+            })
+          );
         } catch (concatenateError) {
           console.error("Concatenation error:", concatenateError);
-          toast.error("Files uploaded but concatenation failed. Please try again.");
+          toast.error(
+            "Files uploaded but concatenation failed. Please try again."
+          );
         }
       } else {
         toast.success("File uploaded successfully!");
       }
-  
+
       setFiles([]);
       setUploadProgress([]);
     } catch (error) {
@@ -151,7 +162,6 @@ function MediaUpload() {
       setUploading(false);
     }
   };
-  
 
   return (
     <div className="pt-4 flex items-center justify-center">
@@ -236,6 +246,16 @@ function MediaUpload() {
             )}
           </div>
         </div>
+        {concatenatedUrl && (
+          <div className="mt-4 text-center">
+            <a
+              href="/editor"
+              className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
+            >
+              Proceed to Editor
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
