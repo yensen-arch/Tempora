@@ -34,7 +34,7 @@ export default async function handler(
     // Retrieve durations for each video resource
     const durations = await Promise.all(
       publicIds.map(async (id) => {
-        const resource = await cloudinary.api.resource(id, { resource_type: "video" });
+        const resource = await cloudinary.api.resource(id, { resource_type: "video", media_metadata: true });
         if (!resource.duration) {
           throw new Error(`Duration not found for video with id: ${id}`);
         }

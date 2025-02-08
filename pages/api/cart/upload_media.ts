@@ -66,7 +66,7 @@ export default async function handler(
           timeout: 240000, // 4 min timeout
           chunk_size: 10000000, // 10MB chunk size for large files
           transformation: [
-            { width: 640, height: 360, crop: "limit", quality: "auto:low" }
+            { width: 640, height: 360, crop: "fill", quality: "auto:low" }
           ],
         };
 
