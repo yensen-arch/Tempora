@@ -66,6 +66,7 @@ function MediaUpload() {
       files.forEach((file) => {
         formData.append("file", file);
       });
+  
       const response = await fetch(`/api/cart/upload_media?email=${email}`, {
         method: "POST",
         body: formData,
@@ -107,6 +108,32 @@ function MediaUpload() {
           const concatenateData = await concatenateResponse.json();
           console.log("Concatenation successful:", concatenateData.concatenatedUrl);
           toast.success("Files uploaded and concatenated successfully!");
+  
+          // Call delete API for original uploaded files
+          await Promise.all(data.fileUrls.map(async (fileUrl) => {
+            try {
+              const deleteResponse = await fetch('/api/cart/delete_media', {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  email: email,
+                  fileUrl: fileUrl,
+                  resourceType: "video"
+                }),
+              });
+  
+              if (!deleteResponse.ok) {
+                console.error(`Failed to delete file: ${fileUrl}`);
+              } else {
+                console.log(`Deleted successfully: ${fileUrl}`);
+              }
+            } catch (deleteError) {
+              console.error(`Error deleting file ${fileUrl}:`, deleteError);
+            }
+          }));
+  
         } catch (concatenateError) {
           console.error("Concatenation error:", concatenateError);
           toast.error("Files uploaded but concatenation failed. Please try again.");
@@ -124,6 +151,7 @@ function MediaUpload() {
       setUploading(false);
     }
   };
+  
 
   return (
     <div className="pt-4 flex items-center justify-center">

@@ -1,4 +1,4 @@
-// pages/api/media/concatenate_media.ts
+// pages/api/cart/concatenate_media.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import cloudinary from "../../../lib/cloudinary";
 import { Media } from "../../models/media";
