@@ -19,13 +19,14 @@ function Timeline({ videoRef, duration }) {
     const updateTimeline = () => {
       if (timelineRef.current && !isDragging) {
         const progress = (video.currentTime / video.duration) * 100;
-        x.set((progress / 100) * (zoom * 100));
+        const containerWidth = containerRef.current.offsetWidth;
+        x.set((progress / 100) * containerWidth);
       }
     };
 
     video.addEventListener("timeupdate", updateTimeline);
     return () => video.removeEventListener("timeupdate", updateTimeline);
-  }, [videoRef, zoom, x, isDragging]);
+  }, [videoRef, x, isDragging]);
 
   const handleZoom = (direction) => {
     setZoom((prevZoom) => Math.min(5, Math.max(1, prevZoom + direction * 0.5)));
@@ -34,8 +35,8 @@ function Timeline({ videoRef, duration }) {
   const handleDrag = (_, info) => {
     if (videoRef.current && containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
-      const newTime =
-        (info.point.x / containerWidth) * videoRef.current.duration;
+      const progress = info.point.x / containerWidth;
+      const newTime = progress * videoRef.current.duration;
       if (!isNaN(newTime) && isFinite(newTime)) {
         videoRef.current.currentTime = newTime;
       }
@@ -73,24 +74,28 @@ function Timeline({ videoRef, duration }) {
           ref={containerRef} 
           className="relative w-full h-12 overflow-hidden border-b border-gray-200"
         >
+          {/* Static time markers */}
+          {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 h-full"
+              style={{ left: `${(i / duration) * 100}%` }}
+            >
+              <div className="h-full w-px bg-gray-300" />
+            </div>
+          ))}
+          
+          {/* Zoom container for additional visual elements */}
           <motion.div
             ref={timelineRef}
-            className="absolute top-0 left-0 h-full"
+            className="absolute top-0 left-0 h-full bg-gray-50/50"
             style={{
               width: `${zoom * 100}%`,
               x: backgroundX,
             }}
-          >
-            {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute top-0 h-full"
-                style={{ left: `${(i / duration) * 100 * zoom}%` }}
-              >
-                <div className="h-full w-px bg-gray-300" />
-              </div>
-            ))}
-          </motion.div>
+          />
+
+          {/* Slider */}
           <motion.div
             className="absolute top-0 w-0.5 h-full bg-red-500 z-10"
             style={{ x }}
@@ -105,24 +110,21 @@ function Timeline({ videoRef, duration }) {
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
           </motion.div>
         </div>
+        
+        {/* Static time labels */}
         <div className="relative h-6">
-          <motion.div
-            className="absolute w-full"
-            style={{ x: backgroundX }}
-          >
-            {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute text-xs text-gray-500"
-                style={{ 
-                  left: `${(i / duration) * 100 * zoom}%`,
-                  transform: 'translateX(-50%)'
-                }}
-              >
-                {i}s
-              </div>
-            ))}
-          </motion.div>
+          {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-xs text-gray-500"
+              style={{ 
+                left: `${(i / duration) * 100}%`,
+                transform: 'translateX(-50%)'
+              }}
+            >
+              {i}s
+            </div>
+          ))}
         </div>
       </div>
     </div>
