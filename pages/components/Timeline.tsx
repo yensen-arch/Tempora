@@ -10,7 +10,6 @@ function Timeline({ videoRef, duration }) {
   const containerRef = useRef(null);
   const x = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
-
   const backgroundX = useTransform(x, (value) => -value);
 
   useEffect(() => {
@@ -69,41 +68,62 @@ function Timeline({ videoRef, duration }) {
           <ChevronRight size={16} className="text-gray-400" />
         </div>
       </div>
-      <div ref={containerRef} className="relative w-full h-12 overflow-hidden">
-        <motion.div
-          ref={timelineRef}
-          className="absolute top-0 left-0 h-full"
-          style={{
-            width: `${zoom * 100}%`,
-            x: backgroundX,
-          }}
+      <div className="relative">
+        <div 
+          ref={containerRef} 
+          className="relative w-full h-12 overflow-hidden border-b border-gray-200"
         >
-          {[...Array(Math.ceil(duration) || 1)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute top-0 h-full"
-              style={{ left: `${(i / duration) * 100}%` }}
-            >
-              <div className="h-full w-px bg-gray-300" />
-              <div className="absolute top-full mt-1 text-xs text-gray-500 transform -translate-x-1/2">
+          <motion.div
+            ref={timelineRef}
+            className="absolute top-0 left-0 h-full"
+            style={{
+              width: `${zoom * 100}%`,
+              x: backgroundX,
+            }}
+          >
+            {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute top-0 h-full"
+                style={{ left: `${(i / duration) * 100 * zoom}%` }}
+              >
+                <div className="h-full w-px bg-gray-300" />
+              </div>
+            ))}
+          </motion.div>
+          <motion.div
+            className="absolute top-0 w-0.5 h-full bg-red-500 z-10"
+            style={{ x }}
+            drag="x"
+            dragConstraints={containerRef}
+            dragElastic={0}
+            dragMomentum={false}
+            onDrag={handleDrag}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={() => setIsDragging(false)}
+          >
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
+          </motion.div>
+        </div>
+        <div className="relative h-6">
+          <motion.div
+            className="absolute w-full"
+            style={{ x: backgroundX }}
+          >
+            {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute text-xs text-gray-500"
+                style={{ 
+                  left: `${(i / duration) * 100 * zoom}%`,
+                  transform: 'translateX(-50%)'
+                }}
+              >
                 {i}s
               </div>
-            </div>
-          ))}
-        </motion.div>
-        <motion.div
-          className="absolute top-0 w-0.5 h-full bg-red-500 z-10"
-          style={{ x }}
-          drag="x"
-          dragConstraints={containerRef}
-          dragElastic={0}
-          dragMomentum={false}
-          onDrag={handleDrag}
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={() => setIsDragging(false)}
-        >
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
-        </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
