@@ -5,13 +5,29 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 
 function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration }) {
   const [videoUrl, setVideoUrl] = useState(initialVideoUrl || "");
+  const [duration, setDuration] = useState(initialDuration || 0);
+  const [loading, setLoading] = useState(!initialVideoUrl);
   const [error, setError] = useState(null);
   const videoRef = useRef(null);
   const { user } = useUser();
   const email = user?.email;
 
   useEffect(() => {
+    if (initialVideoUrl) {
+      setVideoUrl(initialVideoUrl);
+      setLoading(false);
+    }
+  }, [initialVideoUrl]);
+
+  useEffect(() => {
+    if (initialDuration) {
+      setDuration(initialDuration);
+    }
+  }, [initialDuration]);
+
+  useEffect(() => {
     if (!initialVideoUrl && !videoUrl && email) {
+      setLoading(true);
       fetch("/api/cart/get_uploaded_media", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,7 +51,8 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration })
         .catch((error) => {
           console.error("Error fetching video:", error);
           setError(error.message);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   }, [initialVideoUrl, videoUrl, email]);
 
@@ -47,18 +64,19 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration })
 
   return (
     <div className="flex flex-col items-center p-4">
+      {loading && <p className="text-gray-500">Loading video...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
-      {videoUrl ? (
+      {!loading && videoUrl ? (
         <>
           <video ref={videoRef} controls className="w-full max-w-3xl">
             <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <Timeline videoRef={videoRef} duration={initialDuration} />
+          <Timeline videoRef={videoRef} duration={duration} />
         </>
       ) : (
-        <p>No video URL provided.</p>
-      )}
+        !loading && <p>No video URL provided.</p>
+      )} 
     </div>
   );
 }
