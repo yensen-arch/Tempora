@@ -8,25 +8,25 @@ function Timeline({ videoRef, duration }) {
   const [zoom, setZoom] = useState(1);
   const timelineRef = useRef(null);
   const containerRef = useRef(null);
-  const x = useMotionValue(0);
+  const timelineX = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
-  const backgroundX = useTransform(x, (value) => -value);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const updateTimeline = () => {
-      if (timelineRef.current && !isDragging) {
-        const progress = (video.currentTime / video.duration) * 100;
+      if (timelineRef.current && !isDragging && containerRef.current) {
+        const progress = video.currentTime / video.duration;
         const containerWidth = containerRef.current.offsetWidth;
-        x.set((progress / 100) * containerWidth);
+        // Center the current time at the playhead
+        timelineX.set(-(progress * containerWidth * zoom) + containerWidth / 2);
       }
     };
 
     video.addEventListener("timeupdate", updateTimeline);
     return () => video.removeEventListener("timeupdate", updateTimeline);
-  }, [videoRef, x, isDragging]);
+  }, [videoRef, zoom, timelineX, isDragging]);
 
   const handleZoom = (direction) => {
     setZoom((prevZoom) => Math.min(5, Math.max(1, prevZoom + direction * 0.5)));
@@ -35,17 +35,26 @@ function Timeline({ videoRef, duration }) {
   const handleDrag = (_, info) => {
     if (videoRef.current && containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
-      const progress = info.point.x / containerWidth;
+      const centerOffset = containerWidth / 2;
+      // Calculate time based on distance from center
+      const timelinePosition = -timelineX.get() + centerOffset;
+      const progress = timelinePosition / (containerWidth * zoom);
       const newTime = progress * videoRef.current.duration;
-      if (!isNaN(newTime) && isFinite(newTime)) {
+
+      if (
+        !isNaN(newTime) &&
+        isFinite(newTime) &&
+        newTime >= 0 &&
+        newTime <= videoRef.current.duration
+      ) {
         videoRef.current.currentTime = newTime;
       }
     }
   };
 
   return (
-    <div className="relative w-full max-w-3xl mt-4 bg-gray-100 rounded-lg p-4">
-      <div className="flex justify-between mb-2">
+    <div className="relative w-full max-w-3xl mt-4 bg-gray-100 rounded-lg p-8">
+      <div className="flex justify-between ">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => handleZoom(-1)}
@@ -70,61 +79,49 @@ function Timeline({ videoRef, duration }) {
         </div>
       </div>
       <div className="relative">
-        <div 
-          ref={containerRef} 
-          className="relative w-full h-12 overflow-hidden border-b border-gray-200"
-        >
-          {/* Static time markers */}
-          {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute top-0 h-full"
-              style={{ left: `${(i / duration) * 100}%` }}
-            >
-              <div className="h-full w-px bg-gray-300" />
-            </div>
-          ))}
-          
-          {/* Zoom container for additional visual elements */}
+      <div
+  ref={containerRef}
+  className="relative w-full h-16 overflow-hidden border-b border-gray-200"
+>
+
+          {/* Movable timeline */}
           <motion.div
             ref={timelineRef}
-            className="absolute top-0 left-0 h-full bg-gray-50/50"
+            className="absolute top-0 left-0 h-full p-4"
             style={{
               width: `${zoom * 100}%`,
-              x: backgroundX,
+              x: timelineX,
             }}
-          />
-
-          {/* Slider */}
-          <motion.div
-            className="absolute top-0 w-0.5 h-full bg-red-500 z-10"
-            style={{ x }}
             drag="x"
-            dragConstraints={containerRef}
+            dragConstraints={{
+              left: -(zoom * 100 - 100) + "%",
+              right: "0%",
+            }}
             dragElastic={0}
             dragMomentum={false}
             onDrag={handleDrag}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={() => setIsDragging(false)}
           >
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
+            {/* Time markers */}
+            {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute top-0 h-full"
+                style={{ left: `${(i / duration) * 100}%` }}
+              >
+                <div className="h-full w-px bg-gray-300" />
+                <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
+                  {i}s
+                </div>
+              </div>
+            ))}
           </motion.div>
-        </div>
-        
-        {/* Static time labels */}
-        <div className="relative h-6">
-          {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-xs text-gray-500"
-              style={{ 
-                left: `${(i / duration) * 100}%`,
-                transform: 'translateX(-50%)'
-              }}
-            >
-              {i}s
-            </div>
-          ))}
+
+          {/* Fixed center playhead */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-red-500 z-10">
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
+          </div>
         </div>
       </div>
     </div>
