@@ -59,7 +59,7 @@ export default async function handler(
       type: "upload",
       timeout: 240000,
       transformation: [
-        { width: 640, height: 360, crop: "fill", quality: "auto:low" },
+        { width: 480, height: 270, crop: "fill", quality: "auto:low" },
         ...overlays
       ]
     };
