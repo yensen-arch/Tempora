@@ -93,6 +93,7 @@ export default async function handler(
     res.status(200).json({
       success: true,
       concatenatedUrl: concatenatedResult.secure_url,
+      duration: concatenatedResult.duration,
       originalUrls: videoUrls
     });
   } catch (error) {

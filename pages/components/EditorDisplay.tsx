@@ -3,12 +3,11 @@ import { useRef, useEffect, useState } from "react";
 import Timeline from "./Timeline";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
-function EditorDisplay({ videoUrl: initialVideoUrl }) {
-  const [videoUrl, setVideoUrl] = useState(initialVideoUrl || ""); // Use state
+function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration }) {
+  const [videoUrl, setVideoUrl] = useState(initialVideoUrl || "");
   const [error, setError] = useState(null);
   const videoRef = useRef(null);
-  const { user, isLoading } = useUser();
-
+  const { user } = useUser();
   const email = user?.email;
 
   useEffect(() => {
@@ -28,7 +27,7 @@ function EditorDisplay({ videoUrl: initialVideoUrl }) {
         .then((data) => {
           console.log("API Response Data:", data);
           if (data.fileDetails?.length > 0) {
-            setVideoUrl(data.fileDetails[0].url);
+            setVideoUrl(decodeURIComponent(data.fileDetails[0].url));
           } else {
             throw new Error("No files found in the response.");
           }
@@ -52,10 +51,10 @@ function EditorDisplay({ videoUrl: initialVideoUrl }) {
       {videoUrl ? (
         <>
           <video ref={videoRef} controls className="w-full max-w-3xl">
-            <source src={decodeURIComponent(videoUrl)} type="video/mp4" />
+            <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <Timeline videoRef={videoRef} />
+          <Timeline videoRef={videoRef} duration={initialDuration} />
         </>
       ) : (
         <p>No video URL provided.</p>

@@ -8,11 +8,12 @@ import EditorDisplay from "./components/EditorDisplay";
 function Editor() {
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
+  const duration = searchParams.get("duration");
 
   return (
     <div>
       <Navbar />
-      <EditorDisplay videoUrl={videoUrl} />
+      <EditorDisplay videoUrl={videoUrl} duration={duration} />
       <Footer />
     </div>
   );

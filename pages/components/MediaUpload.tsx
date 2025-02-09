@@ -12,6 +12,7 @@ function MediaUpload() {
   const { user, isLoading } = useUser();
   const email = user?.email;
   const [concatenatedUrl, setConcatenatedUrl] = useState<string | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
 
   const allowedFormats = [
     "audio/mp3",
@@ -111,6 +112,7 @@ function MediaUpload() {
 
           const concatenateData = await concatenateResponse.json();
           setConcatenatedUrl(concatenateData.concatenatedUrl);
+          setDuration(concatenateData.duration);
           console.log(
             "Concatenation successful:",
             concatenateData.concatenatedUrl
@@ -246,10 +248,12 @@ function MediaUpload() {
             )}
           </div>
         </div>
-        {concatenatedUrl && (
+        {concatenatedUrl && duration !== null && (
           <div className="mt-4 text-center">
             <a
-              href={`/editor?videoUrl=${encodeURIComponent(concatenatedUrl)}`}
+              href={`/editor?videoUrl=${encodeURIComponent(
+                concatenatedUrl
+              )}&duration=${duration}`}
               className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
             >
               Proceed to Editor
