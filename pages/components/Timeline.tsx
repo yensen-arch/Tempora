@@ -1,83 +1,75 @@
-"use client";
+"use client"
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useMotionValue } from "framer-motion";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
-import TrimOverlay from "./TrimOverlay";
+import { useRef, useState, useEffect } from "react"
+import { motion, useMotionValue } from "framer-motion"
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react"
+import TrimOverlay from "./TrimOverlay"
 
 interface TimelineProps {
-  videoRef: React.RefObject<HTMLVideoElement>;
-  duration: number;
+  videoRef: React.RefObject<HTMLVideoElement>
+  duration: number
 }
 const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
-  const [zoom, setZoom] = useState(1);
-  const timelineRef = useRef(null);
-  const containerRef = useRef(null);
-  const timelineX = useMotionValue(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [zoom, setZoom] = useState(1)
+  const timelineRef = useRef(null)
+  const containerRef = useRef(null)
+  const timelineX = useMotionValue(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [visibleStart, setVisibleStart] = useState(0)
+  const [visibleEnd, setVisibleEnd] = useState(duration)
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const video = videoRef.current
+    if (!video) return
 
     const updateTimeline = () => {
       if (timelineRef.current && !isDragging && containerRef.current) {
-        const progress = video.currentTime / video.duration;
-        const containerWidth = containerRef.current.offsetWidth;
-        // Center the current time at the playhead
-        timelineX.set(-(progress * containerWidth * zoom) + containerWidth / 2);
+        const progress = (video.currentTime - visibleStart) / (visibleEnd - visibleStart)
+        const containerWidth = containerRef.current.offsetWidth
+        timelineX.set(-(progress * containerWidth * zoom) + containerWidth / 2)
       }
-    };
+    }
 
-    video.addEventListener("timeupdate", updateTimeline);
-    return () => video.removeEventListener("timeupdate", updateTimeline);
-  }, [videoRef, zoom, timelineX, isDragging]);
+    video.addEventListener("timeupdate", updateTimeline)
+    return () => video.removeEventListener("timeupdate", updateTimeline)
+  }, [videoRef, zoom, timelineX, isDragging, visibleStart, visibleEnd])
 
   const handleZoom = (direction) => {
-    setZoom((prevZoom) => Math.min(5, Math.max(1, prevZoom + direction * 0.5)));
-  };
+    setZoom((prevZoom) => Math.min(5, Math.max(1, prevZoom + direction * 0.5)))
+  }
 
   const handleDrag = (_, info) => {
     if (videoRef.current && containerRef.current) {
-      const containerWidth = containerRef.current.offsetWidth;
-      const centerOffset = containerWidth / 2;
-      // Calculate time based on distance from center
-      const timelinePosition = -timelineX.get() + centerOffset;
-      const progress = timelinePosition / (containerWidth * zoom);
-      const newTime = progress * videoRef.current.duration;
+      const containerWidth = containerRef.current.offsetWidth
+      const centerOffset = containerWidth / 2
+      const timelinePosition = -timelineX.get() + centerOffset
+      const progress = timelinePosition / (containerWidth * zoom)
+      const newTime = visibleStart + progress * (visibleEnd - visibleStart)
 
-      if (
-        !isNaN(newTime) &&
-        isFinite(newTime) &&
-        newTime >= 0 &&
-        newTime <= videoRef.current.duration
-      ) {
-        videoRef.current.currentTime = newTime;
+      if (!isNaN(newTime) && isFinite(newTime) && newTime >= visibleStart && newTime <= visibleEnd) {
+        videoRef.current.currentTime = newTime
       }
     }
-  };
+  }
 
-  const [showTrim, setShowTrim] = useState(false);
-  const [editHistory, setEditHistory] = useState<
-    { start: number; end: number; type: "trim" | "splice" }[]
-  >([]);
+  const [showTrim, setShowTrim] = useState(false)
+  const [editHistory, setEditHistory] = useState<{ start: number; end: number; type: "trim" | "splice" }[]>([])
 
   const handleTrimUpdate = (start: number, end: number) => {
-    setEditHistory((prev) => [...prev, { start, end, type: "trim" }]);
+    setEditHistory((prev) => [...prev, { start, end, type: "trim" }])
+
+    // Update the visible range of the timeline
+    setVisibleStart(start)
+    setVisibleEnd(end)
 
     if (videoRef.current) {
-      videoRef.current.currentTime = start; // Move video to start
+      videoRef.current.currentTime = start // Move video to start of trim
     }
-    console.log(editHistory);
-  };
+  }
 
-  const visibleStart = editHistory.length
-    ? editHistory[editHistory.length - 1].start
-    : 0;
-  const visibleEnd = editHistory.length
-    ? editHistory[editHistory.length - 1].end
-    : duration;
-  const progressWidth = ((visibleEnd - visibleStart) / duration) * 100;
+  const visibleStart2 = editHistory.length ? editHistory[editHistory.length - 1].start : 0
+  const visibleEnd2 = editHistory.length ? editHistory[editHistory.length - 1].end : duration
+  const progressWidth = ((visibleEnd2 - visibleStart2) / duration) * 100
 
   const handleSpliceUpdate = (splicePoints: number[]) => {
     setEditHistory((prev) => [
@@ -88,33 +80,25 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         end: splicePoints[splicePoints.length - 1],
         splicePoints,
       },
-    ]);
-    console.log(editHistory);
-  };
+    ])
+    console.log(editHistory)
+  }
 
   const undoLastEdit = () => {
-    setEditHistory((prev) => prev.slice(0, -1)); // Remove the last edit (LIFO structure)
-  };
+    setEditHistory((prev) => prev.slice(0, -1)) // Remove the last edit (LIFO structure)
+  }
 
   return (
     <div className="relative w-full max-w-3xl mt-4 bg-gray-100 rounded-lg p-8">
       <div className="flex justify-between ">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handleZoom(-1)}
-            className="p-1 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          <button onClick={() => handleZoom(-1)} className="p-1 bg-gray-200 rounded hover:bg-gray-300">
             <ZoomOut size={16} />
           </button>
-          <button
-            onClick={() => handleZoom(1)}
-            className="p-1 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          <button onClick={() => handleZoom(1)} className="p-1 bg-gray-200 rounded hover:bg-gray-300">
             <ZoomIn size={16} />
           </button>
-          <span className="text-sm text-gray-600">
-            Zoom: {zoom.toFixed(1)}x
-          </span>
+          <span className="text-sm text-gray-600">Zoom: {zoom.toFixed(1)}x</span>
         </div>
         <div className="flex items-center space-x-2">
           <ChevronLeft size={16} className="text-gray-400" />
@@ -123,22 +107,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </div>
       </div>
       <div className="relative">
-        <button
-          onClick={() => setShowTrim(true)}
-          className="mb-2 px-3 py-1 bg-blue-500 text-white rounded"
-        >
+        <button onClick={() => setShowTrim(true)} className="mb-2 px-3 py-1 bg-blue-500 text-white rounded">
           Precut
         </button>
-        <div
-          ref={containerRef}
-          className="relative w-full h-20 overflow-hidden border-b border-gray-200"
-        >
+        <div ref={containerRef} className="relative w-full h-20 overflow-hidden border-b border-gray-200">
           {showTrim && (
-            <TrimOverlay
-              duration={duration}
-              onTrimChange={handleTrimUpdate}
-              onClose={() => setShowTrim(false)}
-            />
+            <TrimOverlay duration={duration} onTrimChange={handleTrimUpdate} onClose={() => setShowTrim(false)} />
           )}
 
           {/* Trimmed section overlay */}
@@ -146,7 +120,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             className="absolute bg-gray-400"
             style={{
               width: `${progressWidth}%`,
-              left: `${(visibleStart / duration) * 100}%`,
+              left: `${(visibleStart2 / duration) * 100}%`,
             }}
           />
 
@@ -157,11 +131,10 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             style={{
               width: `${zoom * 100}%`,
               x: timelineX,
-              display: editHistory.length ? "none" : "block", // Hide if trim is applied
             }}
             drag="x"
             dragConstraints={{
-              left: -(zoom * 100 - 100) + "%",
+              left: -((visibleEnd - visibleStart) * zoom * 100 - 100) + "%",
               right: "0%",
             }}
             dragElastic={0}
@@ -171,15 +144,15 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             onDragEnd={() => setIsDragging(false)}
           >
             {/* Time markers */}
-            {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
+            {[...Array(Math.ceil(visibleEnd - visibleStart) + 1)].map((_, i) => (
               <div
                 key={i}
                 className="absolute top-0 h-8"
-                style={{ left: `${(i / duration) * 100}%` }}
+                style={{ left: `${(i / (visibleEnd - visibleStart)) * 100}%` }}
               >
                 <div className="h-full w-px bg-gray-300" />
                 <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
-                  {i}s
+                  {(visibleStart + i).toFixed(1)}s
                 </div>
               </div>
             ))}
@@ -192,7 +165,8 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Timeline;
+export default Timeline
+
