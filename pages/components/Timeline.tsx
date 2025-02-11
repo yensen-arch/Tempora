@@ -58,11 +58,35 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const [showTrim, setShowTrim] = useState(false);
-  const [trimRanges, setTrimRanges] = useState<
-    { start: number; end: number }[]
+  const [editHistory, setEditHistory] = useState<
+    {
+      action: "trim" | "splice";
+      start: number;
+      end: number;
+      splicePoints?: number[];
+    }[]
   >([]);
+
   const handleTrimUpdate = (start: number, end: number) => {
-    setTrimRanges([{ start, end }]); // Store trimmed section
+    setEditHistory((prev) => [...prev, { action: "trim", start, end }]);
+    console.log(editHistory);
+  };
+
+  const handleSpliceUpdate = (splicePoints: number[]) => {
+    setEditHistory((prev) => [
+      ...prev,
+      {
+        action: "splice",
+        start: splicePoints[0],
+        end: splicePoints[splicePoints.length - 1],
+        splicePoints,
+      },
+    ]);
+    console.log(editHistory);
+  };
+
+  const undoLastEdit = () => {
+    setEditHistory((prev) => prev.slice(0, -1)); // Remove the last edit (LIFO structure)
   };
 
   return (
@@ -116,8 +140,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             style={{
               width: `${zoom * 100}%`,
               x: timelineX,
-              display: trimRanges.length ? "none" : "block", // Hide if trim is applied
-
+              display: editHistory.length ? "none" : "block", // Hide if trim is applied
             }}
             drag="x"
             dragConstraints={{
