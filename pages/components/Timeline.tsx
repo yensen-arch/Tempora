@@ -79,15 +79,14 @@ function Timeline({ videoRef, duration }) {
         </div>
       </div>
       <div className="relative">
-      <div
-  ref={containerRef}
-  className="relative w-full h-16 overflow-hidden border-b border-gray-200"
->
-
+        <div
+          ref={containerRef}
+          className="relative w-full h-20 overflow-hidden  border-b border-gray-200  "
+        >
           {/* Movable timeline */}
           <motion.div
             ref={timelineRef}
-            className="absolute top-0 left-0 h-full p-4"
+            className="absolute top-0 left-0 h-12 p-4"
             style={{
               width: `${zoom * 100}%`,
               x: timelineX,
@@ -107,7 +106,7 @@ function Timeline({ videoRef, duration }) {
             {[...Array(Math.ceil(duration) + 1)].map((_, i) => (
               <div
                 key={i}
-                className="absolute top-0 h-full"
+                className="absolute top-0 h-8"
                 style={{ left: `${(i / duration) * 100}%` }}
               >
                 <div className="h-full w-px bg-gray-300" />
@@ -119,7 +118,7 @@ function Timeline({ videoRef, duration }) {
           </motion.div>
 
           {/* Fixed center playhead */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-red-500 z-10">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-12 bg-red-500 z-10">
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
           </div>
         </div>
