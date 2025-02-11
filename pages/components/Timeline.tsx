@@ -59,18 +59,25 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
   const [showTrim, setShowTrim] = useState(false);
   const [editHistory, setEditHistory] = useState<
-    {
-      action: "trim" | "splice";
-      start: number;
-      end: number;
-      splicePoints?: number[];
-    }[]
+    { start: number; end: number; type: "trim" | "splice" }[]
   >([]);
 
   const handleTrimUpdate = (start: number, end: number) => {
-    setEditHistory((prev) => [...prev, { action: "trim", start, end }]);
+    setEditHistory((prev) => [...prev, { start, end, type: "trim" }]);
+
+    if (videoRef.current) {
+      videoRef.current.currentTime = start; // Move video to start
+    }
     console.log(editHistory);
   };
+
+  const visibleStart = editHistory.length
+    ? editHistory[editHistory.length - 1].start
+    : 0;
+  const visibleEnd = editHistory.length
+    ? editHistory[editHistory.length - 1].end
+    : duration;
+  const progressWidth = ((visibleEnd - visibleStart) / duration) * 100;
 
   const handleSpliceUpdate = (splicePoints: number[]) => {
     setEditHistory((prev) => [
@@ -124,7 +131,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </button>
         <div
           ref={containerRef}
-          className="relative w-full h-20 overflow-hidden  border-b border-gray-200  "
+          className="relative w-full h-20 overflow-hidden border-b border-gray-200"
         >
           {showTrim && (
             <TrimOverlay
@@ -133,6 +140,16 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
               onClose={() => setShowTrim(false)}
             />
           )}
+
+          {/* Trimmed section overlay */}
+          <div
+            className="absolute bg-gray-400"
+            style={{
+              width: `${progressWidth}%`,
+              left: `${(visibleStart / duration) * 100}%`,
+            }}
+          />
+
           {/* Movable timeline */}
           <motion.div
             ref={timelineRef}
