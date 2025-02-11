@@ -34,8 +34,9 @@ const TrimOverlay: React.FC<TrimOverlayProps> = ({
       if (!container) return;
 
       const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const newPosition = (x / rect.width) * duration;
+      const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+      const percentage = x / rect.width;
+      const newPosition = Math.round(percentage * duration * 10) / 10;
 
       if (isDragging === "left") {
         setStart(Math.max(0, Math.min(newPosition, end - 1)));
