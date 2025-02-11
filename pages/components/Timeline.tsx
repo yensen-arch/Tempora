@@ -1,10 +1,15 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import TrimOverlay from "./TrimOverlay";
 
-function Timeline({ videoRef, duration }) {
+interface TimelineProps {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  duration: number;
+}
+const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [zoom, setZoom] = useState(1);
   const timelineRef = useRef(null);
   const containerRef = useRef(null);
@@ -52,6 +57,14 @@ function Timeline({ videoRef, duration }) {
     }
   };
 
+  const [showTrim, setShowTrim] = useState(false);
+  const [trimRanges, setTrimRanges] = useState<
+    { start: number; end: number }[]
+  >([]);
+  const handleTrimUpdate = (start: number, end: number) => {
+    setTrimRanges([{ start, end }]); // Store trimmed section
+  };
+
   return (
     <div className="relative w-full max-w-3xl mt-4 bg-gray-100 rounded-lg p-8">
       <div className="flex justify-between ">
@@ -79,10 +92,23 @@ function Timeline({ videoRef, duration }) {
         </div>
       </div>
       <div className="relative">
+        <button
+          onClick={() => setShowTrim(true)}
+          className="mb-2 px-3 py-1 bg-blue-500 text-white rounded"
+        >
+          Precut
+        </button>
         <div
           ref={containerRef}
           className="relative w-full h-20 overflow-hidden  border-b border-gray-200  "
         >
+          {showTrim && (
+            <TrimOverlay
+              duration={duration}
+              onTrimChange={handleTrimUpdate}
+              onClose={() => setShowTrim(false)}
+            />
+          )}
           {/* Movable timeline */}
           <motion.div
             ref={timelineRef}
@@ -90,6 +116,8 @@ function Timeline({ videoRef, duration }) {
             style={{
               width: `${zoom * 100}%`,
               x: timelineX,
+              display: trimRanges.length ? "none" : "block", // Hide if trim is applied
+
             }}
             drag="x"
             dragConstraints={{
@@ -125,6 +153,6 @@ function Timeline({ videoRef, duration }) {
       </div>
     </div>
   );
-}
+};
 
 export default Timeline;
