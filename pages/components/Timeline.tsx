@@ -9,11 +9,11 @@ interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>
   duration: number
 }
+
 const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [zoom, setZoom] = useState(1)
-  const timelineRef = useRef(null)
-  const containerRef = useRef(null)
-  const timelineX = useMotionValue(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const sliderX = useMotionValue(0)
   const [isDragging, setIsDragging] = useState(false)
   const [visibleStart, setVisibleStart] = useState(0)
   const [visibleEnd, setVisibleEnd] = useState(duration)
@@ -22,28 +22,29 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     const video = videoRef.current
     if (!video) return
 
-    const updateTimeline = () => {
-      if (timelineRef.current && !isDragging && containerRef.current) {
+    const updateSlider = () => {
+      if (containerRef.current && !isDragging) {
         const progress = (video.currentTime - visibleStart) / (visibleEnd - visibleStart)
         const containerWidth = containerRef.current.offsetWidth
-        timelineX.set(-(progress * containerWidth * zoom) + containerWidth / 2)
+        sliderX.set(progress * containerWidth)
+      }
+      if (video.currentTime >= visibleEnd) {
+        video.pause()
       }
     }
 
-    video.addEventListener("timeupdate", updateTimeline)
-    return () => video.removeEventListener("timeupdate", updateTimeline)
-  }, [videoRef, zoom, timelineX, isDragging, visibleStart, visibleEnd])
+    video.addEventListener("timeupdate", updateSlider)
+    return () => video.removeEventListener("timeupdate", updateSlider)
+  }, [videoRef, sliderX, isDragging, visibleStart, visibleEnd])
 
-  const handleZoom = (direction) => {
+  const handleZoom = (direction: number) => {
     setZoom((prevZoom) => Math.min(5, Math.max(1, prevZoom + direction * 0.5)))
   }
 
-  const handleDrag = (_, info) => {
+  const handleDrag = (_, info: { point: { x: number } }) => {
     if (videoRef.current && containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth
-      const centerOffset = containerWidth / 2
-      const timelinePosition = -timelineX.get() + centerOffset
-      const progress = timelinePosition / (containerWidth * zoom)
+      const progress = info.point.x / containerWidth
       const newTime = visibleStart + progress * (visibleEnd - visibleStart)
 
       if (!isNaN(newTime) && isFinite(newTime) && newTime >= visibleStart && newTime <= visibleEnd) {
@@ -58,35 +59,19 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const handleTrimUpdate = (start: number, end: number) => {
     setEditHistory((prev) => [...prev, { start, end, type: "trim" }])
 
-    // Update the visible range of the timeline
     setVisibleStart(start)
     setVisibleEnd(end)
 
     if (videoRef.current) {
-      videoRef.current.currentTime = start // Move video to start of trim
+      videoRef.current.currentTime = start
     }
+
+    console.log(editHistory)
   }
 
   const visibleStart2 = editHistory.length ? editHistory[editHistory.length - 1].start : 0
   const visibleEnd2 = editHistory.length ? editHistory[editHistory.length - 1].end : duration
   const progressWidth = ((visibleEnd2 - visibleStart2) / duration) * 100
-
-  const handleSpliceUpdate = (splicePoints: number[]) => {
-    setEditHistory((prev) => [
-      ...prev,
-      {
-        action: "splice",
-        start: splicePoints[0],
-        end: splicePoints[splicePoints.length - 1],
-        splicePoints,
-      },
-    ])
-    console.log(editHistory)
-  }
-
-  const undoLastEdit = () => {
-    setEditHistory((prev) => prev.slice(0, -1)) // Remove the last edit (LIFO structure)
-  }
 
   return (
     <div className="relative w-full max-w-3xl mt-4 bg-gray-100 rounded-lg p-8">
@@ -108,7 +93,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       </div>
       <div className="relative">
         <button onClick={() => setShowTrim(true)} className="mb-2 px-3 py-1 bg-blue-500 text-white rounded">
-          Precut
+          Pre Cut
         </button>
         <div ref={containerRef} className="relative w-full h-20 overflow-hidden border-b border-gray-200">
           {showTrim && (
@@ -117,32 +102,15 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
           {/* Trimmed section overlay */}
           <div
-            className="absolute bg-gray-400"
+            className="absolute  h-12"
             style={{
               width: `${progressWidth}%`,
               left: `${(visibleStart2 / duration) * 100}%`,
             }}
           />
 
-          {/* Movable timeline */}
-          <motion.div
-            ref={timelineRef}
-            className="absolute top-0 left-0 h-12 p-4"
-            style={{
-              width: `${zoom * 100}%`,
-              x: timelineX,
-            }}
-            drag="x"
-            dragConstraints={{
-              left: -((visibleEnd - visibleStart) * zoom * 100 - 100) + "%",
-              right: "0%",
-            }}
-            dragElastic={0}
-            dragMomentum={false}
-            onDrag={handleDrag}
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={() => setIsDragging(false)}
-          >
+          {/* Stationary timeline */}
+          <div className="absolute top-0 left-0 h-12 p-4 w-full">
             {/* Time markers */}
             {[...Array(Math.ceil(visibleEnd - visibleStart) + 1)].map((_, i) => (
               <div
@@ -150,18 +118,28 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
                 className="absolute top-0 h-8"
                 style={{ left: `${(i / (visibleEnd - visibleStart)) * 100}%` }}
               >
-                <div className="h-full w-px bg-gray-300" />
+                <div className="h-full w-px bg-black" />
                 <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
                   {(visibleStart + i).toFixed(1)}s
                 </div>
               </div>
             ))}
-          </motion.div>
-
-          {/* Fixed center playhead */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-12 bg-red-500 z-10">
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
           </div>
+
+          {/* Movable red slider */}
+          <motion.div
+            className="absolute top-0 w-0.5 h-12 bg-red-500 z-10"
+            style={{ x: sliderX }}
+            drag="x"
+            dragConstraints={containerRef}
+            dragElastic={0}
+            dragMomentum={false}
+            onDrag={handleDrag}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={() => setIsDragging(false)}
+          >
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
+          </motion.div>
         </div>
       </div>
     </div>
