@@ -17,9 +17,8 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
   initialStart,
   initialEnd,
 }) => {
-  // Initialize handles at center with a gap
-  const [start, setStart] = useState(0.4);  // 40% from left
-  const [end, setEnd] = useState(0.6);      // 60% from left
+  const [start, setStart] = useState(0.4);
+  const [end, setEnd] = useState(0.6);
   const [isDragging, setIsDragging] = useState<"left" | "right" | null>(null);
 
   const handleMouseDown = (handle: "left" | "right") => {
@@ -61,25 +60,31 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
   }, [handleMouseMove]);
 
   const handleSpliceChange = () => {
-    onSpliceChange(start, end);
+    // Calculate splice points relative to current duration
+    const actualStart = initialStart + start * (initialEnd - initialStart);
+    const actualEnd = initialStart + end * (initialEnd - initialStart);
+    onSpliceChange(actualStart, actualEnd);
     onClose();
   };
+
+  const leftPosition = (start * 100);
+  const rightPosition = ((1 - end) * 100);
 
   return (
     <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
       <div id="splice-container" className="relative w-full h-16 bg-gray-200">
         <div
           className="absolute inset-y-0 bg-red-500 bg-opacity-50"
-          style={{ left: `${start * 100}%`, right: `${(1 - end) * 100}%` }}
+          style={{ left: `${leftPosition}%`, right: `${rightPosition}%` }}
         />
         <div
           className="absolute top-0 bottom-0 w-3 bg-red-500 cursor-ew-resize"
-          style={{ left: `${start * 100}%` }}
+          style={{ left: `${leftPosition}%` }}
           onMouseDown={() => handleMouseDown("left")}
         />
         <div
           className="absolute top-0 bottom-0 w-3 bg-red-500 cursor-ew-resize"
-          style={{ right: `${(1 - end) * 100}%` }}
+          style={{ right: `${rightPosition}%` }}
           onMouseDown={() => handleMouseDown("right")}
         />
       </div>

@@ -28,27 +28,29 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     const updateSlider = () => {
       const video = videoRef.current;
       if (!video || !containerRef.current || isDragging) return;
-    
+
       const currentTime = video.currentTime;
       let adjustedTime = currentTime;
-      
+
       // Adjust for any spliced sections before current time
-      const splices = editHistory.filter(edit => edit.type === "splice");
+      const splices = editHistory.filter((edit) => edit.type === "splice");
       for (const splice of splices) {
         if (currentTime >= splice.end) {
-          adjustedTime -= (splice.end - splice.start);
+          adjustedTime -= splice.end - splice.start;
         } else if (currentTime >= splice.start) {
-          video.currentTime = splice.end+ 0.1; //prevents loop
+          video.currentTime = splice.end + 0.1; //prevents loop
           adjustedTime = splice.end - (splice.end - splice.start);
           break;
         }
       }
-    
+
       const visibleDuration = visibleEnd - visibleStart;
       const progress = (adjustedTime - visibleStart) / visibleDuration;
       const containerWidth = containerRef.current.offsetWidth;
-      sliderX.set(Math.max(0, Math.min(containerWidth, progress * containerWidth)));
-    
+      sliderX.set(
+        Math.max(0, Math.min(containerWidth, progress * containerWidth))
+      );
+
       if (adjustedTime >= visibleEnd) {
         video.pause();
       }
@@ -92,27 +94,37 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const handleSpliceUpdate = (start: number, end: number) => {
-    const actualStart =
-      currentTrim.start + start * (currentTrim.end - currentTrim.start);
-    const actualEnd =
-      currentTrim.start + end * (currentTrim.end - currentTrim.start);
+    // Get previous splices to adjust the timeline
+    const previousSplices = editHistory.filter(
+      (edit) => edit.type === "splice"
+    );
+    let currentLength = visibleEnd - visibleStart;
+    let adjustedStart = visibleStart + start * currentLength;
+    let adjustedEnd = visibleStart + end * currentLength;
+    // Adjust for previous splices
+    for (const splice of previousSplices) {
+      if (adjustedStart > splice.end) {
+        adjustedStart -= splice.end - splice.start;
+      }
+      if (adjustedEnd > splice.end) {
+        adjustedEnd -= splice.end - splice.start;
+      }
+    }
 
     setEditHistory((prev) => [
       ...prev,
       {
-        start: actualStart,
-        end: actualEnd,
+        start: adjustedStart,
+        end: adjustedEnd,
         type: "splice",
       },
     ]);
 
-    // Update visible range by subtracting spliced duration
-    const splicedDuration = actualEnd - actualStart;
+    const splicedDuration = adjustedEnd - adjustedStart;
     setVisibleEnd((prev) => prev - splicedDuration);
 
-    // Update time markers
     if (videoRef.current) {
-      videoRef.current.currentTime = actualStart;
+      videoRef.current.currentTime = adjustedStart;
     }
   };
 
