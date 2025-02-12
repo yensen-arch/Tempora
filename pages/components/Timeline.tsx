@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Undo, Redo } from "lucide-react";
 import TrimOverlay from "./TrimOverlay";
 import SpliceOverlay from "./SpliceOverlay";
 interface TimelineProps {
@@ -19,6 +19,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [editHistory, setEditHistory] = useState<
     { start: number; end: number; type: "trim" | "splice" }[]
   >([]);
+  const [historyPointer, setHistoryPointer] = useState(-1);
   const [showSplice, setShowSplice] = useState(false);
 
   useEffect(() => {
@@ -93,6 +94,14 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     end: duration,
   };
 
+  const updateEditHistory = (newEdit: { start: number; end: number; type: "trim" | "splice" }) => {
+    setEditHistory((prev) => {
+      const newHistory = [...prev.slice(0, historyPointer + 1), newEdit];
+      setHistoryPointer(newHistory.length - 1);
+      return newHistory;
+    });
+  };
+
   const handleSpliceUpdate = (start: number, end: number) => {
     const visibleDuration = visibleEnd - visibleStart;
     const rawStart = visibleStart + start * visibleDuration;
@@ -120,14 +129,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       cumulativeOffset += spliceLength;
     }
 
-    setEditHistory((prev) => [
-      ...prev,
-      {
-        start: adjustedStart,
-        end: adjustedEnd,
-        type: "splice",
-      },
-    ]);
+    updateEditHistory({ start: adjustedStart, end: adjustedEnd, type: "splice" });
 
     setVisibleEnd((prev) => prev - (adjustedEnd - adjustedStart));
 
@@ -136,6 +138,37 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     }
   };
 
+  const undo = () => {
+    if (historyPointer-1 >= 0) {
+      const prevEdit = editHistory[historyPointer-1];
+      setHistoryPointer((prev) => prev - 1);
+
+      // Revert to previous state
+      console.log(prevEdit);
+      if (prevEdit.type === "trim") {
+        setVisibleStart(prevEdit.start);
+        setVisibleEnd(prevEdit.end);
+      }
+    } else {
+      setHistoryPointer(-1);
+      setVisibleStart(0);
+      setVisibleEnd(duration);
+    }
+  };
+
+  const redo = () => {
+    if (historyPointer < editHistory.length - 1) {
+      const nextEdit = editHistory[historyPointer + 1];
+      setHistoryPointer((prev) => prev + 1);
+
+      if (nextEdit.type === "trim") {
+        setVisibleStart(nextEdit.start);
+        setVisibleEnd(nextEdit.end);
+      }
+    }
+  };
+  console.log(visibleStart, visibleEnd);
+
   const handleTrimUpdate = (start: number, end: number) => {
     // Calculate new trim points relative to the current trim
     const actualStart =
@@ -143,14 +176,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     const actualEnd =
       currentTrim.start + end * (currentTrim.end - currentTrim.start);
 
-    setEditHistory((prev) => [
-      ...prev,
-      {
-        start: actualStart,
-        end: actualEnd,
-        type: "trim",
-      },
-    ]);
+    updateEditHistory({ start: actualStart, end: actualEnd, type: "trim" });
     setVisibleStart(actualStart);
     setVisibleEnd(actualEnd);
 
@@ -166,6 +192,21 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
       {/* Rest of the component remains the same until the timeline section */}
       <div className="relative">
+        <button
+          onClick={undo}
+          disabled={historyPointer < 0}
+          className="mb-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
+        >
+          <Undo/>
+        </button>
+
+        <button
+          onClick={redo}
+          disabled={historyPointer >= editHistory.length - 1}
+          className="mb-2 ml-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
+        >
+          <Redo/>
+        </button>
         <button
           onClick={() => setShowTrim(true)}
           className="mb-2 px-3 py-1 bg-blue-500 text-white rounded"
