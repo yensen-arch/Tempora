@@ -94,21 +94,30 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const handleSpliceUpdate = (start: number, end: number) => {
-    // Get previous splices to adjust the timeline
-    const previousSplices = editHistory.filter(
-      (edit) => edit.type === "splice"
-    );
-    let currentLength = visibleEnd - visibleStart;
-    let adjustedStart = visibleStart + start * currentLength;
-    let adjustedEnd = visibleStart + end * currentLength;
-    // Adjust for previous splices
+    const visibleDuration = visibleEnd - visibleStart;
+    const rawStart = visibleStart + start * visibleDuration;
+    const rawEnd = visibleStart + end * visibleDuration;
+
+    // Get actual video time positions
+    let adjustedStart = rawStart;
+    let adjustedEnd = rawEnd;
+
+    // Sort splices by start time
+    const previousSplices = editHistory
+      .filter((edit) => edit.type === "splice")
+      .sort((a, b) => a.start - b.start);
+
+    // Calculate cumulative offset at each point
+    let cumulativeOffset = 0;
     for (const splice of previousSplices) {
-      if (adjustedStart > splice.end) {
-        adjustedStart -= splice.end - splice.start;
+      const spliceLength = splice.end - splice.start;
+      if (rawStart > splice.start) {
+        adjustedStart += spliceLength;
       }
-      if (adjustedEnd > splice.end) {
-        adjustedEnd -= splice.end - splice.start;
+      if (rawEnd > splice.start) {
+        adjustedEnd += spliceLength;
       }
+      cumulativeOffset += spliceLength;
     }
 
     setEditHistory((prev) => [
@@ -120,8 +129,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       },
     ]);
 
-    const splicedDuration = adjustedEnd - adjustedStart;
-    setVisibleEnd((prev) => prev - splicedDuration);
+    setVisibleEnd((prev) => prev - (adjustedEnd - adjustedStart));
 
     if (videoRef.current) {
       videoRef.current.currentTime = adjustedStart;
@@ -209,18 +217,18 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             const time = visibleStart + i * zoom;
             if (time > visibleEnd) return null;
 
-            // Adjust time display for spliced sections
-            let adjustedTime = time;
-            let totalSplicedTime = 0;
+            // Get actual video time by accounting for all previous splices
+            let displayTime = time;
+            const orderedSplices = editHistory
+              .filter((edit) => edit.type === "splice")
+              .sort((a, b) => a.start - b.start);
 
-            editHistory.forEach((edit) => {
-              if (edit.type === "splice" && time > edit.start) {
-                const spliceLength = edit.end - edit.start;
-                totalSplicedTime += spliceLength;
+            for (const splice of orderedSplices) {
+              const spliceLength = splice.end - splice.start;
+              if (displayTime >= splice.start) {
+                displayTime += spliceLength;
               }
-            });
-
-            adjustedTime += totalSplicedTime;
+            }
 
             return (
               <div
@@ -234,7 +242,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
               >
                 <div className="h-full w-px bg-black" />
                 <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
-                  {adjustedTime.toFixed(1)}s
+                  {displayTime.toFixed(1)}s
                 </div>
               </div>
             );
