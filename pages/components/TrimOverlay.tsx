@@ -7,15 +7,20 @@ interface TrimOverlayProps {
   duration: number;
   onTrimChange: (start: number, end: number) => void;
   onClose: () => void;
+  initialStart: number;
+  initialEnd: number;
 }
 
 const TrimOverlay: React.FC<TrimOverlayProps> = ({
   duration,
   onTrimChange,
   onClose,
+  initialStart,
+  initialEnd,
 }) => {
   const [start, setStart] = useState(0);
-  const [end, setEnd] = useState(duration);
+  const [end, setEnd] = useState(1);
+
   const [isDragging, setIsDragging] = useState<"left" | "right" | null>(null);
 
   const handleMouseDown = (handle: "left" | "right") => {
@@ -36,15 +41,14 @@ const TrimOverlay: React.FC<TrimOverlayProps> = ({
       const rect = container.getBoundingClientRect();
       const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
       const percentage = x / rect.width;
-      const newPosition = Math.round(percentage * duration * 10) / 10;
 
       if (isDragging === "left") {
-        setStart(Math.max(0, Math.min(newPosition, end - 1)));
+        setStart(Math.max(0, Math.min(percentage, end - 0.1)));
       } else {
-        setEnd(Math.min(duration, Math.max(newPosition, start + 1)));
+        setEnd(Math.min(1, Math.max(percentage, start + 0.1)));
       }
     },
-    [isDragging, start, end, duration]
+    [isDragging, start, end]
   );
 
   useEffect(() => {
@@ -55,12 +59,11 @@ const TrimOverlay: React.FC<TrimOverlayProps> = ({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseMove, handleMouseUp]); // Added handleMouseUp to dependencies
+  }, [handleMouseMove, handleMouseUp]);
 
   const handleTrimChange = () => {
     onTrimChange(start, end);
     onClose();
-    console.log("Trimmed video from", start, "to", end);
   };
 
   const leftPosition = (start / duration) * 100;

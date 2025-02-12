@@ -71,24 +71,37 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     }
   };
 
-  const handleTrimUpdate = (start: number, end: number) => {
-    setEditHistory((prev) => [...prev, { start, end, type: "trim" }]);
-    setVisibleStart(start);
-    setVisibleEnd(end);
-
-    if (videoRef.current) {
-      videoRef.current.currentTime = start;
-    }
-  };
-
   const currentTrim = editHistory[editHistory.length - 1] || {
     start: 0,
     end: duration,
   };
+
+  const handleTrimUpdate = (start: number, end: number) => {
+    // Calculate new trim points relative to the current trim
+    const actualStart =
+      currentTrim.start + start * (currentTrim.end - currentTrim.start);
+    const actualEnd =
+      currentTrim.start + end * (currentTrim.end - currentTrim.start);
+
+    setEditHistory((prev) => [
+      ...prev,
+      {
+        start: actualStart,
+        end: actualEnd,
+        type: "trim",
+      },
+    ]);
+    setVisibleStart(actualStart);
+    setVisibleEnd(actualEnd);
+
+    if (videoRef.current) {
+      videoRef.current.currentTime = actualStart;
+    }
+  };
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
-
+console.log(editHistory)
   return (
     <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
       {/* Rest of the component remains the same until the timeline section */}
@@ -105,11 +118,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         >
           {showTrim && (
             <TrimOverlay
-              duration={duration}
+              duration={1}
               onTrimChange={handleTrimUpdate}
               onClose={() => setShowTrim(false)}
-              initialStart={currentTrim.start}
-              initialEnd={currentTrim.end}
+              initialStart={0}
+              initialEnd={1}
             />
           )}
 
