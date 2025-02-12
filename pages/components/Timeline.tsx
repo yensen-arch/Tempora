@@ -1,12 +1,21 @@
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { motion, useMotionValue } from "framer-motion";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Undo, Redo } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  Undo,
+  Redo,
+} from "lucide-react";
 import TrimOverlay from "./TrimOverlay";
 import SpliceOverlay from "./SpliceOverlay";
 interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   duration: number;
 }
+import EditMachine from "./EditMachine";
 
 const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [zoom, setZoom] = useState(1);
@@ -21,6 +30,16 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   >([]);
   const [historyPointer, setHistoryPointer] = useState(-1);
   const [showSplice, setShowSplice] = useState(false);
+
+  const router = useRouter();
+  const { videoUrl } = router.query;
+  const [decodedUrl, setDecodedUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof videoUrl === "string") {
+      setDecodedUrl(decodeURIComponent(videoUrl));
+    }
+  }, [videoUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -94,7 +113,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     end: duration,
   };
 
-  const updateEditHistory = (newEdit: { start: number; end: number; type: "trim" | "splice" }) => {
+  const updateEditHistory = (newEdit: {
+    start: number;
+    end: number;
+    type: "trim" | "splice";
+  }) => {
     setEditHistory((prev) => {
       const newHistory = [...prev.slice(0, historyPointer + 1), newEdit];
       setHistoryPointer(newHistory.length - 1);
@@ -129,7 +152,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       cumulativeOffset += spliceLength;
     }
 
-    updateEditHistory({ start: adjustedStart, end: adjustedEnd, type: "splice" });
+    updateEditHistory({
+      start: adjustedStart,
+      end: adjustedEnd,
+      type: "splice",
+    });
 
     setVisibleEnd((prev) => prev - (adjustedEnd - adjustedStart));
 
@@ -139,8 +166,8 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const undo = () => {
-    if (historyPointer-1 >= 0) {
-      const prevEdit = editHistory[historyPointer-1];
+    if (historyPointer - 1 >= 0) {
+      const prevEdit = editHistory[historyPointer - 1];
       setHistoryPointer((prev) => prev - 1);
 
       // Revert to previous state
@@ -197,7 +224,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           disabled={historyPointer < 0}
           className="mb-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
         >
-          <Undo/>
+          <Undo />
         </button>
 
         <button
@@ -205,7 +232,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           disabled={historyPointer >= editHistory.length - 1}
           className="mb-2 ml-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
         >
-          <Redo/>
+          <Redo />
         </button>
         <button
           onClick={() => setShowTrim(true)}
@@ -304,6 +331,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           </motion.div>
         </div>
       </div>
+      <EditMachine videoUrl={videoUrl} edits={editHistory} />
     </div>
   );
 };
