@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import TrimOverlay from "./TrimOverlay";
-
+import SpliceOverlay from "./SpliceOverlay";
 interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   duration: number;
@@ -19,21 +19,34 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [editHistory, setEditHistory] = useState<
     { start: number; end: number; type: "trim" | "splice" }[]
   >([]);
+  const [showSplice, setShowSplice] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const updateSlider = () => {
+      const video = videoRef.current;
+      if (!video) return;
+    
       if (containerRef.current && !isDragging) {
         const currentTime = video.currentTime;
+    
+        // Check if we're entering a spliced region
+        const splices = editHistory.filter((edit) => edit.type === "splice");
+        for (const splice of splices) {
+          if (currentTime >= splice.start && currentTime < splice.end) {
+            video.currentTime = splice.end;
+            break; // Exit after first splice jump
+          }
+        }
+        
         const visibleDuration = visibleEnd - visibleStart;
         const progress = (currentTime - visibleStart) / visibleDuration;
         const containerWidth = containerRef.current.offsetWidth;
-        sliderX.set(
-          Math.max(0, Math.min(containerWidth, progress * containerWidth))
-        );
+        sliderX.set(Math.max(0, Math.min(containerWidth, progress * containerWidth)));
       }
+      
       if (video.currentTime >= visibleEnd) {
         video.pause();
       }
@@ -41,7 +54,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
     video.addEventListener("timeupdate", updateSlider);
     return () => video.removeEventListener("timeupdate", updateSlider);
-  }, [videoRef, sliderX, isDragging, visibleStart, visibleEnd]);
+  }, [videoRef, sliderX, isDragging, visibleStart, visibleEnd, editHistory]);
 
   const handleZoom = (direction: number) => {
     setZoom((prevZoom) => {
@@ -76,6 +89,32 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     end: duration,
   };
 
+  const handleSpliceUpdate = (start: number, end: number) => {
+    const actualStart =
+      currentTrim.start + start * (currentTrim.end - currentTrim.start);
+    const actualEnd =
+      currentTrim.start + end * (currentTrim.end - currentTrim.start);
+
+    setEditHistory((prev) => [
+      ...prev,
+      {
+        start: actualStart,
+        end: actualEnd,
+        type: "splice",
+      },
+    ]);
+
+    if (videoRef.current) {
+      videoRef.current.currentTime = actualStart;
+    }
+
+    // Remove the spliced section by setting new boundaries
+    setVisibleEnd(visibleEnd - (actualEnd - actualStart));
+    if (videoRef.current) {
+      videoRef.current.currentTime = actualStart;
+    }
+  };
+
   const handleTrimUpdate = (start: number, end: number) => {
     // Calculate new trim points relative to the current trim
     const actualStart =
@@ -101,7 +140,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
-console.log(editHistory)
+  console.log(editHistory);
   return (
     <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
       {/* Rest of the component remains the same until the timeline section */}
@@ -112,6 +151,13 @@ console.log(editHistory)
         >
           Pre Cut
         </button>
+
+        <button
+          onClick={() => setShowSplice(true)}
+          className="mb-2 ml-2 px-3 py-1 bg-red-500 text-white rounded"
+        >
+          Splice
+        </button>
         <div
           ref={containerRef}
           className="relative w-full h-20 overflow-hidden border-b border-gray-200"
@@ -121,6 +167,16 @@ console.log(editHistory)
               duration={1}
               onTrimChange={handleTrimUpdate}
               onClose={() => setShowTrim(false)}
+              initialStart={0}
+              initialEnd={1}
+            />
+          )}
+
+          {showSplice && (
+            <SpliceOverlay
+              duration={1}
+              onSpliceChange={handleSpliceUpdate}
+              onClose={() => setShowSplice(false)}
               initialStart={0}
               initialEnd={1}
             />
