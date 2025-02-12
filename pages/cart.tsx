@@ -200,7 +200,7 @@ export default function Cart() {
                     {/* Delete Button */}
                     <button
                       className="flex items-center justify-center gap-2 text-white text-sm px-6 py-3 rounded-md hover:bg-gray-200 transition focus:outline-none"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDelete(item.productId)}
                     >
                       <Trash2 className="w-4 h-4 text-black" />
                     </button>
