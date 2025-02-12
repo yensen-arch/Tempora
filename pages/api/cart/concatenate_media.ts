@@ -77,13 +77,13 @@ export default async function handler(
     await Media.findOneAndUpdate(
       { email },
       {
-        $push: {
-          files: {
+        $set: {
+          file: {
             fileUrl: concatenatedResult.secure_url,
             mediaType: "video",
-            originalFormat: "mp4",
+            duration: concatenatedResult.duration,
             isConcatenated: true,
-            originalVideos: videoUrls
+            uploadedAt: new Date(), // Ensures uploadedAt is updated
           },
         },
       },
