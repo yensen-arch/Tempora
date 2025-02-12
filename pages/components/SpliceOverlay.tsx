@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 
@@ -67,8 +67,8 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
     onClose();
   };
 
-  const leftPosition = (start * 100);
-  const rightPosition = ((1 - end) * 100);
+  const leftPosition = start * 100;
+  const rightPosition = (1 - end) * 100;
 
   return (
     <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
@@ -78,17 +78,17 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
           style={{ left: `${leftPosition}%`, right: `${rightPosition}%` }}
         />
         <div
-          className="absolute top-0 bottom-0 w-3 bg-red-500 cursor-ew-resize"
+          className="absolute top-0 bottom-0 w-3 bg-red-500 z-10 cursor-ew-resize"
           style={{ left: `${leftPosition}%` }}
           onMouseDown={() => handleMouseDown("left")}
         />
         <div
-          className="absolute top-0 bottom-0 w-3 bg-red-500 cursor-ew-resize"
+          className="absolute top-0 bottom-0 w-3 bg-red-500 z-10 cursor-ew-resize"
           style={{ right: `${rightPosition}%` }}
           onMouseDown={() => handleMouseDown("right")}
         />
       </div>
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+      <div className="absolute -14 left-0 right-0 flex justify-center space-x-4">
         <button
           onClick={handleSpliceChange}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
