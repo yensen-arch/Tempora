@@ -27,29 +27,29 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
     const updateSlider = () => {
       const video = videoRef.current;
-      if (!video) return;
-
-      if (containerRef.current && !isDragging) {
-        const currentTime = video.currentTime;
-
-        // Check if we're entering a spliced region
-        const splices = editHistory.filter((edit) => edit.type === "splice");
-        for (const splice of splices) {
-          if (currentTime >= splice.start && currentTime < splice.end) {
-            video.currentTime = splice.end + 0.1; 
-            break; // Exit after first splice jump
-          }
+      if (!video || !containerRef.current || isDragging) return;
+    
+      const currentTime = video.currentTime;
+      let adjustedTime = currentTime;
+      
+      // Adjust for any spliced sections before current time
+      const splices = editHistory.filter(edit => edit.type === "splice");
+      for (const splice of splices) {
+        if (currentTime >= splice.end) {
+          adjustedTime -= (splice.end - splice.start);
+        } else if (currentTime >= splice.start) {
+          video.currentTime = splice.end+ 0.1; //prevents loop
+          adjustedTime = splice.end - (splice.end - splice.start);
+          break;
         }
-
-        const visibleDuration = visibleEnd - visibleStart;
-        const progress = (currentTime - visibleStart) / visibleDuration;
-        const containerWidth = containerRef.current.offsetWidth;
-        sliderX.set(
-          Math.max(0, Math.min(containerWidth, progress * containerWidth))
-        );
       }
-
-      if (video.currentTime >= visibleEnd) {
+    
+      const visibleDuration = visibleEnd - visibleStart;
+      const progress = (adjustedTime - visibleStart) / visibleDuration;
+      const containerWidth = containerRef.current.offsetWidth;
+      sliderX.set(Math.max(0, Math.min(containerWidth, progress * containerWidth)));
+    
+      if (adjustedTime >= visibleEnd) {
         video.pause();
       }
     };
@@ -92,9 +92,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const handleSpliceUpdate = (start: number, end: number) => {
-    const actualStart = currentTrim.start + start * (currentTrim.end - currentTrim.start);
-    const actualEnd = currentTrim.start + end * (currentTrim.end - currentTrim.start);
-  
+    const actualStart =
+      currentTrim.start + start * (currentTrim.end - currentTrim.start);
+    const actualEnd =
+      currentTrim.start + end * (currentTrim.end - currentTrim.start);
+
     setEditHistory((prev) => [
       ...prev,
       {
@@ -103,11 +105,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         type: "splice",
       },
     ]);
-  
+
     // Update visible range by subtracting spliced duration
     const splicedDuration = actualEnd - actualStart;
     setVisibleEnd((prev) => prev - splicedDuration);
-    
+
     // Update time markers
     if (videoRef.current) {
       videoRef.current.currentTime = actualStart;
@@ -189,31 +191,42 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             }}
           />
 
-          <div className="absolute top-0 left-0 h-12 p-4 w-full">
-            {Array.from({
-              length: Math.ceil((visibleEnd - visibleStart) / zoom) + 1,
-            }).map((_, i) => {
-              const time = visibleStart + i * zoom;
-              if (time > visibleEnd) return null;
-              return (
-                <div
-                  key={i}
-                  className="absolute top-0 h-8"
-                  style={{
-                    left: `${
-                      ((time - visibleStart) / (visibleEnd - visibleStart)) *
-                      100
-                    }%`,
-                  }}
-                >
-                  <div className="h-full w-px bg-black" />
-                  <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
-                    {time.toFixed(1)}s
-                  </div>
+          {Array.from({
+            length: Math.ceil((visibleEnd - visibleStart) / zoom) + 1,
+          }).map((_, i) => {
+            const time = visibleStart + i * zoom;
+            if (time > visibleEnd) return null;
+
+            // Adjust time display for spliced sections
+            let adjustedTime = time;
+            let totalSplicedTime = 0;
+
+            editHistory.forEach((edit) => {
+              if (edit.type === "splice" && time > edit.start) {
+                const spliceLength = edit.end - edit.start;
+                totalSplicedTime += spliceLength;
+              }
+            });
+
+            adjustedTime += totalSplicedTime;
+
+            return (
+              <div
+                key={i}
+                className="absolute top-0 h-8"
+                style={{
+                  left: `${
+                    ((time - visibleStart) / (visibleEnd - visibleStart)) * 100
+                  }%`,
+                }}
+              >
+                <div className="h-full w-px bg-black" />
+                <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
+                  {adjustedTime.toFixed(1)}s
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
 
           <motion.div
             className="absolute top-0 w-0.5 h-12 bg-red-500 z-10"
