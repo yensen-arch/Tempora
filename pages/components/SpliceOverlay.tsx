@@ -1,4 +1,4 @@
-// SpliceOverlay.tsx
+"use client"
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 
@@ -17,8 +17,9 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
   initialStart,
   initialEnd,
 }) => {
-  const [start, setStart] = useState(0);
-  const [end, setEnd] = useState(1);
+  // Initialize handles at center with a gap
+  const [start, setStart] = useState(0.4);  // 40% from left
+  const [end, setEnd] = useState(0.6);      // 60% from left
   const [isDragging, setIsDragging] = useState<"left" | "right" | null>(null);
 
   const handleMouseDown = (handle: "left" | "right") => {
@@ -57,34 +58,28 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseMove, handleMouseUp]);
+  }, [handleMouseMove]);
 
   const handleSpliceChange = () => {
     onSpliceChange(start, end);
     onClose();
   };
 
-  const leftPosition = (start / duration) * 100;
-  const rightPosition = 100 - (end / duration) * 100;
-
   return (
     <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
       <div id="splice-container" className="relative w-full h-16 bg-gray-200">
-        {/* Area to be removed */}
         <div
           className="absolute inset-y-0 bg-red-500 bg-opacity-50"
-          style={{ left: `${leftPosition}%`, right: `${rightPosition}%` }}
+          style={{ left: `${start * 100}%`, right: `${(1 - end) * 100}%` }}
         />
-        {/* Left Handle */}
         <div
           className="absolute top-0 bottom-0 w-3 bg-red-500 cursor-ew-resize"
-          style={{ left: `${leftPosition}%` }}
+          style={{ left: `${start * 100}%` }}
           onMouseDown={() => handleMouseDown("left")}
         />
-        {/* Right Handle */}
         <div
           className="absolute top-0 bottom-0 w-3 bg-red-500 cursor-ew-resize"
-          style={{ right: `${rightPosition}%` }}
+          style={{ right: `${(1 - end) * 100}%` }}
           onMouseDown={() => handleMouseDown("right")}
         />
       </div>

@@ -28,25 +28,27 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     const updateSlider = () => {
       const video = videoRef.current;
       if (!video) return;
-    
+
       if (containerRef.current && !isDragging) {
         const currentTime = video.currentTime;
-    
+
         // Check if we're entering a spliced region
         const splices = editHistory.filter((edit) => edit.type === "splice");
         for (const splice of splices) {
           if (currentTime >= splice.start && currentTime < splice.end) {
-            video.currentTime = splice.end;
+            video.currentTime = splice.end + 0.1; 
             break; // Exit after first splice jump
           }
         }
-        
+
         const visibleDuration = visibleEnd - visibleStart;
         const progress = (currentTime - visibleStart) / visibleDuration;
         const containerWidth = containerRef.current.offsetWidth;
-        sliderX.set(Math.max(0, Math.min(containerWidth, progress * containerWidth)));
+        sliderX.set(
+          Math.max(0, Math.min(containerWidth, progress * containerWidth))
+        );
       }
-      
+
       if (video.currentTime >= visibleEnd) {
         video.pause();
       }
@@ -90,11 +92,9 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const handleSpliceUpdate = (start: number, end: number) => {
-    const actualStart =
-      currentTrim.start + start * (currentTrim.end - currentTrim.start);
-    const actualEnd =
-      currentTrim.start + end * (currentTrim.end - currentTrim.start);
-
+    const actualStart = currentTrim.start + start * (currentTrim.end - currentTrim.start);
+    const actualEnd = currentTrim.start + end * (currentTrim.end - currentTrim.start);
+  
     setEditHistory((prev) => [
       ...prev,
       {
@@ -103,13 +103,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         type: "splice",
       },
     ]);
-
-    if (videoRef.current) {
-      videoRef.current.currentTime = actualStart;
-    }
-
-    // Remove the spliced section by setting new boundaries
-    setVisibleEnd(visibleEnd - (actualEnd - actualStart));
+  
+    // Update visible range by subtracting spliced duration
+    const splicedDuration = actualEnd - actualStart;
+    setVisibleEnd((prev) => prev - splicedDuration);
+    
+    // Update time markers
     if (videoRef.current) {
       videoRef.current.currentTime = actualStart;
     }
