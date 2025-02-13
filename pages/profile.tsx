@@ -26,10 +26,10 @@ function Profile() {
   if (isLoading) return <p className="text-center text-gray-500">Loading...</p>;
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
       <Navbar />
 
-      <div className="bg-white shadow-md rounded-lg p-6 mt-10 w-full max-w-md">
+      <div className="bg-white self-center shadow-md rounded-lg p-6 mt-10 w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center">Profile</h2>
 
         <div className="flex flex-col items-center mt-4">
