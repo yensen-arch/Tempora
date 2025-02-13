@@ -159,7 +159,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
               <>
                 {user ? (
                   <span className="text-lg font-medium text-gray-800 mr-4">
-                    Welcome, {user.given_name}
+                    Welcome, {user.nickname}
                   </span>
                 ) : null}
               </>
