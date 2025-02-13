@@ -181,17 +181,25 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                 <User className="w-5 h-5" />
               </button>
               {isOpen && (
-                <div
-                  className="absolute right-0 mt-2 px-4 bg-white cursor-pointer"
-                  onClick={() => {
-                    window.location.href = user
-                      ? "/api/auth/logout"
-                      : "/api/auth/login";
-                  }}
-                >
-                  <p className="text-gray-800 font-medium">
-                    {user ? "Logout" : "Login"}
-                  </p>
+                <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg w-48">
+                  <div
+                    className="px-4 py-2 text-gray-800 cursor-pointer hover:bg-gray-100"
+                    onClick={() => {
+                      window.location.href = user ? "/api/auth/logout" : "/api/auth/login";
+                    }}
+                  >
+                    <p className="font-medium">{user ? "Logout" : "Login"}</p>
+                  </div>
+                  {user && (
+                    <div
+                      className="px-4 py-2 text-gray-800 cursor-pointer hover:bg-gray-100"
+                      onClick={() => {
+                        window.location.href = "/profile";
+                      }}
+                    >
+                      <p className="font-medium">Profile</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
