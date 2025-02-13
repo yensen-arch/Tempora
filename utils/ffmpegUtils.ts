@@ -5,15 +5,17 @@ import { toBlobURL } from '@ffmpeg/util';
 export const processVideo = async (videoUrl: string, edits: any) => {
   // Create FFmpeg instance with the new API
   const ffmpeg = new FFmpeg();
-  
+  const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
+
   // Load FFmpeg with the new method
   if (!ffmpeg.loaded) {
     try {
       // Load the core and required files from CDN
       await ffmpeg.load({
-        coreURL: await toBlobURL(`/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`/ffmpeg-core.wasm`, 'application/wasm'),
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
       });
+
     } catch (error) {
       console.error("Error loading FFmpeg:", error);
       return null;

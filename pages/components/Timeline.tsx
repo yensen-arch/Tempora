@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion, useMotionValue } from "framer-motion";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,6 +22,8 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderX = useMotionValue(0);
+  const { user } = useUser();
+  const email = user?.email;
   const [isDragging, setIsDragging] = useState(false);
   const [visibleStart, setVisibleStart] = useState(0);
   const [visibleEnd, setVisibleEnd] = useState(duration);
@@ -36,10 +39,29 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [decodedUrl, setDecodedUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof videoUrl === "string") {
-      setDecodedUrl(decodeURIComponent(videoUrl));
+    if (!videoUrl) {
+      fetch("/api/cart/get_uploaded_media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`HTTP ${res.status}: ${errorText}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (data.fileUrl) {
+            setDecodedUrl(decodeURIComponent(data.fileUrl));
+            console.log(data.fileUrl);
+          } else {
+            throw new Error("No file URL found in the response.");
+          }
+        })
     }
-  }, [videoUrl]);
+  }, [decodedUrl, videoUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -331,7 +353,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           </motion.div>
         </div>
       </div>
-      <EditMachine videoUrl={videoUrl} edits={editHistory} />
+      {decodedUrl ? (
+        <EditMachine videoUrl={decodedUrl} edits={editHistory} />
+      ) : (
+        <div>Loading video...</div>
+      )}
     </div>
   );
 };
