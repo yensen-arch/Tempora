@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useRef, useEffect, useState } from "react";
 import Timeline from "./Timeline";
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -42,10 +42,11 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration })
         })
         .then((data) => {
           console.log("API Response Data:", data);
-          if (data.fileDetails?.length > 0) {
-            setVideoUrl(decodeURIComponent(data.fileDetails[0].url));
+          if (data.fileUrl) {
+            setVideoUrl(decodeURIComponent(data.fileUrl));
+            setDuration(data.duration);
           } else {
-            throw new Error("No files found in the response.");
+            throw new Error("No file URL found in the response.");
           }
         })
         .catch((error) => {
@@ -76,7 +77,7 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration })
         </>
       ) : (
         !loading && <p>No video URL provided.</p>
-      )} 
+      )}
     </div>
   );
 }

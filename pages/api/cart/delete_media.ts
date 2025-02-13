@@ -34,17 +34,17 @@ export default async function handler(req, res) {
       }
       await dbConnect();
 
-      const mediaRecord = await Media.findOneAndUpdate(
-        { email, "files.fileUrl": fileUrl },
-        { $pull: { files: { fileUrl } } },
-        { new: true }
-      );
+      // const mediaRecord = await Media.findOneAndUpdate(
+      //   { email, "files.fileUrl": fileUrl },
+      //   { $pull: { files: { fileUrl } } },
+      //   { new: true }
+      // );
 
-      if (!mediaRecord) {
-        return res.status(404).json({
-          message: "Media record not found for the given email and fileUrl.",
-        });
-      }
+      // if (!mediaRecord) {
+      //   return res.status(404).json({
+      //     message: "Media record not found for the given email and fileUrl.",
+      //   });
+      // }
       return res.status(200).json({
         message: "File deleted successfully from Cloudinary and database.",
         result,

@@ -81,19 +81,20 @@ export default async function handler(
         console.log("Cloudinary upload result:", result);
 
         // Save file URL and metadata to database
-        await Media.findOneAndUpdate(
-          { email },
-          {
-            $push: {
-              files: {
-                fileUrl: result.secure_url,
-                mediaType: resourceType,
-                originalFormat: fileType.split("/")[1], // Extract file extension
-              },
-            },
-          },
-          { upsert: true, new: true } // Create new document if it doesn't exist
-        );
+        /////delete
+        // await Media.findOneAndUpdate(
+        //   { email },
+        //   {
+        //     $push: {
+        //       files: {
+        //         fileUrl: result.secure_url,
+        //         mediaType: resourceType,
+        //         originalFormat: fileType.split("/")[1], // Extract file extension
+        //       },
+        //     },
+        //   },
+        //   { upsert: true, new: true } // Create new document if it doesn't exist
+        // );
 
         return result.secure_url;
       });

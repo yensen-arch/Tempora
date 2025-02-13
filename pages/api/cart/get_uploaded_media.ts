@@ -18,16 +18,13 @@ export default async function handler(
   try {
     const media = await Media.findOne({ email });
 
-    if (!media || !media.files || media.files.length === 0) {
+    if (!media || !media.file ) {
       return res.status(404).json({ error: "No files found for the given email" });
     }
 
-    const fileDetails = media.files.map((file) => ({
-      url: file.fileUrl,
-      resourceType: file.mediaType,
-    }));
+    const fileDetails = media.file;
 
-    return res.status(200).json({ fileDetails });
+    return res.status(200).json( fileDetails );
   } catch (error) {
     console.error("Error fetching media:", error);
     return res.status(500).json({ error: "Failed to fetch media" });
