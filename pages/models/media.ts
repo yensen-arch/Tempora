@@ -9,6 +9,7 @@ const mediaSchema = new mongoose.Schema({
       uploadedAt: { type: Date, default: Date.now },
       duration: {type: Number},
       isConcatenated: {type: Boolean, default: false},
+      audioPath: {type: String}
     }
 });
 

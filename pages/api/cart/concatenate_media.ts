@@ -73,6 +73,13 @@ export default async function handler(
     );
     console.log('Concatenation successful:', concatenatedResult);
 
+    const audioResult = await cloudinary.uploader.upload(concatenatedResult.secure_url, {
+      resource_type: "video",
+      format: "mp3",
+      transformation: [{ resource_type: "video", format: "mp3", audio_codec: "mp3" }]
+    });
+    console.log(audioResult);
+
     // Update database with concatenated video info
     await Media.findOneAndUpdate(
       { email },
@@ -82,6 +89,7 @@ export default async function handler(
             fileUrl: concatenatedResult.secure_url,
             mediaType: "video",
             duration: concatenatedResult.duration,
+            audioPath: audioResult.secure_url,
             isConcatenated: true,
             uploadedAt: new Date(), // Ensures uploadedAt is updated
           },
@@ -94,7 +102,8 @@ export default async function handler(
       success: true,
       concatenatedUrl: concatenatedResult.secure_url,
       duration: concatenatedResult.duration,
-      originalUrls: videoUrls
+      originalUrls: videoUrls,
+      audioPath: audioResult.secure_url      
     });
   } catch (error) {
     console.error('Concatenation error:', error);
