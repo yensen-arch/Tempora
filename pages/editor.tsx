@@ -9,11 +9,12 @@ function Editor() {
   const searchParams = useSearchParams();
   const videoUrl = searchParams.get("videoUrl");
   const duration = searchParams.get("duration");
+  const audioPath = searchParams.get("audioPath");
 
   return (
     <div>
       <Navbar />
-      <EditorDisplay videoUrl={videoUrl} duration={duration} />
+      <EditorDisplay videoUrl={videoUrl} duration={duration} audioPath = {audioPath}/>
       <Footer />
     </div>
   );

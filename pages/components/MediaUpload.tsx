@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 function MediaUpload() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [audioPath, setAudioPath] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number[]>([]);
   const { user, isLoading } = useUser();
   const email = user?.email;
@@ -112,6 +113,7 @@ function MediaUpload() {
 
           const concatenateData = await concatenateResponse.json();
           setConcatenatedUrl(concatenateData.concatenatedUrl);
+          setAudioPath(concatenateData.audioPath);
           setDuration(concatenateData.duration);
           console.log(
             "Concatenation successful:",
@@ -248,12 +250,12 @@ function MediaUpload() {
             )}
           </div>
         </div>
-        {concatenatedUrl && duration !== null && (
+        {concatenatedUrl && duration !== null && audioPath &&(
           <div className="mt-4 text-center">
             <a
               href={`/editor?videoUrl=${encodeURIComponent(
                 concatenatedUrl
-              )}&duration=${duration}`}
+              )}&duration=${duration}&audioPath=${encodeURIComponent(audioPath)}`}
               className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
             >
               Proceed to Editor

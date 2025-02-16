@@ -33,6 +33,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   >([]);
   const [historyPointer, setHistoryPointer] = useState(-1);
   const [showSplice, setShowSplice] = useState(false);
+  const [submitClicked, setSubmitClicked] = useState(false);
 
   const router = useRouter();
   const { videoUrl } = router.query;
@@ -60,6 +61,8 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             throw new Error("No file URL found in the response.");
           }
         })
+    } else{
+      setDecodedUrl(videoUrl);
     }
   }, [decodedUrl, videoUrl]);
 
@@ -269,6 +272,13 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         >
           Splice
         </button>
+
+        <button
+          onClick={() => setSubmitClicked((prev) => !prev)}
+          className="mb-2 ml-2 px-3 py-1 bg-green-500 text-white rounded"
+        >
+          Submit
+        </button>
         <div
           ref={containerRef}
           className="relative w-full h-20 overflow-hidden border-b border-gray-200"
@@ -354,7 +364,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </div>
       </div>
       {decodedUrl ? (
-        <EditMachine videoUrl={decodedUrl} edits={editHistory} />
+        <EditMachine videoUrl={decodedUrl} edits={editHistory} submitClicked={submitClicked}/>
       ) : (
         <div>Loading video...</div>
       )}

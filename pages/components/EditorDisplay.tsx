@@ -3,8 +3,9 @@ import { useRef, useEffect, useState } from "react";
 import Timeline from "./Timeline";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
-function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration }) {
+function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, audioPath }) {
   const [videoUrl, setVideoUrl] = useState(initialVideoUrl || "");
+  const [audioUrl, setAudioUrl] = useState(audioPath || "");
   const [duration, setDuration] = useState(initialDuration || 0);
   const [loading, setLoading] = useState(!initialVideoUrl);
   const [error, setError] = useState(null);
@@ -26,6 +27,12 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration })
   }, [initialDuration]);
 
   useEffect(() => {
+    if(audioPath){
+      setAudioUrl(audioPath);
+    }
+  },[audioPath]);
+
+  useEffect(() => {
     if (!initialVideoUrl && !videoUrl && email) {
       setLoading(true);
       fetch("/api/cart/get_uploaded_media", {
@@ -44,6 +51,7 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration })
           console.log("API Response Data:", data);
           if (data.fileUrl) {
             setVideoUrl(decodeURIComponent(data.fileUrl));
+            setAudioUrl(decodeURIComponent(data.audioPath));
             setDuration(data.duration);
           } else {
             throw new Error("No file URL found in the response.");

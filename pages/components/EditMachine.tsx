@@ -2,17 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { processVideo } from "../../utils/ffmpegUtils";
 
-function EditMachine({ videoUrl, edits }: { videoUrl: string; edits: any }) {
+function EditMachine({ videoUrl, edits, submitClicked }: { videoUrl: string; edits: any, submitClicked: boolean }) {
   const [processedVideo, setProcessedVideo] = useState<string | null>(null);
 
   useEffect(() => {
     const runFFmpeg = async () => {
+      setProcessedVideo("");
       const outputUrl = await processVideo(videoUrl, edits);
       setProcessedVideo(outputUrl);
     };
+    console.log("here");
 
     runFFmpeg();
-  }, [videoUrl, edits]);
+  }, [submitClicked]);
 
   return (
     <div>
