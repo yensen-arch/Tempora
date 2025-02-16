@@ -2,8 +2,90 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 
-export const processAudio = async (audioUrl: string, edits: any) => {
-  // Create FFmpeg instance
+type Edit = {
+  type: "trim" | "splice";
+  start: number;
+  end: number;
+};
+
+export const preProcessEdits = (edits: Edit[]) => {
+  if (!edits.length) return [];
+
+  const allEdits = [...edits];
+  
+  const keepers = allEdits.filter(edit => edit.type === "trim")
+    .sort((a, b) => a.start - b.start);
+  
+  const removers = allEdits.filter(edit => edit.type === "splice")
+    .sort((a, b) => a.start - b.start);
+  
+  const mergedKeepers: Edit[] = [];
+  for (const trim of keepers) {
+    const lastKeeper = mergedKeepers[mergedKeepers.length - 1];
+    if (!lastKeeper || trim.start > lastKeeper.end) {
+      mergedKeepers.push({...trim});
+    } else {
+      lastKeeper.end = Math.max(lastKeeper.end, trim.end);
+    }
+  }
+  
+  const finalSegments: Edit[] = [];
+  
+  for (const keeper of mergedKeepers) {
+    let currentStart = keeper.start;
+    let currentEnd = keeper.end;
+    
+    const relevantRemovers = removers.filter(
+      r => r.end > currentStart && r.start < currentEnd
+    );
+    
+    if (relevantRemovers.length === 0) {
+      finalSegments.push({...keeper});
+      continue;
+    }
+    
+    relevantRemovers.sort((a, b) => a.start - b.start);
+    
+    for (const remover of relevantRemovers) {
+      if (remover.start <= currentStart) {
+        if (remover.end >= currentEnd) {
+          currentStart = currentEnd;
+          break;
+        } else {
+          currentStart = remover.end;
+        }
+      } else {
+        if (remover.start > currentStart) {
+          finalSegments.push({
+            type: "trim",
+            start: currentStart,
+            end: remover.start
+          });
+        }
+        
+        if (remover.end >= currentEnd) {
+          currentStart = currentEnd;
+          break;
+        } else {
+          currentStart = remover.end;
+        }
+      }
+    }
+    
+    if (currentStart < currentEnd) {
+      finalSegments.push({
+        type: "trim",
+        start: currentStart,
+        end: currentEnd
+      });
+    }
+  }
+  
+  return finalSegments.sort((a, b) => a.start - b.start);
+};
+
+export const processAudio = async (audioUrl: string, edits: Edit[]) => {
+  
   const ffmpeg = new FFmpeg();
   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
 
@@ -33,41 +115,47 @@ export const processAudio = async (audioUrl: string, edits: any) => {
     // Write file
     await ffmpeg.writeFile(audioName, new Uint8Array(arrayBuffer));
 
-    let filterComplex = "";
-    let streamCount = edits.length;
-
-    // Create individual trimmed segments
-    edits.forEach((edit, index) => {
-      filterComplex += `[0:a]atrim=start=${edit.start}:end=${edit.end},asetpts=PTS-STARTPTS[a${index}];`;
-    });
-
-    // Concatenate segments
-    if (streamCount > 0) {
-      filterComplex += `${Array.from({ length: streamCount }, (_, i) => `[a${i}]`).join('')}concat=n=${streamCount}:v=0:a=1[outa]`;
-    }
-
-    const outputFile = "output.mp3";
-    const cmd = ["-i", audioName];
-
-    if (filterComplex && streamCount > 0) {
-      cmd.push("-filter_complex", filterComplex);
-      cmd.push("-map", "[outa]");
+    const segmentsToKeep = preProcessEdits(edits);
+    console.log(segmentsToKeep);
+    
+    if (segmentsToKeep.length === 0) {
+      await ffmpeg.exec([
+        '-f', 'lavfi',
+        '-i', 'anullsrc=r=44100:cl=stereo',
+        '-t', '0.1',
+        'output.mp3'
+      ]);
     } else {
-      cmd.push("-c", "copy");
+      let filterComplex = "";
+      let streamCount = 0;
+      let allSegments = [];
+      
+      segmentsToKeep.forEach((segment, index) => {
+        filterComplex += `[0:a]atrim=start=${segment.start}:end=${segment.end},asetpts=PTS-STARTPTS[a${streamCount}];`;
+        allSegments.push(`[a${streamCount}]`);
+        streamCount++;
+      });
+
+      if (streamCount > 0) {
+        filterComplex += `${allSegments.join('')}concat=n=${streamCount}:v=0:a=1[outa]`;
+      }
+
+      await ffmpeg.exec([
+        '-i', audioName,
+        '-filter_complex', filterComplex,
+        '-map', '[outa]',
+        'output.mp3'
+      ]);
     }
 
-    cmd.push(outputFile);
-
-    // Execute command
-    await ffmpeg.exec(cmd);
-
-    // Read output file
-    const data = await ffmpeg.readFile(outputFile);
+    const data = await ffmpeg.readFile('output.mp3');
     const uint8Array = new Uint8Array(data as ArrayBuffer);
 
     return URL.createObjectURL(new Blob([uint8Array], { type: "audio/mp3" }));
   } catch (error) {
     console.error("Error processing audio:", error);
     return null;
+  } finally {
+    await ffmpeg.terminate();
   }
 };
