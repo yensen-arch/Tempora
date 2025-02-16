@@ -36,11 +36,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [submitClicked, setSubmitClicked] = useState(false);
 
   const router = useRouter();
-  const { videoUrl } = router.query;
+  const { videoUrl, audioPath: audioUrl } = router.query;
   const [decodedUrl, setDecodedUrl] = useState<string | null>(null);
+  const [decodedAudioUrl, setDecodedAudioUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!videoUrl) {
+    if (!videoUrl || !audioUrl) {
       fetch("/api/cart/get_uploaded_media", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,6 +57,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         .then((data) => {
           if (data.fileUrl) {
             setDecodedUrl(decodeURIComponent(data.fileUrl));
+            setDecodedAudioUrl(decodeURIComponent(data.audioPath));
             console.log(data.fileUrl);
           } else {
             throw new Error("No file URL found in the response.");
@@ -63,6 +65,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         })
     } else{
       setDecodedUrl(videoUrl);
+      setDecodedAudioUrl(audioUrl);
     }
   }, [decodedUrl, videoUrl]);
 
@@ -364,7 +367,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </div>
       </div>
       {decodedUrl ? (
-        <EditMachine videoUrl={decodedUrl} edits={editHistory} submitClicked={submitClicked}/>
+        <EditMachine videoUrl={decodedUrl} edits={editHistory} submitClicked={submitClicked} audioUrl={decodedAudioUrl}/>
       ) : (
         <div>Loading video...</div>
       )}

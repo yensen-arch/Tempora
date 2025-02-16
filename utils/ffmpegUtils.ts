@@ -2,15 +2,14 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 
-export const processVideo = async (videoUrl: string, edits: any) => {
-  // Create FFmpeg instance with the new API
+export const processAudio = async (audioUrl: string, edits: any) => {
+  // Create FFmpeg instance
   const ffmpeg = new FFmpeg();
   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
 
-  // Load FFmpeg with the new method
+  // Load FFmpeg
   if (!ffmpeg.loaded) {
     try {
-      // Load the core and required files from CDN
       await ffmpeg.load({
         coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
@@ -22,41 +21,36 @@ export const processVideo = async (videoUrl: string, edits: any) => {
   }
 
   try {
-    // Fetch video file
-    const response = await fetch(videoUrl);
+    // Fetch audio file
+    const response = await fetch(audioUrl);
     if (!response.ok) {
-      throw new Error(`Error fetching video: ${response.status} ${response.statusText}`);
+      throw new Error(`Error fetching audio: ${response.status} ${response.statusText}`);
     }
-    const videoBlob = await response.blob();
-    const videoName = "input.mp4";
-    const arrayBuffer = await videoBlob.arrayBuffer();
+    const audioBlob = await response.blob();
+    const audioName = "input.mp3";
+    const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // Write file using the new API
-    await ffmpeg.writeFile(videoName, new Uint8Array(arrayBuffer));
+    // Write file
+    await ffmpeg.writeFile(audioName, new Uint8Array(arrayBuffer));
 
     let filterComplex = "";
     let streamCount = edits.length;
 
     // Create individual trimmed segments
     edits.forEach((edit, index) => {
-      filterComplex += 
-        `[0:v]trim=start=${edit.start}:end=${edit.end},setpts=PTS-STARTPTS[v${index}];` +
-        `[0:a]atrim=start=${edit.start}:end=${edit.end},asetpts=PTS-STARTPTS[a${index}];`;
+      filterComplex += `[0:a]atrim=start=${edit.start}:end=${edit.end},asetpts=PTS-STARTPTS[a${index}];`;
     });
 
-    // Add concat filter for video and audio streams
+    // Concatenate segments
     if (streamCount > 0) {
-      filterComplex += 
-        `${Array.from({length: streamCount}, (_, i) => `[v${i}]`).join('')}concat=n=${streamCount}:v=1:a=0[outv];` +
-        `${Array.from({length: streamCount}, (_, i) => `[a${i}]`).join('')}concat=n=${streamCount}:v=0:a=1[outa]`;
+      filterComplex += `${Array.from({ length: streamCount }, (_, i) => `[a${i}]`).join('')}concat=n=${streamCount}:v=0:a=1[outa]`;
     }
 
-    const outputFile = "output.mp4";
-    const cmd = ["-i", videoName];
+    const outputFile = "output.mp3";
+    const cmd = ["-i", audioName];
 
     if (filterComplex && streamCount > 0) {
       cmd.push("-filter_complex", filterComplex);
-      cmd.push("-map", "[outv]");
       cmd.push("-map", "[outa]");
     } else {
       cmd.push("-c", "copy");
@@ -64,16 +58,16 @@ export const processVideo = async (videoUrl: string, edits: any) => {
 
     cmd.push(outputFile);
 
-    // Execute command using the new API
+    // Execute command
     await ffmpeg.exec(cmd);
 
-    // Read the output file using the new API
+    // Read output file
     const data = await ffmpeg.readFile(outputFile);
     const uint8Array = new Uint8Array(data as ArrayBuffer);
 
-    return URL.createObjectURL(new Blob([uint8Array], { type: "video/mp4" }));
+    return URL.createObjectURL(new Blob([uint8Array], { type: "audio/mp3" }));
   } catch (error) {
-    console.error("Error processing video:", error);
+    console.error("Error processing audio:", error);
     return null;
   }
 };

@@ -1,14 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { processVideo } from "../../utils/ffmpegUtils";
+import { processAudio } from "../../utils/ffmpegUtils";
 
-function EditMachine({ videoUrl, edits, submitClicked }: { videoUrl: string; edits: any, submitClicked: boolean }) {
+function EditMachine({ videoUrl, edits, submitClicked, audioUrl }: { videoUrl: string; edits: any, submitClicked: boolean, audioUrl: string }) {
   const [processedVideo, setProcessedVideo] = useState<string | null>(null);
 
   useEffect(() => {
     const runFFmpeg = async () => {
       setProcessedVideo("");
-      const outputUrl = await processVideo(videoUrl, edits);
+      const outputUrl = await processAudio(audioUrl, edits);
       setProcessedVideo(outputUrl);
     };
     console.log("here");
@@ -19,7 +19,7 @@ function EditMachine({ videoUrl, edits, submitClicked }: { videoUrl: string; edi
   return (
     <div>
       <h2>Ignore this for now</h2>
-      {processedVideo ? <video controls src={processedVideo} /> : <p>Processing...</p>}
+      {processedVideo ? <audio controls src={processedVideo} /> : <p>Processing...</p>}
     </div>
   );
 }
