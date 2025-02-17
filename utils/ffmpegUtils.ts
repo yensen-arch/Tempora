@@ -25,7 +25,14 @@ export const preProcessEdits = (edits: Edit[]) => {
     if (!lastKeeper || trim.start > lastKeeper.end) {
       mergedKeepers.push({...trim});
     } else {
-      lastKeeper.end = Math.max(lastKeeper.end, trim.end);
+      // Take the maximum start and minimum end
+      lastKeeper.start = Math.max(lastKeeper.start, trim.start);
+      lastKeeper.end = Math.min(lastKeeper.end, trim.end);
+      
+      // If this makes the segment invalid, remove it
+      if (lastKeeper.start >= lastKeeper.end) {
+        mergedKeepers.pop();
+      }
     }
   }
   
