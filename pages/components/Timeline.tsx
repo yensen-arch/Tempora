@@ -18,6 +18,12 @@ interface TimelineProps {
 }
 import EditMachine from "./EditMachine";
 
+type Edit = {
+  start: number;
+  end: number;
+  type: "trim" | "splice";
+};
+
 const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +37,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [editHistory, setEditHistory] = useState<
     { start: number; end: number; type: "trim" | "splice" }[]
   >([]);
+  const [undoneEdits, setUndoneEdits] = useState<Edit[]>([]);
   const [historyPointer, setHistoryPointer] = useState(-1);
   const [showSplice, setShowSplice] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
@@ -141,16 +148,10 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     end: duration,
   };
 
-  const updateEditHistory = (newEdit: {
-    start: number;
-    end: number;
-    type: "trim" | "splice";
-  }) => {
-    setEditHistory((prev) => {
-      const newHistory = [...prev.slice(0, historyPointer + 1), newEdit];
-      setHistoryPointer(newHistory.length - 1);
-      return newHistory;
-    });
+  const updateEditHistory = (newEdit: Edit) => {
+    setEditHistory(prevEdits => [...prevEdits, newEdit]);
+    // Clear the redo stack when a new edit is made
+    setUndoneEdits([]);
   };
 
   const handleSpliceUpdate = (start: number, end: number) => {
@@ -194,31 +195,37 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const undo = () => {
-    if (historyPointer - 1 >= 0) {
-      const prevEdit = editHistory[historyPointer - 1];
-      setHistoryPointer((prev) => prev - 1);
-
-      // Revert to previous state
-      console.log(prevEdit);
-      if (prevEdit.type === "trim") {
-        setVisibleStart(prevEdit.start);
-        setVisibleEnd(prevEdit.end);
+    if (editHistory.length > 0) {
+      // Remove the last edit from activeEdits and add to undoneEdits
+      const lastEdit = editHistory[editHistory.length - 1];
+      setEditHistory(prevEdits => prevEdits.slice(0, -1));
+      setUndoneEdits(prevUndone => [...prevUndone, lastEdit]);
+      
+      // Apply the second-to-last edit state (or reset if no edits remain)
+      if (editHistory.length > 1) {
+        const previousEdit = editHistory[editHistory.length - 2];
+        if (previousEdit.type === "trim") {
+          setVisibleStart(previousEdit.start);
+          setVisibleEnd(previousEdit.end);
+        }
+      } else {
+        setVisibleStart(0);
+        setVisibleEnd(duration);
       }
-    } else {
-      setHistoryPointer(-1);
-      setVisibleStart(0);
-      setVisibleEnd(duration);
     }
   };
 
   const redo = () => {
-    if (historyPointer < editHistory.length - 1) {
-      const nextEdit = editHistory[historyPointer + 1];
-      setHistoryPointer((prev) => prev + 1);
-
-      if (nextEdit.type === "trim") {
-        setVisibleStart(nextEdit.start);
-        setVisibleEnd(nextEdit.end);
+    if (undoneEdits.length > 0) {
+      // Move the last undone edit back to activeEdits
+      const editToRedo = undoneEdits[undoneEdits.length - 1];
+      setUndoneEdits(prevUndone => prevUndone.slice(0, -1));
+      setEditHistory(prevEdits => [...prevEdits, editToRedo]);
+      
+      // Apply the redone edit
+      if (editToRedo.type === "trim") {
+        setVisibleStart(editToRedo.start);
+        setVisibleEnd(editToRedo.end);
       }
     }
   };
@@ -249,15 +256,14 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       <div className="relative">
         <button
           onClick={undo}
-          disabled={historyPointer < 0}
+          disabled={editHistory.length === 0}
           className="mb-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
         >
           <Undo />
         </button>
-
         <button
           onClick={redo}
-          disabled={historyPointer >= editHistory.length - 1}
+          disabled={undoneEdits.length === 0}
           className="mb-2 ml-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
         >
           <Redo />
