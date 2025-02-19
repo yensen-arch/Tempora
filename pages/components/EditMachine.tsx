@@ -1,25 +1,56 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { processAudio } from "../../utils/ffmpegUtils";
+import { useUser } from "@auth0/nextjs-auth0/client";
 
-function EditMachine({ videoUrl, edits, submitClicked, audioUrl }: { videoUrl: string; edits: any, submitClicked: boolean, audioUrl: string }) {
-  const [processedVideo, setProcessedVideo] = useState<string | null>(null);
+function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitClicked: boolean, audioUrl: string }) {
+  const [processedAudio, setProcessedAudio] = useState<string | null>(null);
+  const { user, isLoading } = useUser();
+  const email = user?.email;
+
+  if (!user?.email) {
+    return (
+      <div className="p-8 text-center">Please sign in to upload files.</div>
+    );
+  }
 
   useEffect(() => {
     const runFFmpeg = async () => {
-      setProcessedVideo("");
       const outputUrl = await processAudio(audioUrl, edits);
-      setProcessedVideo(outputUrl);
+      console.log(outputUrl);
+      setProcessedAudio(outputUrl);
     };
-    console.log("here");
-
+    
     runFFmpeg();
   }, [submitClicked]);
+
+  const getFileFromBlob = async(bloburl: string, filename: string) =>{
+    const resp = await fetch(bloburl);
+    const blob = await resp.blob();
+    return new File([blob], filename, {type: blob.type});
+  }
+
+  const handleProceed = async(fileUrl: string)=>{
+    const file = await getFileFromBlob(fileUrl, 'processedAudio');
+    const formData = new FormData();
+    formData.append("file", file);
+    const resp = await fetch(`api/processed-audio/upload?email=${email}`, {
+      method: 'POST',
+      body: formData
+    });
+  }
 
   return (
     <div>
       <h2>Ignore this for now</h2>
-      {processedVideo ? <audio controls src={processedVideo} /> : <p>Processing...</p>}
+      {processedAudio ? (
+        <>
+          <audio controls src={processedAudio} controlsList="nodownload"/>
+          <button onClick={() => handleProceed(processedAudio)}>Proceed to Checkout -&gt;</button>
+        </>
+      ) : (
+        <p>Processing...</p>
+      )}
     </div>
   );
 }
