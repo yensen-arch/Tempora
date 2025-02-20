@@ -38,6 +38,7 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
       method: 'POST',
       body: formData
     });
+    window.location.href = '/checkout';
   }
 
   return (
