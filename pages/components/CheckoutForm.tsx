@@ -6,6 +6,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
     lastName: '',
     email: '',
     address: '',
+    phoneNumber:'',
     city: '',
     state: '',
     zipCode: '',
@@ -24,9 +25,39 @@ const CheckoutForm = ({ products, onCheckout }) => {
     return products.reduce((sum, product) => sum + parseFloat(product.cost), 0).toFixed(2);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would integrate with your payment gateway
+    // add payment gateway integration here
+    const orderData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      contactNumber: formData.phoneNumber, 
+      totalAmount: calculateTotal(),
+    };
+
+    try{
+      const response = await fetch('/api/orders/new_order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      });
+      const data = await response.json();
+      if(response.ok){
+        alert('Order placed successfully');
+      } else {
+        alert(data.error || 'Failed to place order');
+      }
+    }catch(error){
+      console.error('Failed to place order:', error);
+    }
+
     onCheckout?.(formData);
   };
 
@@ -77,6 +108,21 @@ const CheckoutForm = ({ products, onCheckout }) => {
             id="email"
             name="email"
             value={formData.email}
+            onChange={handleInputChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
+          <input
+            type="text"
+            id="phoneNumer"
+            name="phoneNumber"
+            value={formData.phoneNumber}
             onChange={handleInputChange}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

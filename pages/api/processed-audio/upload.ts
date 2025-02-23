@@ -1,6 +1,8 @@
+import { getIronSession, IronSession } from "iron-session"
 import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
+import { sessionOptions, SessionData } from "../../../lib/sessionConfig";
 
 export const config = {
   api: {
@@ -18,6 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     maxFileSize: 100 * 1024 * 1024, // 100MB limit
     keepExtensions: true,
   });
+
+  const session: IronSession<SessionData> = await getIronSession<SessionData>(req, res, sessionOptions);
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -46,6 +50,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       console.log("Cloudinary upload result:", result);
+
+      session.fileUrl = result.secure_url;
+      await session.save();
 
       res.status(200).json({ fileUrl: result.secure_url });
     } catch (error) {
