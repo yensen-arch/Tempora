@@ -34,6 +34,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
       email: formData.email,
       address: formData.address,
       city: formData.city,
+      products: products,
       state: formData.state,
       zipCode: formData.zipCode,
       contactNumber: formData.phoneNumber, 

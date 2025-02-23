@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { firstName, lastName, email, address, city, state, zipCode, contactNumber } = req.body;
+    const { firstName, lastName, email, address, city, state, zipCode, contactNumber, products } = req.body;
 
     if (!firstName || !lastName || !email || !address || !city || !state || !zipCode) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -35,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       city,
       state,
       zipcode: zipCode,
+      products,
       contactNumber: contactNumber || "N/A",
       totalAmount,
     });

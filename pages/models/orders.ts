@@ -24,6 +24,7 @@ const OrderSchema: Schema = new Schema(
     city: { type: String, required: true },
     state: { type: String, required: true },
     zipcode: { type: String, required: true },
+    products: { type: Array, required: true },
     totalAmount: { type: Number, required: true },
   },
   { timestamps: true }

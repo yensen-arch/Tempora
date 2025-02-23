@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       session.fileUrl = result.secure_url;
       await session.save();
 
-      res.status(200).json({ fileUrl: result.secure_url });
+      res.status(200).json({ message: "File upload successful"});
     } catch (error) {
       console.error("Error uploading file:", error);
       res.status(500).json({ error: "Failed to upload file" });

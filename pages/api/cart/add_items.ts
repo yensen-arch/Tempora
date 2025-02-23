@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ message: "Product already exists in the cart", cart });
     }
 
-    // Add the new product to the cart
+    cart.items = [];
     cart.items.push({
       productId: product.id,
       name: product.name,
