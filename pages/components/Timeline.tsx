@@ -43,10 +43,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const { decodedUrl, decodedAudioUrl } = useMediaLoader(user?.email);
 
   useEffect(() => {
-    setHasUnsavedChanges(true);
-  }, [editHistory]);
-
-  useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         handleSave();
@@ -152,6 +148,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       end: adjustedEnd,
       type: "splice",
     });
+    setHasUnsavedChanges(true);
 
     setVisibleEnd((prev) => prev - (adjustedEnd - adjustedStart));
 
@@ -173,6 +170,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           editHistory
         })
       });
+      setHasUnsavedChanges(false);
       console.log(res.json());
     }catch{
       console.log("Cannot save edits, try again later");
@@ -191,6 +189,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     updateEditHistory({ start: actualStart, end: actualEnd, type: "trim" });
     setVisibleStart(actualStart);
     setVisibleEnd(actualEnd);
+    setHasUnsavedChanges(true);
 
     if (videoRef.current) {
       videoRef.current.currentTime = actualStart;
