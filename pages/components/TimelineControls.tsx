@@ -8,8 +8,10 @@ interface TimelineControlsProps {
   onTrim: () => void;
   onSplice: () => void;
   onSubmit: () => void;
+  onSave: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  isSaving: boolean;
 }
 
 const TimelineControls: React.FC<TimelineControlsProps> = ({
@@ -17,9 +19,11 @@ const TimelineControls: React.FC<TimelineControlsProps> = ({
   onRedo,
   onTrim,
   onSplice,
+  onSave,
   onSubmit,
   canUndo,
-  canRedo
+  canRedo,
+  isSaving,
 }) => {
   return (
     <div className="flex mb-2 space-x-2">
@@ -39,7 +43,7 @@ const TimelineControls: React.FC<TimelineControlsProps> = ({
       </button>
       <button
         onClick={onTrim}
-        className="px-3 py-1 bg-blue-500 text-white rounded"
+        className="px-3 py-1 bg-yellow-500 text-black rounded"
       >
         Pre Cut
       </button>
@@ -49,6 +53,11 @@ const TimelineControls: React.FC<TimelineControlsProps> = ({
       >
         Splice
       </button>
+      <button
+        onClick={onSave}
+        disabled={isSaving}
+        className='px-3 py-1 bg-blue-700 text-white rounded disabled:opacity-50'
+      >Save</button>
       <button
         onClick={onSubmit}
         className="px-3 py-1 bg-green-500 text-white rounded"

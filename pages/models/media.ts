@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { editSchema } from "./editSchema"; // Import the schema, NOT the model
 
 const mediaSchema = new mongoose.Schema({
   email: { type: String, required: true },
@@ -10,7 +11,8 @@ const mediaSchema = new mongoose.Schema({
       duration: {type: Number},
       isConcatenated: {type: Boolean, default: false},
       audioPath: {type: String}
-    }
+    },
+  editHistory: {type: [editSchema], default: []}
 });
 
 export const Media = mongoose.models.Media || mongoose.model("Media", mediaSchema);
