@@ -1,9 +1,7 @@
 // Timeline.tsx - Main component file
 import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { motion, useMotionValue } from "framer-motion";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { Undo, Redo } from "lucide-react";
 import TrimOverlay from "./TrimOverlay";
 import SpliceOverlay from "./SpliceOverlay";
 import EditMachine from "./EditMachine";
@@ -12,7 +10,6 @@ import TimelineSlider from "./TimelineSlider";
 import { useEditHistory } from "./hooks/useEditHistory";
 import { useTimelineState } from "./hooks/useTimelineState";
 import { useMediaLoader } from "./hooks/useMediaLoader";
-import { Edit } from "./types";
 
 interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>;

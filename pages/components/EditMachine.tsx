@@ -47,8 +47,7 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
   }
 
   return (
-    <div>
-      <h2>Ignore this for now</h2>
+    <div className="mt-20">
       {processedAudio ? (
         <>
           <audio controls src={processedAudio} controlsList="nodownload"/>
