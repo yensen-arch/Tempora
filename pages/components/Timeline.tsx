@@ -1,3 +1,4 @@
+// Timeline.tsx - Main component file
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion, useMotionValue } from "framer-motion";
@@ -6,68 +7,41 @@ import { Undo, Redo } from "lucide-react";
 import TrimOverlay from "./TrimOverlay";
 import SpliceOverlay from "./SpliceOverlay";
 import EditMachine from "./EditMachine";
+import TimelineControls from "./TimelineControls";
+import TimelineSlider from "./TimelineSlider";
+import { useEditHistory } from "./hooks/useEditHistory";
+import { useTimelineState } from "./hooks/useTimelineState";
+import { useMediaLoader } from "./hooks/useMediaLoader";
+import { Edit } from "./types";
 
 interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   duration: number;
 }
 
-type Edit = {
-  start: number;
-  end: number;
-  type: "trim" | "splice";
-};
-
 const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
-  const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderX = useMotionValue(0);
   const { user } = useUser();
-  const email = user?.email;
   const [isDragging, setIsDragging] = useState(false);
-  const [visibleStart, setVisibleStart] = useState(0);
-  const [visibleEnd, setVisibleEnd] = useState(duration);
   const [showTrim, setShowTrim] = useState(false);
-  const [editHistory, setEditHistory] = useState<
-    { start: number; end: number; type: "trim" | "splice" }[]
-  >([]);
-  const [undoneEdits, setUndoneEdits] = useState<Edit[]>([]);
   const [showSplice, setShowSplice] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
 
-  const router = useRouter();
-  const { videoUrl, audioPath: audioUrl } = router.query;
-  const [decodedUrl, setDecodedUrl] = useState<string | null>(null);
-  const [decodedAudioUrl, setDecodedAudioUrl] = useState<string | null>(null);
+  // Custom hooks for state management
+  const {
+    visibleStart,
+    visibleEnd,
+    zoom,
+    handleZoom,
+    setVisibleStart,
+    setVisibleEnd,
+  } = useTimelineState(duration);
 
-  useEffect(() => {
-    if (!videoUrl || !audioUrl) {
-      fetch("/api/cart/get_uploaded_media", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errorText}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          if (data.fileUrl) {
-            setDecodedUrl(decodeURIComponent(data.fileUrl));
-            setDecodedAudioUrl(decodeURIComponent(data.audioPath));
-            console.log(data.fileUrl);
-          } else {
-            throw new Error("No file URL found in the response.");
-          }
-        });
-    } else {
-      setDecodedUrl(videoUrl);
-      setDecodedAudioUrl(audioUrl);
-    }
-  }, [decodedUrl, videoUrl]);
+  const { editHistory, undoneEdits, updateEditHistory, undo, redo } =
+    useEditHistory(duration, setVisibleStart, setVisibleEnd);
+
+  const { decodedUrl, decodedAudioUrl } = useMediaLoader(user?.email);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -128,12 +102,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     end: duration,
   };
 
-  const updateEditHistory = (newEdit: Edit) => {
-    setEditHistory((prevEdits) => [...prevEdits, newEdit]);
-    // Clear the redo stack when a new edit is made
-    setUndoneEdits([]);
-  };
-
   const handleSpliceUpdate = (start: number, end: number) => {
     const visibleDuration = visibleEnd - visibleStart;
     const rawStart = visibleStart + start * visibleDuration;
@@ -174,43 +142,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     }
   };
 
-  const undo = () => {
-    if (editHistory.length > 0) {
-      // Remove the last edit from activeEdits and add to undoneEdits
-      const lastEdit = editHistory[editHistory.length - 1];
-      setEditHistory((prevEdits) => prevEdits.slice(0, -1));
-      setUndoneEdits((prevUndone) => [...prevUndone, lastEdit]);
-
-      // Apply the second-to-last edit state (or reset if no edits remain)
-      if (editHistory.length > 1) {
-        const previousEdit = editHistory[editHistory.length - 2];
-        if (previousEdit.type === "trim") {
-          setVisibleStart(previousEdit.start);
-          setVisibleEnd(previousEdit.end);
-        }
-      } else {
-        setVisibleStart(0);
-        setVisibleEnd(duration);
-      }
-    }
-  };
-
-  const redo = () => {
-    if (undoneEdits.length > 0) {
-      // Move the last undone edit back to activeEdits
-      const editToRedo = undoneEdits[undoneEdits.length - 1];
-      setUndoneEdits((prevUndone) => prevUndone.slice(0, -1));
-      setEditHistory((prevEdits) => [...prevEdits, editToRedo]);
-
-      // Apply the redone edit
-      if (editToRedo.type === "trim") {
-        setVisibleStart(editToRedo.start);
-        setVisibleEnd(editToRedo.end);
-      }
-    }
-  };
-  console.log(visibleStart, visibleEnd);
-
   const handleTrimUpdate = (start: number, end: number) => {
     // Calculate new trim points relative to the current trim
     const actualStart =
@@ -226,48 +157,24 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       videoRef.current.currentTime = actualStart;
     }
   };
+
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
-  console.log(editHistory);
+
   return (
     <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
-      {/* Rest of the component remains the same until the timeline section */}
       <div className="relative">
-        <button
-          onClick={undo}
-          disabled={editHistory.length === 0}
-          className="mb-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
-        >
-          <Undo />
-        </button>
-        <button
-          onClick={redo}
-          disabled={undoneEdits.length === 0}
-          className="mb-2 ml-2 px-3 py-1 bg-gray-500 text-white rounded disabled:opacity-50"
-        >
-          <Redo />
-        </button>
-        <button
-          onClick={() => setShowTrim(true)}
-          className="mb-2 px-3 py-1 bg-blue-500 text-white rounded"
-        >
-          Pre Cut
-        </button>
+        <TimelineControls
+          onUndo={undo}
+          onRedo={redo}
+          onTrim={() => setShowTrim(true)}
+          onSplice={() => setShowSplice(true)}
+          onSubmit={() => setSubmitClicked((prev) => !prev)}
+          canUndo={editHistory.length > 0}
+          canRedo={undoneEdits.length > 0}
+        />
 
-        <button
-          onClick={() => setShowSplice(true)}
-          className="mb-2 ml-2 px-3 py-1 bg-red-500 text-white rounded"
-        >
-          Splice
-        </button>
-
-        <button
-          onClick={() => setSubmitClicked((prev) => !prev)}
-          className="mb-2 ml-2 px-3 py-1 bg-green-500 text-white rounded"
-        >
-          Submit
-        </button>
         <div
           ref={containerRef}
           className="relative w-full h-20 overflow-hidden border-b border-gray-200"
@@ -300,42 +207,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             }}
           />
 
-          {Array.from({
-            length: Math.ceil((visibleEnd - visibleStart) / zoom) + 1,
-          }).map((_, i) => {
-            const time = visibleStart + i * zoom;
-            if (time > visibleEnd) return null;
-
-            // Get actual video time by accounting for all previous splices
-            let displayTime = time;
-            const orderedSplices = editHistory
-              .filter((edit) => edit.type === "splice")
-              .sort((a, b) => a.start - b.start);
-
-            for (const splice of orderedSplices) {
-              const spliceLength = splice.end - splice.start;
-              if (displayTime >= splice.start) {
-                displayTime += spliceLength;
-              }
-            }
-
-            return (
-              <div
-                key={i}
-                className="absolute top-0 h-8"
-                style={{
-                  left: `${
-                    ((time - visibleStart) / (visibleEnd - visibleStart)) * 100
-                  }%`,
-                }}
-              >
-                <div className="h-full w-px bg-black" />
-                <div className="absolute top-full transform -translate-x-1/2 text-xs text-gray-500 mt-1">
-                  {displayTime.toFixed(1)}s
-                </div>
-              </div>
-            );
-          })}
+          <TimelineSlider
+            visibleStart={visibleStart}
+            visibleEnd={visibleEnd}
+            zoom={zoom}
+            editHistory={editHistory}
+          />
 
           <motion.div
             className="absolute top-0 w-0.5 h-12 bg-red-500 z-10"
