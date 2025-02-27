@@ -23,9 +23,11 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderX = useMotionValue(0);
   const { user } = useUser();
+  const [isSaving, setIsSaving] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showTrim, setShowTrim] = useState(false);
   const [showSplice, setShowSplice] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
 
   // Custom hooks for state management
@@ -42,6 +44,25 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     useEditHistory(duration, setVisibleStart, setVisibleEnd);
 
   const { decodedUrl, decodedAudioUrl } = useMediaLoader(user?.email);
+
+  useEffect(() => {
+    setHasUnsavedChanges(true);
+  }, [editHistory]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        handleSave();
+        event.preventDefault();
+        return ""
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    }
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -142,6 +163,27 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     }
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    try{
+      const res = await fetch('api/cart/save_edits', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': "application/json",
+        },
+        body: JSON.stringify({
+          email: user?.email,
+          editHistory
+        })
+      });
+      console.log(res.json());
+    }catch{
+      console.log("Cannot save edits, try again later");
+    }finally{
+      setIsSaving(false);
+    }
+  }
+
   const handleTrimUpdate = (start: number, end: number) => {
     // Calculate new trim points relative to the current trim
     const actualStart =
@@ -163,16 +205,19 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     ((currentTrim.end - currentTrim.start) / duration) * 100;
 
   return (
+    <>
     <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
       <div className="relative">
         <TimelineControls
           onUndo={undo}
           onRedo={redo}
-          onTrim={() => setShowTrim(true)}
-          onSplice={() => setShowSplice(true)}
+          onTrim={() => {setShowTrim(true); setShowSplice(false)}}
+          onSplice={() => {setShowSplice(true); setShowTrim(false)}}
           onSubmit={() => setSubmitClicked((prev) => !prev)}
+          onSave={handleSave}
           canUndo={editHistory.length > 0}
           canRedo={undoneEdits.length > 0}
+          isSaving={isSaving}
         />
 
         <div
@@ -240,6 +285,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         <div>Loading video...</div>
       )}
     </div>
+    </>
   );
 };
 

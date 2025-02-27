@@ -8,12 +8,6 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
   const { user, isLoading } = useUser();
   const email = user?.email;
 
-  if (!user?.email) {
-    return (
-      <div className="p-8 text-center">Please sign in to upload files.</div>
-    );
-  }
-
   useEffect(() => {
     const runFFmpeg = async () => {
       const outputUrl = await processAudio(audioUrl, edits);
@@ -23,6 +17,12 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
     
     runFFmpeg();
   }, [submitClicked]);
+
+  if (!user?.email) {
+    return (
+      <div className="p-8 text-center">Please sign in to upload files.</div>
+    );
+  }
 
   const getFileFromBlob = async(bloburl: string, filename: string) =>{
     const resp = await fetch(bloburl);

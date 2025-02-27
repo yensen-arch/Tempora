@@ -22,7 +22,9 @@ export default async function handler(
       return res.status(404).json({ error: "No files found for the given email" });
     }
 
-    const fileDetails = media.file;
+    const fileDetails = {...media.file, editHistory: media.editHistory};
+
+    console.log("editHistory array: ", media.editHistory);
 
     return res.status(200).json( fileDetails );
   } catch (error) {

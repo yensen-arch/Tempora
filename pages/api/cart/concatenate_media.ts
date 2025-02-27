@@ -93,6 +93,7 @@ export default async function handler(
             isConcatenated: true,
             uploadedAt: new Date(), // Ensures uploadedAt is updated
           },
+          editHistory: []
         },
       },
       { upsert: true, new: true }
