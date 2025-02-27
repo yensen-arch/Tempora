@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { processAudio } from "../../utils/ffmpegUtils";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import { NODE_ESM_RESOLVE_OPTIONS } from "next/dist/build/webpack-config";
 
 function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitClicked: boolean, audioUrl: string }) {
   const [processedAudio, setProcessedAudio] = useState<string | null>(null);

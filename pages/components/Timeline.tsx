@@ -2,21 +2,15 @@ import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion, useMotionValue } from "framer-motion";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Undo,
-  Redo,
-} from "lucide-react";
+import { Undo, Redo } from "lucide-react";
 import TrimOverlay from "./TrimOverlay";
 import SpliceOverlay from "./SpliceOverlay";
+import EditMachine from "./EditMachine";
+
 interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   duration: number;
 }
-import EditMachine from "./EditMachine";
 
 type Edit = {
   start: number;
@@ -38,7 +32,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     { start: number; end: number; type: "trim" | "splice" }[]
   >([]);
   const [undoneEdits, setUndoneEdits] = useState<Edit[]>([]);
-  const [historyPointer, setHistoryPointer] = useState(-1);
   const [showSplice, setShowSplice] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
 
@@ -69,8 +62,8 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           } else {
             throw new Error("No file URL found in the response.");
           }
-        })
-    } else{
+        });
+    } else {
       setDecodedUrl(videoUrl);
       setDecodedAudioUrl(audioUrl);
     }
@@ -115,19 +108,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     return () => video.removeEventListener("timeupdate", updateSlider);
   }, [videoRef, sliderX, isDragging, visibleStart, visibleEnd, editHistory]);
 
-  const handleZoom = (direction: number) => {
-    setZoom((prevZoom) => {
-      const newZoom = Math.min(5, Math.max(1, prevZoom + direction * 0.5));
-      const midpoint = (visibleStart + visibleEnd) / 2;
-      const visibleDuration = duration / newZoom;
-      const newStart = Math.max(0, midpoint - visibleDuration / 2);
-      const newEnd = Math.min(duration, midpoint + visibleDuration / 2);
-      setVisibleStart(newStart);
-      setVisibleEnd(newEnd);
-      return newZoom;
-    });
-  };
-
   const handleDrag = (_, info: { point: { x: number } }) => {
     if (videoRef.current && containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
@@ -149,7 +129,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   };
 
   const updateEditHistory = (newEdit: Edit) => {
-    setEditHistory(prevEdits => [...prevEdits, newEdit]);
+    setEditHistory((prevEdits) => [...prevEdits, newEdit]);
     // Clear the redo stack when a new edit is made
     setUndoneEdits([]);
   };
@@ -198,9 +178,9 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     if (editHistory.length > 0) {
       // Remove the last edit from activeEdits and add to undoneEdits
       const lastEdit = editHistory[editHistory.length - 1];
-      setEditHistory(prevEdits => prevEdits.slice(0, -1));
-      setUndoneEdits(prevUndone => [...prevUndone, lastEdit]);
-      
+      setEditHistory((prevEdits) => prevEdits.slice(0, -1));
+      setUndoneEdits((prevUndone) => [...prevUndone, lastEdit]);
+
       // Apply the second-to-last edit state (or reset if no edits remain)
       if (editHistory.length > 1) {
         const previousEdit = editHistory[editHistory.length - 2];
@@ -219,9 +199,9 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     if (undoneEdits.length > 0) {
       // Move the last undone edit back to activeEdits
       const editToRedo = undoneEdits[undoneEdits.length - 1];
-      setUndoneEdits(prevUndone => prevUndone.slice(0, -1));
-      setEditHistory(prevEdits => [...prevEdits, editToRedo]);
-      
+      setUndoneEdits((prevUndone) => prevUndone.slice(0, -1));
+      setEditHistory((prevEdits) => [...prevEdits, editToRedo]);
+
       // Apply the redone edit
       if (editToRedo.type === "trim") {
         setVisibleStart(editToRedo.start);
@@ -373,7 +353,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </div>
       </div>
       {decodedUrl ? (
-        <EditMachine videoUrl={decodedUrl} edits={editHistory} submitClicked={submitClicked} audioUrl={decodedAudioUrl}/>
+        <EditMachine
+          videoUrl={decodedUrl}
+          edits={editHistory}
+          submitClicked={submitClicked}
+          audioUrl={decodedAudioUrl}
+        />
       ) : (
         <div>Loading video...</div>
       )}
