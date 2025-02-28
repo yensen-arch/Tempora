@@ -241,7 +241,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           )}
 
           <div
-            className="absolute h-12 bg-opacity-50"
+            className="absolute  bg-opacity-50"
             style={{
               width: `${trimWidthPercent}%`,
               left: `${trimStartPercent}%`,
