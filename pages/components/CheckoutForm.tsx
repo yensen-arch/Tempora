@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe('your-publishable-key-here');
 
 const CheckoutForm = ({ products, onCheckout }) => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    address: '',
-    phoneNumber:'',
-    city: '',
-    state: '',
-    zipCode: '',
-    cardName: '',
+    firstName: '', lastName: '', email: '', address: '', phoneNumber: '',
+    city: '', state: '', zipCode: '', cardName: ''
   });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const stripe = useStripe();
+  const elements = useElements();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const calculateTotal = () => {
@@ -27,199 +24,67 @@ const CheckoutForm = ({ products, onCheckout }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // add payment gateway integration here
-    const orderData = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      address: formData.address,
-      city: formData.city,
-      products: products,
-      state: formData.state,
-      zipCode: formData.zipCode,
-      contactNumber: formData.phoneNumber, 
-      totalAmount: calculateTotal(),
-    };
+    if (!stripe || !elements) return;
 
-    try{
-      const response = await fetch('/api/orders/new_order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-      });
-      const data = await response.json();
-      if(response.ok){
-        alert('Order placed successfully');
-      } else {
-        alert(data.error || 'Failed to place order');
+    setIsProcessing(true);
+    const cardElement = elements.getElement(CardElement);
+    
+    const { paymentMethod, error } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+      billing_details: {
+        name: formData.cardName,
+        email: formData.email,
+        address: { city: formData.city, line1: formData.address, state: formData.state, postal_code: formData.zipCode }
       }
-    }catch(error){
-      console.error('Failed to place order:', error);
+    });
+
+    if (error) {
+      alert(error.message);
+      setIsProcessing(false);
+      return;
     }
 
+    const orderData = {
+      ...formData, products, totalAmount: calculateTotal(), paymentMethodId: paymentMethod.id
+    };
+
+    try {
+      const response = await fetch('/api/orders/new_order', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData)
+      });
+      const data = await response.json();
+      if (response.ok) alert('Order placed successfully');
+      else alert(data.error || 'Failed to place order');
+    } catch (error) {
+      console.error('Order submission error:', error);
+    }
+    setIsProcessing(false);
     onCheckout?.(formData);
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-8 bg-white rounded-lg shadow-md p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Checkout Details</h2>
+    <Elements stripe={stripePromise}>
+      <div className="w-full max-w-2xl mx-auto mt-8 bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Checkout Details</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="First Name" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Last Name" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} placeholder="Phone Number" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="address" value={formData.address} onChange={handleInputChange} placeholder="Address" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="state" value={formData.state} onChange={handleInputChange} placeholder="State" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="zipCode" value={formData.zipCode} onChange={handleInputChange} placeholder="ZIP Code" required className="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="cardName" value={formData.cardName} onChange={handleInputChange} placeholder="Name on Card" required className="w-full px-3 py-2 border rounded-md" />
+          <CardElement className="p-3 border rounded-md" />
+          <div className="flex justify-between text-lg font-semibold"><span>Total:</span><span>${calculateTotal()}</span></div>
+          <button type="submit" disabled={isProcessing} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md">
+            {isProcessing ? 'Processing...' : 'Complete Purchase'}
+          </button>
+        </form>
       </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-              First Name
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-            Phone Number
-          </label>
-          <input
-            type="text"
-            id="phoneNumer"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-            Shipping Address
-          </label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-              City
-            </label>
-            <input
-              type="text"
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-              State
-            </label>
-            <input
-              type="text"
-              id="state"
-              name="state"
-              value={formData.state}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
-              ZIP Code
-            </label>
-            <input
-              type="text"
-              id="zipCode"
-              name="zipCode"
-              value={formData.zipCode}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
-            Name on Card
-          </label>
-          <input
-            type="text"
-            id="cardName"
-            name="cardName"
-            value={formData.cardName}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div className="pt-4 border-t border-gray-200">
-          <div className="flex justify-between text-lg font-semibold">
-            <span>Total:</span>
-            <span>${calculateTotal()}</span>
-          </div>
-        </div>
-
-        <button 
-          type="submit" 
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200 ease-in-out"
-        >
-          Complete Purchase
-        </button>
-      </form>
-    </div>
+    </Elements>
   );
 };
 
