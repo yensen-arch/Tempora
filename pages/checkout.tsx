@@ -16,7 +16,7 @@ export default function checkout() {
   const [product, setProduct] = useState([]);
   const { user, isLoading } = useUser();
   const [loading, setLoading] = useState(false);
-  const stripePromise = loadStripe("your-publishable-key-here");
+  const stripePromise = loadStripe("your-publishable-key-here");//will take on Sunday
 
   useEffect(() => {
     const productFromQuery = {
