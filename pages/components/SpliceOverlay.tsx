@@ -88,7 +88,7 @@ const SpliceOverlay: React.FC<SpliceOverlayProps> = ({
           onMouseDown={() => handleMouseDown("right")}
         />
       </div>
-      <div className="absolute  flex justify-center space-x-4 ">
+      <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex justify-center space-x-4">
         <button
           onClick={handleSpliceChange}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"

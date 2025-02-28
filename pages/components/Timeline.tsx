@@ -218,7 +218,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
         <div
           ref={containerRef}
-          className="relative w-full h-20 overflow-hidden border-b border-gray-200"
+          className="relative w-full h-20 overflow-visible border-b border-gray-200"
         >
           {showTrim && (
             <TrimOverlay
