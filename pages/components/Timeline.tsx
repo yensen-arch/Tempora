@@ -8,6 +8,7 @@ import EditMachine from "./EditMachine";
 import TimelineControls from "./TimelineControls";
 import TimelineSlider from "./TimelineSlider";
 import { useEditHistory } from "./hooks/useEditHistory";
+import { useEditHistoryContext } from "../context/EditHistoryContext";
 import { useTimelineState } from "./hooks/useTimelineState";
 import { useMediaLoader } from "./hooks/useMediaLoader";
 
@@ -37,8 +38,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     setVisibleEnd,
   } = useTimelineState(duration);
 
-  const { editHistory, undoneEdits, updateEditHistory, undo, redo } =
-    useEditHistory(duration, setVisibleStart, setVisibleEnd);
+  // const { editHistory, undoneEdits, updateEditHistory, undo, redo } =
+  //   useEditHistory(duration, setVisibleStart, setVisibleEnd);
+
+  const {
+    editHistory, undoneEdits, updateEditHistory, undo, redo, setEditHistoryFromApi
+  } = useEditHistoryContext();
 
   const { decodedUrl, decodedAudioUrl } = useMediaLoader(user?.email);
 

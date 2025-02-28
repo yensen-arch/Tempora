@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import EditorDisplay from "./components/EditorDisplay";
+import { EditHistoryProvider } from "./context/EditHistoryContext";
 
 function Editor() {
   const searchParams = useSearchParams();
@@ -14,7 +15,9 @@ function Editor() {
   return (
     <div>
       <Navbar />
+      <EditHistoryProvider>
       <EditorDisplay videoUrl={videoUrl} duration={duration} audioPath = {audioPath}/>
+      </EditHistoryProvider>
       <Footer />
     </div>
   );
