@@ -176,7 +176,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         })
       });
       setHasUnsavedChanges(false);
-      console.log(res.json());
+      console.log("saved edits:",await res.json());
     }catch{
       console.log("Cannot save edits, try again later");
     }finally{
