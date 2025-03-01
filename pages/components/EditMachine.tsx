@@ -3,7 +3,15 @@ import React, { useState, useEffect } from "react";
 import { processAudio } from "../../utils/ffmpegUtils";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
-function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitClicked: boolean, audioUrl: string }) {
+function EditMachine({
+  edits,
+  submitClicked,
+  audioUrl,
+}: {
+  edits: any;
+  submitClicked: boolean;
+  audioUrl: string;
+}) {
   const [processedAudio, setProcessedAudio] = useState<string | null>(null);
   const { user, isLoading } = useUser();
   const email = user?.email;
@@ -13,7 +21,7 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
       const outputUrl = await processAudio(audioUrl, edits);
       setProcessedAudio(outputUrl);
     };
-    
+
     runFFmpeg();
   }, [submitClicked]);
 
@@ -23,34 +31,36 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
     );
   }
 
-  const getFileFromBlob = async(bloburl: string, filename: string) =>{
+  const getFileFromBlob = async (bloburl: string, filename: string) => {
     const resp = await fetch(bloburl);
     const blob = await resp.blob();
-    return new File([blob], filename, {type: blob.type});
-  }
+    return new File([blob], filename, { type: blob.type });
+  };
 
-  const handleProceed = async(fileUrl: string)=>{
-    const file = await getFileFromBlob(fileUrl, 'processedAudio');
+  const handleProceed = async (fileUrl: string) => {
+    const file = await getFileFromBlob(fileUrl, "processedAudio");
     const formData = new FormData();
     formData.append("file", file);
     const resp = await fetch(`api/processed-audio/upload?email=${email}`, {
-      method: 'POST',
-      body: formData
+      method: "POST",
+      body: formData,
     });
-    if(resp.status===200){
-      alert('File uploaded successfully');
-      window.location.href = '/checkout';
-    }else {
-      alert('Failed to upload file, Try again in sometime');
+    if (resp.status === 200) {
+      alert("File uploaded successfully");
+      window.location.href = "/checkout";
+    } else {
+      alert("Failed to upload file, Try again in sometime");
     }
-  }
+  };
 
   return (
     <div className="mt-20">
       {processedAudio ? (
         <>
-          <audio controls src={processedAudio} controlsList="nodownload"/>
-          <button onClick={() => handleProceed(processedAudio)}>Proceed to Checkout -&gt;</button>
+          <audio controls src={processedAudio} controlsList="nodownload" />
+          <button onClick={() => handleProceed(processedAudio)}>
+            Proceed to Checkout -&gt;
+          </button>
         </>
       ) : (
         <p>Processing...</p>

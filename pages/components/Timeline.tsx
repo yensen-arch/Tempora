@@ -7,7 +7,6 @@ import SpliceOverlay from "./SpliceOverlay";
 import EditMachine from "./EditMachine";
 import TimelineControls from "./TimelineControls";
 import TimelineSlider from "./TimelineSlider";
-import { useEditHistory } from "./hooks/useEditHistory";
 import { useEditHistoryContext } from "../context/EditHistoryContext";
 import { useTimelineState } from "./hooks/useTimelineState";
 import { useMediaLoader } from "./hooks/useMediaLoader";
@@ -37,9 +36,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     setVisibleStart,
     setVisibleEnd,
   } = useTimelineState(duration);
-
-  // const { editHistory, undoneEdits, updateEditHistory, undo, redo } =
-  //   useEditHistory(duration, setVisibleStart, setVisibleEnd);
 
   const {
     editHistory,
@@ -231,13 +227,13 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     }
   };
 
-//this syncs the timeline with the fresh editfistory from the server
+  //this syncs the timeline with the fresh editfistory from the server
   useEffect(() => {
     if (editHistory.length > 0) {
       const lastTrimEdit = [...editHistory]
-        .filter(edit => edit.type === 'trim')
+        .filter((edit) => edit.type === "trim")
         .pop();
-        
+
       if (lastTrimEdit) {
         setVisibleStart(lastTrimEdit.start);
         setVisibleEnd(lastTrimEdit.end);
@@ -261,7 +257,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       videoRef.current.currentTime = actualStart;
     }
   };
-
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
