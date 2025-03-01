@@ -26,6 +26,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [showSplice, setShowSplice] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   // Custom hooks for state management
   const {
@@ -276,6 +277,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
               setShowSplice(true);
               setShowTrim(false);
             }}
+            processing={processing}
             onSubmit={() => setSubmitClicked((prev) => !prev)}
             onSave={handleSave}
             canUndo={editHistory.length > 0}
@@ -339,9 +341,9 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
         </div>
         {decodedUrl ? (
           <EditMachine
-            videoUrl={decodedUrl}
             edits={editHistory}
             submitClicked={submitClicked}
+            setProcessing={setProcessing}
             audioUrl={decodedAudioUrl}
           />
         ) : (

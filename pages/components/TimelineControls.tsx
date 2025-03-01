@@ -12,6 +12,7 @@ interface TimelineControlsProps {
   canUndo: boolean;
   canRedo: boolean;
   isSaving: boolean;
+  processing: boolean
 }
 
 const TimelineControls: React.FC<TimelineControlsProps> = ({
@@ -24,6 +25,7 @@ const TimelineControls: React.FC<TimelineControlsProps> = ({
   canUndo,
   canRedo,
   isSaving,
+  processing,
 }) => {
   return (
     <div className="flex mb-2 space-x-2">
@@ -62,9 +64,10 @@ const TimelineControls: React.FC<TimelineControlsProps> = ({
       </button>
       <button
         onClick={onSubmit}
-        className="px-3 py-1 bg-green-500 text-white rounded"
+        disabled={processing}
+        className="px-3 py-1 bg-green-500 text-white rounded disabled:opacity-50"
       >
-        Submit
+        {processing? "Please Wait..." : "Submit"}
       </button>
     </div>
   );
