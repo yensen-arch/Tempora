@@ -92,7 +92,6 @@ export const preProcessEdits = (edits: Edit[]) => {
 };
 
 export const processAudio = async (audioUrl: string, edits: Edit[]) => {
-  
   const ffmpeg = new FFmpeg();
   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
 
@@ -123,7 +122,6 @@ export const processAudio = async (audioUrl: string, edits: Edit[]) => {
     await ffmpeg.writeFile(audioName, new Uint8Array(arrayBuffer));
 
     const segmentsToKeep = preProcessEdits(edits);
-    console.log(segmentsToKeep);
     
     if (segmentsToKeep.length === 0) {
       await ffmpeg.exec([

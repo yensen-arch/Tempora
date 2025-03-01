@@ -67,7 +67,14 @@ export default async function handler(
           timeout: 240000, // 4 min timeout
           chunk_size: 10000000, // 10MB chunk size for large files
           transformation: [
-            { width: 480, height: 270, crop: "fill", quality: "auto:low", bitrate: "500k", fps: "24" }
+            {
+              width: 480,
+              height: 270,
+              crop: "fill",
+              quality: "auto:low",
+              bitrate: "500k",
+              fps: "24",
+            },
           ],
         };
 
@@ -79,23 +86,6 @@ export default async function handler(
           uploadOptions
         );
         console.log("Cloudinary upload result:", result);
-
-        // Save file URL and metadata to database
-        /////delete
-        // await Media.findOneAndUpdate(
-        //   { email },
-        //   {
-        //     $push: {
-        //       files: {
-        //         fileUrl: result.secure_url,
-        //         mediaType: resourceType,
-        //         originalFormat: fileType.split("/")[1], // Extract file extension
-        //       },
-        //     },
-        //   },
-        //   { upsert: true, new: true } // Create new document if it doesn't exist
-        // );
-
         return result.secure_url;
       });
 

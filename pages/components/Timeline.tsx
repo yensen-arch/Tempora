@@ -7,7 +7,7 @@ import SpliceOverlay from "./SpliceOverlay";
 import EditMachine from "./EditMachine";
 import TimelineControls from "./TimelineControls";
 import TimelineSlider from "./TimelineSlider";
-import { useEditHistory } from "./hooks/useEditHistory";
+import { useEditHistoryContext } from "../context/EditHistoryContext";
 import { useTimelineState } from "./hooks/useTimelineState";
 import { useMediaLoader } from "./hooks/useMediaLoader";
 
@@ -26,6 +26,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const [showSplice, setShowSplice] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   // Custom hooks for state management
   const {
@@ -37,24 +38,73 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     setVisibleEnd,
   } = useTimelineState(duration);
 
-  const { editHistory, undoneEdits, updateEditHistory, undo, redo } =
-    useEditHistory(duration, setVisibleStart, setVisibleEnd);
-
+  const {
+    editHistory,
+    undoneEdits,
+    updateEditHistory,
+    undo,
+    redo,
+    setEditHistoryFromApi,
+  } = useEditHistoryContext();
   const { decodedUrl, decodedAudioUrl } = useMediaLoader(user?.email);
 
+  useEffect(() => {
+    if (editHistory.length > 0) {
+      // Find the most recent trim edit
+      const lastTrimEdit = [...editHistory]
+        .filter((edit) => edit.type === "trim")
+        .pop();
+
+      if (lastTrimEdit) {
+        // Update timeline view to match the last trim
+        setVisibleStart(lastTrimEdit.start);
+        setVisibleEnd(lastTrimEdit.end);
+
+        // Update video position
+        if (videoRef.current) {
+          videoRef.current.currentTime = lastTrimEdit.start;
+        }
+      }
+    }
+  }, [editHistory, setVisibleStart, setVisibleEnd]);
+  // In Timeline.tsx, modify how you call undo/redo
+  const handleUndo = () => {
+    undo({
+      onTrim: (start, end) => {
+        setVisibleStart(start);
+        setVisibleEnd(end);
+        if (videoRef.current) videoRef.current.currentTime = start;
+      },
+      onResetTrim: () => {
+        setVisibleStart(0);
+        setVisibleEnd(duration);
+        if (videoRef.current) videoRef.current.currentTime = 0;
+      },
+    });
+  };
+
+  const handleRedo = () => {
+    redo({
+      onTrim: (start, number, end) => {
+        setVisibleStart(start);
+        setVisibleEnd(end);
+        if (videoRef.current) videoRef.current.currentTime = start;
+      },
+    });
+  };
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         handleSave();
         event.preventDefault();
-        return ""
+        return "";
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-    }
+    };
   }, [hasUnsavedChanges]);
 
   useEffect(() => {
@@ -149,7 +199,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       type: "splice",
     });
     setHasUnsavedChanges(true);
-
     setVisibleEnd((prev) => prev - (adjustedEnd - adjustedStart));
 
     if (videoRef.current) {
@@ -159,25 +208,39 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    try{
-      const res = await fetch('api/cart/save_edits', {
-        method: 'PUT',
+    try {
+      const res = await fetch("api/cart/save_edits", {
+        method: "PUT",
         headers: {
-          'Content-Type': "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: user?.email,
-          editHistory
-        })
+          editHistory,
+        }),
       });
       setHasUnsavedChanges(false);
-      console.log(res.json());
-    }catch{
+      console.log("saved edits:", await res.json());
+    } catch {
       console.log("Cannot save edits, try again later");
-    }finally{
+    } finally {
       setIsSaving(false);
     }
-  }
+  };
+
+  //this syncs the timeline with the fresh editfistory from the server
+  useEffect(() => {
+    if (editHistory.length > 0) {
+      const lastTrimEdit = [...editHistory]
+        .filter((edit) => edit.type === "trim")
+        .pop();
+
+      if (lastTrimEdit) {
+        setVisibleStart(lastTrimEdit.start);
+        setVisibleEnd(lastTrimEdit.end);
+      }
+    }
+  }, [editHistory]);
 
   const handleTrimUpdate = (start: number, end: number) => {
     // Calculate new trim points relative to the current trim
@@ -195,92 +258,98 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       videoRef.current.currentTime = actualStart;
     }
   };
-
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
 
   return (
     <>
-    <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
-      <div className="relative">
-        <TimelineControls
-          onUndo={undo}
-          onRedo={redo}
-          onTrim={() => {setShowTrim(true); setShowSplice(false)}}
-          onSplice={() => {setShowSplice(true); setShowTrim(false)}}
-          onSubmit={() => setSubmitClicked((prev) => !prev)}
-          onSave={handleSave}
-          canUndo={editHistory.length > 0}
-          canRedo={undoneEdits.length > 0}
-          isSaving={isSaving}
-        />
-
-        <div
-          ref={containerRef}
-          className="relative w-full h-20 overflow-visible border-b border-gray-200"
-        >
-          {showTrim && (
-            <TrimOverlay
-              duration={1}
-              onTrimChange={handleTrimUpdate}
-              onClose={() => setShowTrim(false)}
-              initialStart={0}
-              initialEnd={1}
-            />
-          )}
-
-          {showSplice && (
-            <SpliceOverlay
-              duration={1}
-              onSpliceChange={handleSpliceUpdate}
-              onClose={() => setShowSplice(false)}
-              initialStart={0}
-              initialEnd={1}
-            />
-          )}
+      <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
+        <div className="relative">
+          <TimelineControls
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onTrim={() => {
+              setShowTrim(true);
+              setShowSplice(false);
+            }}
+            onSplice={() => {
+              setShowSplice(true);
+              setShowTrim(false);
+            }}
+            processing={processing}
+            onSubmit={() => setSubmitClicked((prev) => !prev)}
+            onSave={handleSave}
+            canUndo={editHistory.length > 0}
+            canRedo={undoneEdits.length > 0}
+            isSaving={isSaving}
+          />
 
           <div
-            className="absolute  bg-opacity-50"
-            style={{
-              width: `${trimWidthPercent}%`,
-              left: `${trimStartPercent}%`,
-            }}
-          />
-
-          <TimelineSlider
-            visibleStart={visibleStart}
-            visibleEnd={visibleEnd}
-            zoom={zoom}
-            editHistory={editHistory}
-          />
-
-          <motion.div
-            className="absolute top-0 w-0.5 h-12 bg-red-500 z-10"
-            style={{ x: sliderX }}
-            drag="x"
-            dragConstraints={containerRef}
-            dragElastic={0}
-            dragMomentum={false}
-            onDrag={handleDrag}
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={() => setIsDragging(false)}
+            ref={containerRef}
+            className="relative w-full h-20 overflow-visible border-b border-gray-200"
           >
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
-          </motion.div>
+            {showTrim && (
+              <TrimOverlay
+                duration={1}
+                onTrimChange={handleTrimUpdate}
+                onClose={() => setShowTrim(false)}
+                initialStart={0}
+                initialEnd={1}
+              />
+            )}
+
+            {showSplice && (
+              <SpliceOverlay
+                duration={1}
+                onSpliceChange={handleSpliceUpdate}
+                onClose={() => setShowSplice(false)}
+                initialStart={0}
+                initialEnd={1}
+              />
+            )}
+
+            <div
+              className="absolute  bg-opacity-50"
+              style={{
+                width: `${trimWidthPercent}%`,
+                left: `${trimStartPercent}%`,
+              }}
+            />
+
+            <TimelineSlider
+              visibleStart={visibleStart}
+              visibleEnd={visibleEnd}
+              zoom={zoom}
+              editHistory={editHistory}
+            />
+
+            <motion.div
+              className="absolute top-0 w-0.5 h-12 bg-red-500 z-10"
+              style={{ x: sliderX }}
+              drag="x"
+              dragConstraints={containerRef}
+              dragElastic={0}
+              dragMomentum={false}
+              onDrag={handleDrag}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={() => setIsDragging(false)}
+            >
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
+            </motion.div>
+          </div>
         </div>
+        {decodedUrl ? (
+          <EditMachine
+            edits={editHistory}
+            submitClicked={submitClicked}
+            setProcessing={setProcessing}
+            audioUrl={decodedAudioUrl}
+          />
+        ) : (
+          <div>Loading video...</div>
+        )}
       </div>
-      {decodedUrl ? (
-        <EditMachine
-          videoUrl={decodedUrl}
-          edits={editHistory}
-          submitClicked={submitClicked}
-          audioUrl={decodedAudioUrl}
-        />
-      ) : (
-        <div>Loading video...</div>
-      )}
-    </div>
     </>
   );
 };

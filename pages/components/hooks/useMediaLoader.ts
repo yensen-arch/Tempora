@@ -1,12 +1,14 @@
 // hooks/useMediaLoader.ts
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useEditHistoryContext } from '@/pages/context/EditHistoryContext';
 
 export const useMediaLoader = (email?: string) => {
   const router = useRouter();
   const { videoUrl, audioPath: audioUrl } = router.query;
   const [decodedUrl, setDecodedUrl] = useState<string | null>(null);
   const [decodedAudioUrl, setDecodedAudioUrl] = useState<string | null>(null);
+  const { setEditHistoryFromApi } = useEditHistoryContext();
 
   useEffect(() => {
     if (!videoUrl || !audioUrl) {
@@ -28,7 +30,10 @@ export const useMediaLoader = (email?: string) => {
           if (data.fileUrl) {
             setDecodedUrl(decodeURIComponent(data.fileUrl));
             setDecodedAudioUrl(decodeURIComponent(data.audioPath));
-            console.log(data.fileUrl);
+
+            if(data.editHistory && Array.isArray(data.editHistory)){
+              setEditHistoryFromApi(data.editHistory);
+            }
           } else {
             throw new Error("No file URL found in the response.");
           }
@@ -38,7 +43,6 @@ export const useMediaLoader = (email?: string) => {
       setDecodedAudioUrl(audioUrl as string);
     }
   }, [email, videoUrl, audioUrl]);
-
   return {
     decodedUrl,
     decodedAudioUrl

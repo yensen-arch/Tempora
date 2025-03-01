@@ -48,7 +48,6 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, a
           return res.json();
         })
         .then((data) => {
-          console.log("API Response Data:", data);
           if (data.fileUrl) {
             setVideoUrl(decodeURIComponent(data.fileUrl));
             setAudioUrl(decodeURIComponent(data.audioPath));
@@ -77,7 +76,7 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, a
       {error && <p className="text-red-500">Error: {error}</p>}
       {!loading && videoUrl ? (
         <>
-          <video ref={videoRef} controls className="w-full max-w-3xl">
+          <video ref={videoRef} controls controlsList="nodownload" className="w-full max-w-3xl">
             <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
