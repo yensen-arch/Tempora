@@ -34,8 +34,6 @@ export const useMediaLoader = (email?: string) => {
             if(data.editHistory && Array.isArray(data.editHistory)){
               setEditHistoryFromApi(data.editHistory);
             }
-            console.log(data.editHistory);
-            console.log(data.fileUrl);
           } else {
             throw new Error("No file URL found in the response.");
           }
@@ -45,7 +43,6 @@ export const useMediaLoader = (email?: string) => {
       setDecodedAudioUrl(audioUrl as string);
     }
   }, [email, videoUrl, audioUrl]);
-
   return {
     decodedUrl,
     decodedAudioUrl

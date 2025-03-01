@@ -48,7 +48,6 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, a
           return res.json();
         })
         .then((data) => {
-          console.log("API Response Data:", data);
           if (data.fileUrl) {
             setVideoUrl(decodeURIComponent(data.fileUrl));
             setAudioUrl(decodeURIComponent(data.audioPath));

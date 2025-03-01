@@ -8,9 +8,7 @@ export default async function handler(
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-
   const { email } = req.body;
-
   if (!email) {
     return res.status(400).json({ error: "Email is required" });
   }
@@ -18,15 +16,13 @@ export default async function handler(
   try {
     const media = await Media.findOne({ email });
 
-    if (!media || !media.file ) {
-      return res.status(404).json({ error: "No files found for the given email" });
+    if (!media || !media.file) {
+      return res
+        .status(404)
+        .json({ error: "No files found for the given email" });
     }
-
-    const fileDetails = {...media.file, editHistory: media.editHistory};
-
-    console.log("editHistory array: ", media.editHistory);
-
-    return res.status(200).json( fileDetails );
+    const fileDetails = { ...media.file, editHistory: media.editHistory };
+    return res.status(200).json(fileDetails);
   } catch (error) {
     console.error("Error fetching media:", error);
     return res.status(500).json({ error: "Failed to fetch media" });

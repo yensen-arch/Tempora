@@ -66,7 +66,6 @@ export const EditHistoryProvider: React.FC<{
     setEditHistory(history);
     setUndoneEdits([]);
   };
-
   return (
     <EditHistoryContext.Provider
       value={{
@@ -82,7 +81,6 @@ export const EditHistoryProvider: React.FC<{
     </EditHistoryContext.Provider>
   );
 };
-
 export const useEditHistoryContext = () => {
   const context = useContext(EditHistoryContext);
   if (context === undefined) {

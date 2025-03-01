@@ -11,7 +11,6 @@ function EditMachine({ edits, submitClicked, audioUrl }: { edits: any, submitCli
   useEffect(() => {
     const runFFmpeg = async () => {
       const outputUrl = await processAudio(audioUrl, edits);
-      console.log(outputUrl);
       setProcessedAudio(outputUrl);
     };
     
