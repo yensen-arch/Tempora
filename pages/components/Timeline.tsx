@@ -1,4 +1,4 @@
-// Timeline.tsx - Main component file
+// Timeline.tsx - Enhanced with zoom controls
 import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -48,6 +48,28 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   } = useEditHistoryContext();
   const { decodedUrl, decodedAudioUrl } = useMediaLoader(user?.email);
 
+  // Handle zoom with mouse wheel
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const direction = e.deltaY > 0 ? -1 : 1; // Reverse direction for intuitive zoom
+        handleZoom(direction);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, [handleZoom]);
+
   useEffect(() => {
     if (editHistory.length > 0) {
       // Find the most recent trim edit
@@ -67,6 +89,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       }
     }
   }, [editHistory, setVisibleStart, setVisibleEnd]);
+  
   // In Timeline.tsx, modify how you call undo/redo
   const handleUndo = () => {
     undo({
@@ -92,6 +115,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       },
     });
   };
+  
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -258,9 +282,26 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       videoRef.current.currentTime = actualStart;
     }
   };
+  
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
+
+  // Helper function to format time in mm:ss format
+  const formatTime = (timeInSeconds: number) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+    
+  // Calculate zoom percentage
+  const zoomPercentage = Math.round(zoom * 100);
+  
+  // Reset zoom to show full timeline
+  const handleResetZoom = () => {
+    setVisibleStart(currentTrim.start);
+    setVisibleEnd(currentTrim.end);
+  };
 
   return (
     <>
@@ -284,6 +325,34 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             canRedo={undoneEdits.length > 0}
             isSaving={isSaving}
           />
+          
+          {/* Zoom controls */}
+          <div className="flex items-center justify-end mb-2 space-x-2">
+            <span className="text-xs text-gray-500">Zoom: {zoomPercentage}%</span>
+            <button 
+              className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+              onClick={() => handleZoom(-1)}
+              aria-label="Zoom out"
+            >
+              -
+            </button>
+            <button 
+              className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+              onClick={() => handleZoom(1)}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+            <button 
+              className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+              onClick={handleResetZoom}
+            >
+              Reset
+            </button>
+            <div className="text-xs text-gray-500">
+              {formatTime(visibleStart)} - {formatTime(visibleEnd)}
+            </div>
+          </div>
 
           <div
             ref={containerRef}
@@ -310,7 +379,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             )}
 
             <div
-              className="absolute  bg-opacity-50"
+              className="absolute bg-opacity-50"
               style={{
                 width: `${trimWidthPercent}%`,
                 left: `${trimStartPercent}%`,
