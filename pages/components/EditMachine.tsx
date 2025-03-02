@@ -6,12 +6,14 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 function EditMachine({
   edits,
   submitClicked,
+  setSubmitClicked,
   audioUrl,
   setProcessing
 }: {
   edits: any;
   submitClicked: boolean;
   audioUrl: string;
+  setSubmitClicked: (value: boolean) => void;
   setProcessing: (value: boolean) => void;
 }) {
   const [processedAudio, setProcessedAudio] = useState<string | null>(null);
@@ -21,11 +23,14 @@ function EditMachine({
 
   useEffect(() => {
     const runFFmpeg = async () => {
-      setProcessing(true);
-      const outputUrl = await processAudio(audioUrl, edits);
-      setProcessedAudio(outputUrl);
-      setIsModalOpen(true);
-      setProcessing(false);
+      if(submitClicked){
+        setProcessing(true);
+        const outputUrl = await processAudio(audioUrl, edits);
+        setProcessedAudio(outputUrl);
+        setIsModalOpen(true);
+        setProcessing(false);
+        setSubmitClicked(false);
+      }
     };
 
     runFFmpeg();
@@ -83,7 +88,6 @@ function EditMachine({
           </div>
         </div>
       )}
-      {!processedAudio && <p>Processing...</p>}
     </div>
   );
 }

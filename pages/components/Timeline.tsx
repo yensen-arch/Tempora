@@ -278,7 +278,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
               setShowTrim(false);
             }}
             processing={processing}
-            onSubmit={() => setSubmitClicked((prev) => !prev)}
+            onSubmit={() => setSubmitClicked(true)}
             onSave={handleSave}
             canUndo={editHistory.length > 0}
             canRedo={undoneEdits.length > 0}
@@ -343,6 +343,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
           <EditMachine
             edits={editHistory}
             submitClicked={submitClicked}
+            setSubmitClicked={setSubmitClicked}
             setProcessing={setProcessing}
             audioUrl={decodedAudioUrl}
           />

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, type ChangeEvent } from "react";
-import { Music, Video, X, Loader2 } from "lucide-react";
+import React, { useState, type ChangeEvent, useEffect } from "react";
+import { Music, Video, X, Loader2, AlertCircle } from "lucide-react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { toast } from "react-hot-toast";
 
@@ -14,6 +14,9 @@ function MediaUpload() {
   const email = user?.email;
   const [concatenatedUrl, setConcatenatedUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
+  const [fileDurations, setFileDurations] = useState<number[]>([]);
+  const [totalDuration, setTotalDuration] = useState<number>(0);
+  const MAX_DURATION_MINUTES = 20;
 
   const allowedFormats = [
     "audio/mp3",
@@ -38,7 +41,29 @@ function MediaUpload() {
     );
   }
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const getFileDuration = (file: File): Promise<number> => {
+    return new Promise((resolve) => {
+      const element = file.type.startsWith('audio/') 
+        ? document.createElement('audio') 
+        : document.createElement('video');
+      
+      element.preload = 'metadata';
+      
+      element.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(element.src);
+        resolve(element.duration);
+      };
+      
+      element.src = URL.createObjectURL(file);
+    });
+  };
+
+  useEffect(() => {
+    const newTotal = fileDurations.reduce((sum, duration) => sum + duration, 0);
+    setTotalDuration(newTotal);
+  }, [fileDurations]);
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const validFiles = Array.from(e.target.files).filter((file) =>
         allowedFormats.includes(file.type)
@@ -50,13 +75,25 @@ function MediaUpload() {
         );
       }
 
+      const durations = await Promise.all(
+        validFiles.map(file => getFileDuration(file))
+      );
+      
+      const newTotalDuration = [...fileDurations, ...durations].reduce((sum, duration) => sum + duration, 0);
+      
+      if (newTotalDuration > MAX_DURATION_MINUTES * 60) {
+        toast.error(`Total duration exceeds ${MAX_DURATION_MINUTES} minutes limit. Please remove some files.`);
+      }
+
       setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+      setFileDurations((prevDurations) => [...prevDurations, ...durations]);
       setUploadProgress(new Array(validFiles.length).fill(0));
     }
   };
 
   const removeFile = (index: number) => {
     setFiles(files.filter((_, i) => i !== index));
+    setFileDurations(fileDurations.filter((_, i) => i !== index));
     setUploadProgress(uploadProgress.filter((_, i) => i !== index));
   };
 
@@ -158,6 +195,8 @@ function MediaUpload() {
       }
 
       setFiles([]);
+      setFileDurations([]);
+      setTotalDuration(0);
       setUploadProgress([]);
     } catch (error) {
       console.error("Upload error:", error);
@@ -166,6 +205,14 @@ function MediaUpload() {
       setUploading(false);
     }
   };
+
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const isDurationExceeded = totalDuration > MAX_DURATION_MINUTES * 60;
 
   return (
     <div className="pt-4 flex items-center justify-center">
@@ -195,6 +242,7 @@ function MediaUpload() {
                 Select Audio & Video Files
               </label>
               <p className="mt-2 text-amber-700">or drag and drop files here</p>
+              <p className="text-red-700 text-xs">*Your files can have a total duration upto 20 minutes</p>
             </div>
             {files.length > 0 && (
               <div className="mt-6">
@@ -216,6 +264,11 @@ function MediaUpload() {
                         <span className="text-amber-800 truncate">
                           {file.name}
                         </span>
+                        {fileDurations[index] && (
+                          <span className="ml-2 text-amber-600 text-sm">
+                            ({formatDuration(fileDurations[index])})
+                          </span>
+                        )}
                       </div>
                       {!uploading && (
                         <button
@@ -228,15 +281,29 @@ function MediaUpload() {
                     </li>
                   ))}
                 </ul>
+                
+                {/* Total duration indicator */}
+                <div className="mt-3 flex items-center">
+                  <span className="text-amber-800 font-medium">
+                    Total Duration: {formatDuration(totalDuration)}
+                  </span>
+                  {isDurationExceeded && (
+                    <div className="ml-2 flex items-center text-red-600">
+                      <AlertCircle size={16} className="mr-1" />
+                      <span>Exceeds {MAX_DURATION_MINUTES} minute limit</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {files.length > 0 && (
               <button
                 onClick={handleUpload}
-                disabled={uploading}
+                disabled={uploading || isDurationExceeded}
                 className={`mt-4 px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
-                  uploading ? "opacity-50 cursor-not-allowed" : ""
+                  (uploading || isDurationExceeded) ? "opacity-50 cursor-not-allowed" : ""
                 }`}
+                title={isDurationExceeded ? `Maximum duration is ${MAX_DURATION_MINUTES} minutes` : ""}
               >
                 {uploading ? (
                   <span className="flex items-center">
