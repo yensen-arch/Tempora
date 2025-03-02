@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from "react";
 import Timeline from "./Timeline";
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { useRouter } from "next/navigation";
 
 function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, audioPath }) {
   const [videoUrl, setVideoUrl] = useState(initialVideoUrl || "");
@@ -11,6 +12,7 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, a
   const [error, setError] = useState(null);
   const videoRef = useRef(null);
   const { user } = useUser();
+  const router = useRouter();
   const email = user?.email;
 
   useEffect(() => {
@@ -70,12 +72,47 @@ function EditorDisplay({ videoUrl: initialVideoUrl, duration: initialDuration, a
     }
   }, [videoUrl]);
 
+  const handleDelete = async () => {
+    console.log(videoUrl);
+    if (!email || !videoUrl) {
+      console.log("No email or videoUrl");
+      return;
+    }
+    try {
+      const response = await fetch("/api/cart/delete_media", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          fileUrl: videoUrl,
+          resourceType: "video",
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert("File deleted successfully");
+        router.push("/"); // Redirect after deletion
+      } else {
+        alert(data.message || "Failed to delete file");
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      alert("An error occurred while deleting the file");
+    }
+  };
+
   return (
     <div className="flex flex-col items-center p-4">
       {loading && <p className="text-gray-500">Loading video...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
       {!loading && videoUrl ? (
         <>
+        <button
+          onClick={handleDelete}
+          className="absolute top-10 right-10 px-3 py-2 bg-black text-white border-none cursor-pointer rounded-full"
+        >
+          X
+        </button>
           <video ref={videoRef} controls controlsList="nodownload" className="w-full max-w-3xl">
             <source src={videoUrl} type="video/mp4" />
             Your browser does not support the video tag.
