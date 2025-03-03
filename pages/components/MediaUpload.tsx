@@ -221,7 +221,7 @@ function MediaUpload() {
           <div className="h-40 bg-cover bg-center"></div>
           <div className="p-6">
             <h2 className="text-2xl font-serif text-amber-800 mb-4">
-              Upload Your Media
+              Upload Your Media (If you haven't alredy)
             </h2>
             <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
               <input

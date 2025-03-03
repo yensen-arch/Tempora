@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import WaveSurfer from "wavesurfer.js";
 import { processAudio } from "../../utils/ffmpegUtils";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
@@ -18,6 +19,8 @@ function EditMachine({
 }) {
   const [processedAudio, setProcessedAudio] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const waveformRef = useRef<HTMLDivElement | null>(null);
+  const waveSurferInstance = useRef<WaveSurfer | null>(null);
   const { user, isLoading } = useUser();
   const email = user?.email;
 
@@ -35,6 +38,26 @@ function EditMachine({
 
     runFFmpeg();
   }, [submitClicked]);
+
+  useEffect(() => {
+    if (processedAudio && waveformRef.current) {
+      if (waveSurferInstance.current) {
+        waveSurferInstance.current.destroy();
+      }
+
+      waveSurferInstance.current = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: "#4A90E2",
+        progressColor: "#357ABD",
+        cursorColor: "#FF0000",
+        height: 80,
+        responsive: true,
+        normalize: true,
+      });
+
+      waveSurferInstance.current.load(processedAudio);
+    }
+  }, [processedAudio]);
 
   if (!user?.email) {
     return (
@@ -70,6 +93,10 @@ function EditMachine({
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-[#f5f0eb] p-6 rounded-lg shadow-lg max-w-md text-center">
             <h2 className="text-lg font-semibold mb-4">Your final edit will be : </h2>
+            
+            {/* Waveform */}
+            <div ref={waveformRef} className="w-full mb-4"></div>
+
             <audio controls src={processedAudio} controlsList="nodownload" className="w-full mb-4 bg-[#f5f0eb]" />
             <div className="flex justify-between gap-2">
               <button
