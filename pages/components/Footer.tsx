@@ -76,6 +76,9 @@ const Footer: React.FC = () => {
                 <ShoppingCart className="inline-block w-4 h-4 mr-2" />
                 Cart
               </FooterLink>
+              <FooterLink href="/terms">
+                Terms and Conditions
+              </FooterLink>
             </ul>
           </div>
 
