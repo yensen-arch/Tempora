@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
+import { Play, Pause } from "lucide-react";
 import { processAudio } from "../../utils/ffmpegUtils";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
@@ -9,24 +10,19 @@ function EditMachine({
   submitClicked,
   setSubmitClicked,
   audioUrl,
-  setProcessing
-}: {
-  edits: any;
-  submitClicked: boolean;
-  audioUrl: string;
-  setSubmitClicked: (value: boolean) => void;
-  setProcessing: (value: boolean) => void;
+  setProcessing,
 }) {
-  const [processedAudio, setProcessedAudio] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const waveformRef = useRef<HTMLDivElement | null>(null);
-  const waveSurferInstance = useRef<WaveSurfer | null>(null);
-  const { user, isLoading } = useUser();
+  const [processedAudio, setProcessedAudio] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const waveformRef = useRef(null);
+  const waveSurferInstance = useRef(null);
+  const { user } = useUser();
   const email = user?.email;
 
   useEffect(() => {
     const runFFmpeg = async () => {
-      if(submitClicked){
+      if (submitClicked) {
         setProcessing(true);
         const outputUrl = await processAudio(audioUrl, edits);
         setProcessedAudio(outputUrl);
@@ -35,7 +31,6 @@ function EditMachine({
         setSubmitClicked(false);
       }
     };
-
     runFFmpeg();
   }, [submitClicked]);
 
@@ -44,7 +39,6 @@ function EditMachine({
       if (waveSurferInstance.current) {
         waveSurferInstance.current.destroy();
       }
-
       waveSurferInstance.current = WaveSurfer.create({
         container: waveformRef.current,
         waveColor: "#4A90E2",
@@ -54,24 +48,33 @@ function EditMachine({
         responsive: true,
         normalize: true,
       });
-
       waveSurferInstance.current.load(processedAudio);
     }
   }, [processedAudio]);
 
+  const togglePlayPause = () => {
+    if (waveSurferInstance.current) {
+      if (waveSurferInstance.current.isPlaying()) {
+        waveSurferInstance.current.pause();
+        setIsPlaying(false);
+      } else {
+        waveSurferInstance.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
   if (!user?.email) {
-    return (
-      <div className="p-8 text-center">Please sign in to upload files.</div>
-    );
+    return <p>Please sign in to upload files.</p>;
   }
 
-  const getFileFromBlob = async (bloburl: string, filename: string) => {
+  const getFileFromBlob = async (bloburl, filename) => {
     const resp = await fetch(bloburl);
     const blob = await resp.blob();
     return new File([blob], filename, { type: blob.type });
   };
 
-  const handleProceed = async (fileUrl: string) => {
+  const handleProceed = async (fileUrl) => {
     const file = await getFileFromBlob(fileUrl, "processedAudio");
     const formData = new FormData();
     formData.append("file", file);
@@ -83,39 +86,39 @@ function EditMachine({
       alert("File uploaded successfully");
       window.location.href = "/checkout";
     } else {
-      alert("Failed to upload file, Try again in sometime");
+      alert("Failed to upload file, Try again later");
     }
   };
 
   return (
-    <div className="mt-20">
+    <>
       {isModalOpen && processedAudio && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-[#f5f0eb] p-6 rounded-lg shadow-lg max-w-md text-center">
-            <h2 className="text-lg font-semibold mb-4">Your final edit will be : </h2>
-            
-            {/* Waveform */}
-            <div ref={waveformRef} className="w-full mb-4"></div>
-
-            <audio controls src={processedAudio} controlsList="nodownload" className="w-full mb-4 bg-[#f5f0eb]" />
-            <div className="flex justify-between gap-2">
-              <button
-                onClick={() => handleProceed(processedAudio)}
-                className="bg-green-600 text-white px-4 py-2 rounded-md"
-              >
-                Proceed to Checkout
-              </button>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded-md"
-              >
-                Edit This
-              </button>
-            </div>
+        <div className="modal">
+          <h2>Your final edit will be:</h2>
+          <div ref={waveformRef} className="waveform" />
+          <button
+            onClick={togglePlayPause}
+            className="bg-black hover:bg-gray-600 text-white px-2 py-2 rounded-full mt-2 flex items-center gap-2"
+          >
+            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+          </button>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => handleProceed(processedAudio)}
+              className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md"
+            >
+              Checkout
+            </button>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md"
+            >
+              Edit
+            </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
