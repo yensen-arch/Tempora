@@ -16,7 +16,11 @@ function Editor() {
     <div>
       <Navbar />
       <EditHistoryProvider>
-      <EditorDisplay videoUrl={videoUrl} duration={duration} audioPath = {audioPath}/>
+        <EditorDisplay
+          videoUrl={videoUrl}
+          duration={duration}
+          audioPath={audioPath}
+        />
       </EditHistoryProvider>
       <Footer />
     </div>
