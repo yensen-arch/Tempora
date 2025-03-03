@@ -1,4 +1,4 @@
-// Timeline.tsx - Enhanced with zoom controls
+// Timeline.tsx - Update to include panning functionality
 import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -303,6 +303,22 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     setVisibleEnd(currentTrim.end);
   };
 
+  const handlePan = (direction: 'left' | 'right') => {
+    const panAmount = (visibleEnd - visibleStart) * 0.2; // Pan by 20% of visible window
+    
+    if (direction === 'left' && visibleStart > currentTrim.start) {
+      const newStart = Math.max(currentTrim.start, visibleStart - panAmount);
+      const newEnd = newStart + (visibleEnd - visibleStart);
+      setVisibleStart(newStart);
+      setVisibleEnd(newEnd);
+    } else if (direction === 'right' && visibleEnd < currentTrim.end) {
+      const newEnd = Math.min(currentTrim.end, visibleEnd + panAmount);
+      const newStart = newEnd - (visibleEnd - visibleStart);
+      setVisibleStart(newStart);
+      setVisibleEnd(newEnd);
+    }
+  };
+
   return (
     <>
       <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
@@ -326,31 +342,56 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             isSaving={isSaving}
           />
           
-          {/* Zoom controls */}
-          <div className="flex items-center justify-end mb-2 space-x-2">
-            <span className="text-xs text-gray-500">Zoom: {zoomPercentage}%</span>
-            <button 
-              className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
-              onClick={() => handleZoom(-1)}
-              aria-label="Zoom out"
-            >
-              -
-            </button>
-            <button 
-              className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
-              onClick={() => handleZoom(1)}
-              aria-label="Zoom in"
-            >
-              +
-            </button>
-            <button 
-              className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
-              onClick={handleResetZoom}
-            >
-              Reset
-            </button>
-            <div className="text-xs text-gray-500">
-              {formatTime(visibleStart)} - {formatTime(visibleEnd)}
+          {/* Zoom and pan controls */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              {zoom > 1 && (
+                <>
+                  <button 
+                    className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                    onClick={() => handlePan('left')}
+                    disabled={visibleStart <= currentTrim.start}
+                    aria-label="Pan left"
+                  >
+                    ◀
+                  </button>
+                  <button 
+                    className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                    onClick={() => handlePan('right')}
+                    disabled={visibleEnd >= currentTrim.end}
+                    aria-label="Pan right"
+                  >
+                    ▶
+                  </button>
+                </>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500">Zoom: {zoomPercentage}%</span>
+              <button 
+                className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => handleZoom(-1)}
+                aria-label="Zoom out"
+              >
+                -
+              </button>
+              <button 
+                className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => handleZoom(1)}
+                aria-label="Zoom in"
+              >
+                +
+              </button>
+              <button 
+                className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                onClick={handleResetZoom}
+              >
+                Reset
+              </button>
+              <div className="text-xs text-gray-500">
+                {formatTime(visibleStart)} - {formatTime(visibleEnd)}
+              </div>
             </div>
           </div>
 
@@ -391,6 +432,9 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
               visibleEnd={visibleEnd}
               zoom={zoom}
               editHistory={editHistory}
+              setVisibleStart={setVisibleStart}
+              setVisibleEnd={setVisibleEnd}
+              duration={duration}
             />
 
             <motion.div
