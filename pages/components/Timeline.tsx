@@ -60,12 +60,12 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false });
+      container.addEventListener("wheel", handleWheel, { passive: false });
     }
 
     return () => {
       if (container) {
-        container.removeEventListener('wheel', handleWheel);
+        container.removeEventListener("wheel", handleWheel);
       }
     };
   }, [handleZoom]);
@@ -89,7 +89,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       }
     }
   }, [editHistory, setVisibleStart, setVisibleEnd]);
-  
+
   // In Timeline.tsx, modify how you call undo/redo
   const handleUndo = () => {
     undo({
@@ -115,7 +115,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       },
     });
   };
-  
+
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -282,7 +282,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       videoRef.current.currentTime = actualStart;
     }
   };
-  
+
   const trimStartPercent = (currentTrim.start / duration) * 100;
   const trimWidthPercent =
     ((currentTrim.end - currentTrim.start) / duration) * 100;
@@ -291,12 +291,14 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   const formatTime = (timeInSeconds: number) => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
-    
+
   // Calculate zoom percentage
   const zoomPercentage = Math.round(zoom * 100);
-  
+
   // Reset zoom to show full timeline
   const handleResetZoom = () => {
     setVisibleStart(currentTrim.start);
@@ -325,25 +327,27 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             canRedo={undoneEdits.length > 0}
             isSaving={isSaving}
           />
-          
+
           {/* Zoom controls */}
           <div className="flex items-center justify-end mb-2 space-x-2">
-            <span className="text-xs text-gray-500">Zoom: {zoomPercentage}%</span>
-            <button 
+            <span className="text-xs text-gray-500">
+              Zoom: {zoomPercentage}%
+            </span>
+            <button
               className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
               onClick={() => handleZoom(-1)}
               aria-label="Zoom out"
             >
               -
             </button>
-            <button 
+            <button
               className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
               onClick={() => handleZoom(1)}
               aria-label="Zoom in"
             >
               +
             </button>
-            <button 
+            <button
               className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
               onClick={handleResetZoom}
             >
