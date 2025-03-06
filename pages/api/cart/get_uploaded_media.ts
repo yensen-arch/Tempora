@@ -18,7 +18,7 @@ export default async function handler(
 
     if (!media || !media.file) {
       return res
-        .status(401)
+        .status(404)
         .json({ error: "No files found for the given email" });
     }
     const fileDetails = { ...media.file, editHistory: media.editHistory };

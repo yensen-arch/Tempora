@@ -22,7 +22,8 @@ export const useMediaLoader = (email?: string) => {
         .then(async (res) => {
           if (!res.ok) {
             const errorText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errorText}`);
+            console.warn(`HTTP ${res.status}: ${errorText}`);
+            return;
           }
           return res.json();
         })
@@ -35,7 +36,7 @@ export const useMediaLoader = (email?: string) => {
               setEditHistoryFromApi(data.editHistory);
             }
           } else {
-            throw new Error("No file URL found in the response.");
+            return;
           }
         });
     } else {

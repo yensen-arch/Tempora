@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import MediaUpload from "./components/MediaUpload";
+import { EditHistoryProvider } from "./context/EditHistoryContext";
 
 export default function Cart() {
   const router = useRouter();
@@ -225,7 +226,9 @@ export default function Cart() {
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Products
           </Link>
-          <MediaUpload />
+          <EditHistoryProvider>
+            <MediaUpload />
+          </EditHistoryProvider>
         </div>
       </div>
 

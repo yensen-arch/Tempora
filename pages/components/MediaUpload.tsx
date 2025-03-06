@@ -4,6 +4,7 @@ import React, { useState, type ChangeEvent, useEffect } from "react";
 import { Music, Video, X, Loader2, AlertCircle } from "lucide-react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { toast } from "react-hot-toast";
+import { useMediaLoader } from "./hooks/useMediaLoader";
 
 function MediaUpload() {
   const [files, setFiles] = useState<File[]>([]);
@@ -40,6 +41,8 @@ function MediaUpload() {
       <div className="p-8 text-center">Please sign in to upload files.</div>
     );
   }
+
+  const {decodedUrl} = useMediaLoader(user.email);
 
   const getFileDuration = (file: File): Promise<number> => {
     return new Promise((resolve) => {
@@ -217,6 +220,7 @@ function MediaUpload() {
   return (
     <div className="pt-4 flex items-center justify-center">
       <div className="w-full">
+        {!decodedUrl ? (
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
           <div className="h-40 bg-cover bg-center"></div>
           <div className="p-6">
@@ -317,6 +321,16 @@ function MediaUpload() {
             )}
           </div>
         </div>
+        ):(
+          <div className="mt-4 text-center">
+            <a
+              href={`/editor`}
+              className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
+            >
+              Proceed to Editor
+            </a>
+          </div>
+        )}
         {concatenatedUrl && duration !== null && audioPath &&(
           <div className="mt-4 text-center">
             <a

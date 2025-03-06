@@ -48,8 +48,9 @@ function EditorDisplay({
       })
         .then(async (res) => {
           if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`HTTP ${res.status}: ${errorText}`);
+            const errorText = res.statusText;
+            console.log(res);
+            // throw new Error(`HTTP ${res.status}: ${errorText}`);
           }
           return res.json();
         })
@@ -59,7 +60,7 @@ function EditorDisplay({
             setAudioUrl(decodeURIComponent(data.audioPath));
             setDuration(data.duration);
           } else {
-            throw new Error("No file URL found in the response.");
+            // throw new Error("No file URL found in the response.");
           }
         })
         .catch((error) => {
