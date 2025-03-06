@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-
-const stripePromise = loadStripe('your-publishable-key-here');
 
 const CheckoutForm = ({ products, onCheckout }) => {
   const [formData, setFormData] = useState({
@@ -28,6 +25,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
 
     setIsProcessing(true);
     const cardElement = elements.getElement(CardElement);
+    console.log(cardElement)
     
     const { paymentMethod, error } = await stripe.createPaymentMethod({
       type: 'card',
@@ -64,7 +62,6 @@ const CheckoutForm = ({ products, onCheckout }) => {
   };
 
   return (
-    <Elements stripe={stripePromise}>
       <div className="w-full max-w-2xl mx-auto mt-8 bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Checkout Details</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -84,7 +81,6 @@ const CheckoutForm = ({ products, onCheckout }) => {
           </button>
         </form>
       </div>
-    </Elements>
   );
 };
 
