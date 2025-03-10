@@ -28,12 +28,14 @@ export const useMediaLoader = (email?: string) => {
           return res.json();
         })
         .then((data) => {
-          if (data.fileUrl) {
-            setDecodedUrl(decodeURIComponent(data.fileUrl));
-            setDecodedAudioUrl(decodeURIComponent(data.audioPath));
+          if(data){
+            if (data.fileUrl) {
+              setDecodedUrl(decodeURIComponent(data.fileUrl));
+              setDecodedAudioUrl(decodeURIComponent(data.audioPath));
 
-            if(data.editHistory && Array.isArray(data.editHistory)){
-              setEditHistoryFromApi(data.editHistory);
+              if(data.editHistory && Array.isArray(data.editHistory)){
+                setEditHistoryFromApi(data.editHistory);
+              }
             }
           } else {
             return;
