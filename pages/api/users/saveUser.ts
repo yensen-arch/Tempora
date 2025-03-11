@@ -12,14 +12,14 @@ export default async function handler(req, res) {
     await dbConnect();
 
     // Check if user already exists
-    let user = await User.findOne({ auth0Id });
-    if (user) {
-      return res.status(200).json({ message: "User already exists", user });
-    }
-    if (!user) {
-      // Create new user
-      user = await User.create({ auth0Id, email, given_name, family_name });
-    }
+    const user = await User.findOneAndUpdate(
+      { auth0Id }, // Find by auth0Id
+      { email, given_name, family_name }, // Update these fields
+      { 
+        new: true, // Return the updated document
+        upsert: true // Create if doesn't exist
+      }
+    );
 
     res.status(200).json({ message: "User saved successfully", user });
   } catch (error) {

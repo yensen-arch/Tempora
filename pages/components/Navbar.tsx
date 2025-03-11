@@ -105,7 +105,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
       }
     };
     saveUser();
-  }, [user]);
+  }, [user, userSaved]);
 
   const springTransition = {
     type: "spring",

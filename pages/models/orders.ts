@@ -12,6 +12,7 @@ export interface IOrder extends Document {
   zipcode: string;
   totalAmount: number;
   createdAt: Date;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered'; // Add the status field here
 }
 
 const OrderSchema: Schema = new Schema(
@@ -26,9 +27,14 @@ const OrderSchema: Schema = new Schema(
     zipcode: { type: String, required: true },
     products: { type: Array, required: true },
     totalAmount: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], // Enum of possible statuses
+      default: 'pending', // Default status is 'pending'
+      required: true
+    },
   },
   { timestamps: true }
 );
 
-// Export the model, ensuring it doesn't get redefined if already present
 export default mongoose.models.Order || mongoose.model<IOrder>("Order", OrderSchema);
