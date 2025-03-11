@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 import dbConnect from "../../../lib/dbConnect";
-import Order from "../../models/orders";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2023-10-16" });
 
@@ -22,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       payment_method_types: ["card"],
       receipt_email: email,
     });
+    console.log(firstName, lastName, email, address, city, state, zipCode, contactNumber, products, totalAmount);
 
     return res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {

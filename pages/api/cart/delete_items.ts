@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import mongoose from "mongoose";
 import Cart from "../../models/Cart";
-import { em } from "framer-motion/client";
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) {
