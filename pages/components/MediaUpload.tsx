@@ -35,6 +35,7 @@ function MediaUpload() {
       </div>
     );
   }
+  const { decodedUrl } = useMediaLoader(user.email);
 
   if (!user?.email) {
     return (
@@ -42,21 +43,19 @@ function MediaUpload() {
     );
   }
 
-  const {decodedUrl} = useMediaLoader(user.email);
-
   const getFileDuration = (file: File): Promise<number> => {
     return new Promise((resolve) => {
-      const element = file.type.startsWith('audio/') 
-        ? document.createElement('audio') 
-        : document.createElement('video');
-      
-      element.preload = 'metadata';
-      
+      const element = file.type.startsWith("audio/")
+        ? document.createElement("audio")
+        : document.createElement("video");
+
+      element.preload = "metadata";
+
       element.onloadedmetadata = () => {
         window.URL.revokeObjectURL(element.src);
         resolve(element.duration);
       };
-      
+
       element.src = URL.createObjectURL(file);
     });
   };
@@ -79,13 +78,18 @@ function MediaUpload() {
       }
 
       const durations = await Promise.all(
-        validFiles.map(file => getFileDuration(file))
+        validFiles.map((file) => getFileDuration(file))
       );
-      
-      const newTotalDuration = [...fileDurations, ...durations].reduce((sum, duration) => sum + duration, 0);
-      
+
+      const newTotalDuration = [...fileDurations, ...durations].reduce(
+        (sum, duration) => sum + duration,
+        0
+      );
+
       if (newTotalDuration > MAX_DURATION_MINUTES * 60) {
-        toast.error(`Total duration exceeds ${MAX_DURATION_MINUTES} minutes limit. Please remove some files.`);
+        toast.error(
+          `Total duration exceeds ${MAX_DURATION_MINUTES} minutes limit. Please remove some files.`
+        );
       }
 
       setFiles((prevFiles) => [...prevFiles, ...validFiles]);
@@ -212,7 +216,7 @@ function MediaUpload() {
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const isDurationExceeded = totalDuration > MAX_DURATION_MINUTES * 60;
@@ -221,107 +225,117 @@ function MediaUpload() {
     <div className="pt-4 flex items-center justify-center">
       <div className="w-full">
         {!decodedUrl ? (
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div className="h-40 bg-cover bg-center"></div>
-          <div className="p-6">
-            <h2 className="text-2xl font-serif text-amber-800 mb-4">
-              Upload Your Media (If you haven't alredy)
-            </h2>
-            <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
-              <input
-                type="file"
-                accept={allowedFormats.join(",")}
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-                id="fileInput"
-                disabled={uploading}
-              />
-              <label
-                htmlFor="fileInput"
-                className={`cursor-pointer inline-block px-6 py-3 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
-                  uploading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                Select Audio & Video Files
-              </label>
-              <p className="mt-2 text-amber-700">or drag and drop files here</p>
-              <p className="text-red-700 text-xs">*Your files can have a total duration upto 20 minutes</p>
-            </div>
-            {files.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-amber-800 mb-2">
-                  Selected Files:
-                </h3>
-                <ul className="space-y-2">
-                  {files.map((file, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center justify-between bg-amber-50 p-3 rounded-md"
-                    >
-                      <div className="flex items-center">
-                        {file.type.startsWith("audio/") ? (
-                          <Music className="text-amber-600 mr-2" />
-                        ) : (
-                          <Video className="text-amber-600 mr-2" />
-                        )}
-                        <span className="text-amber-800 truncate">
-                          {file.name}
-                        </span>
-                        {fileDurations[index] && (
-                          <span className="ml-2 text-amber-600 text-sm">
-                            ({formatDuration(fileDurations[index])})
-                          </span>
-                        )}
-                      </div>
-                      {!uploading && (
-                        <button
-                          onClick={() => removeFile(index)}
-                          className="text-amber-600 hover:text-amber-800"
-                        >
-                          <X size={20} />
-                        </button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                
-                {/* Total duration indicator */}
-                <div className="mt-3 flex items-center">
-                  <span className="text-amber-800 font-medium">
-                    Total Duration: {formatDuration(totalDuration)}
-                  </span>
-                  {isDurationExceeded && (
-                    <div className="ml-2 flex items-center text-red-600">
-                      <AlertCircle size={16} className="mr-1" />
-                      <span>Exceeds {MAX_DURATION_MINUTES} minute limit</span>
-                    </div>
-                  )}
-                </div>
+          <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="h-40 bg-cover bg-center"></div>
+            <div className="p-6">
+              <h2 className="text-2xl font-serif text-amber-800 mb-4">
+                Upload Your Media (If you haven't alredy)
+              </h2>
+              <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
+                <input
+                  type="file"
+                  accept={allowedFormats.join(",")}
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="fileInput"
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="fileInput"
+                  className={`cursor-pointer inline-block px-6 py-3 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
+                    uploading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  Select Audio & Video Files
+                </label>
+                <p className="mt-2 text-amber-700">
+                  or drag and drop files here
+                </p>
+                <p className="text-red-700 text-xs">
+                  *Your files can have a total duration upto 20 minutes
+                </p>
               </div>
-            )}
-            {files.length > 0 && (
-              <button
-                onClick={handleUpload}
-                disabled={uploading || isDurationExceeded}
-                className={`mt-4 px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
-                  (uploading || isDurationExceeded) ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                title={isDurationExceeded ? `Maximum duration is ${MAX_DURATION_MINUTES} minutes` : ""}
-              >
-                {uploading ? (
-                  <span className="flex items-center">
-                    <Loader2 className="animate-spin mr-2" />
-                    Uploading...
-                  </span>
-                ) : (
-                  "Upload Files"
-                )}
-              </button>
-            )}
+              {files.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-amber-800 mb-2">
+                    Selected Files:
+                  </h3>
+                  <ul className="space-y-2">
+                    {files.map((file, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center justify-between bg-amber-50 p-3 rounded-md"
+                      >
+                        <div className="flex items-center">
+                          {file.type.startsWith("audio/") ? (
+                            <Music className="text-amber-600 mr-2" />
+                          ) : (
+                            <Video className="text-amber-600 mr-2" />
+                          )}
+                          <span className="text-amber-800 truncate">
+                            {file.name}
+                          </span>
+                          {fileDurations[index] && (
+                            <span className="ml-2 text-amber-600 text-sm">
+                              ({formatDuration(fileDurations[index])})
+                            </span>
+                          )}
+                        </div>
+                        {!uploading && (
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="text-amber-600 hover:text-amber-800"
+                          >
+                            <X size={20} />
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Total duration indicator */}
+                  <div className="mt-3 flex items-center">
+                    <span className="text-amber-800 font-medium">
+                      Total Duration: {formatDuration(totalDuration)}
+                    </span>
+                    {isDurationExceeded && (
+                      <div className="ml-2 flex items-center text-red-600">
+                        <AlertCircle size={16} className="mr-1" />
+                        <span>Exceeds {MAX_DURATION_MINUTES} minute limit</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {files.length > 0 && (
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading || isDurationExceeded}
+                  className={`mt-4 px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
+                    uploading || isDurationExceeded
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  title={
+                    isDurationExceeded
+                      ? `Maximum duration is ${MAX_DURATION_MINUTES} minutes`
+                      : ""
+                  }
+                >
+                  {uploading ? (
+                    <span className="flex items-center">
+                      <Loader2 className="animate-spin mr-2" />
+                      Uploading...
+                    </span>
+                  ) : (
+                    "Upload Files"
+                  )}
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-        ):(
+        ) : (
           <div className="mt-4 text-center">
             <a
               href={`/editor`}
@@ -331,12 +345,14 @@ function MediaUpload() {
             </a>
           </div>
         )}
-        {concatenatedUrl && duration !== null && audioPath &&(
+        {concatenatedUrl && duration !== null && audioPath && (
           <div className="mt-4 text-center">
             <a
               href={`/editor?videoUrl=${encodeURIComponent(
                 concatenatedUrl
-              )}&duration=${duration}&audioPath=${encodeURIComponent(audioPath)}`}
+              )}&duration=${duration}&audioPath=${encodeURIComponent(
+                audioPath
+              )}`}
               className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
             >
               Proceed to Editor

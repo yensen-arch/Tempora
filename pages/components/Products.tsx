@@ -9,6 +9,7 @@ const Products = forwardRef((props, ref) => {
   const [products, setProducts] = useState([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  Products.displayName = "Products"; 
 
   useEffect(() => {
     setMounted(true);
