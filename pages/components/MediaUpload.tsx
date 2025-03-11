@@ -19,6 +19,28 @@ function MediaUpload() {
   const [totalDuration, setTotalDuration] = useState<number>(0);
   const MAX_DURATION_MINUTES = 20;
 
+  const getFileDuration = (file: File): Promise<number> => {
+    return new Promise((resolve) => {
+      const element = file.type.startsWith("audio/")
+        ? document.createElement("audio")
+        : document.createElement("video");
+
+      element.preload = "metadata";
+
+      element.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(element.src);
+        resolve(element.duration);
+      };
+
+      element.src = URL.createObjectURL(file);
+    });
+  };
+
+  useEffect(() => {
+    const newTotal = fileDurations.reduce((sum, duration) => sum + duration, 0);
+    setTotalDuration(newTotal);
+  }, [fileDurations]);
+
   const allowedFormats = [
     "audio/mp3",
     "audio/mpeg",
@@ -42,28 +64,6 @@ function MediaUpload() {
       <div className="p-8 text-center">Please sign in to upload files.</div>
     );
   }
-
-  const getFileDuration = (file: File): Promise<number> => {
-    return new Promise((resolve) => {
-      const element = file.type.startsWith("audio/")
-        ? document.createElement("audio")
-        : document.createElement("video");
-
-      element.preload = "metadata";
-
-      element.onloadedmetadata = () => {
-        window.URL.revokeObjectURL(element.src);
-        resolve(element.duration);
-      };
-
-      element.src = URL.createObjectURL(file);
-    });
-  };
-
-  useEffect(() => {
-    const newTotal = fileDurations.reduce((sum, duration) => sum + duration, 0);
-    setTotalDuration(newTotal);
-  }, [fileDurations]);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
