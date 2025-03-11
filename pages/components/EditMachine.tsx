@@ -32,7 +32,7 @@ function EditMachine({
       }
     };
     runFFmpeg();
-  }, [submitClicked]);
+  }, [submitClicked, audioUrl, edits, setProcessing, setSubmitClicked]);
 
   useEffect(() => {
     if (processedAudio && waveformRef.current) {

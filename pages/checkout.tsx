@@ -11,7 +11,7 @@ import CheckoutForm from "./components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
-export default function checkout() {
+export default function Checkout() {
   const router = useRouter();
   const [product, setProduct] = useState([]);
   const { user, isLoading } = useUser();
