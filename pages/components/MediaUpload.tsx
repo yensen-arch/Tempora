@@ -27,6 +27,7 @@ function MediaUpload() {
     "video/mpeg",
     "video/webm",
   ];
+  const { decodedUrl } = useMediaLoader(user.email);
 
   if (isLoading) {
     return (
@@ -35,7 +36,6 @@ function MediaUpload() {
       </div>
     );
   }
-  const { decodedUrl } = useMediaLoader(user.email);
 
   if (!user?.email) {
     return (
