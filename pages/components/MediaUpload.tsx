@@ -5,6 +5,7 @@ import { Music, Video, X, Loader2, AlertCircle } from "lucide-react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { toast } from "react-hot-toast";
 import { useMediaLoader } from "./hooks/useMediaLoader";
+import Router from "next/router";
 
 function MediaUpload() {
   const [files, setFiles] = useState<File[]>([]);
@@ -159,11 +160,7 @@ function MediaUpload() {
           setConcatenatedUrl(concatenateData.concatenatedUrl);
           setAudioPath(concatenateData.audioPath);
           setDuration(concatenateData.duration);
-          console.log(
-            "Concatenation successful:",
-            concatenateData.concatenatedUrl
-          );
-          toast.success("Files uploaded and concatenated successfully!");
+          toast.success("Media uploaded & combined successfully!");
 
           // Call delete API for original uploaded files
           await Promise.all(
@@ -205,6 +202,7 @@ function MediaUpload() {
       setFileDurations([]);
       setTotalDuration(0);
       setUploadProgress([]);
+      Router.push("/editor");
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload files. Please try again.");
@@ -329,7 +327,7 @@ function MediaUpload() {
                       Uploading...
                     </span>
                   ) : (
-                    "Upload Files"
+                    "Upload"
                   )}
                 </button>
               )}
