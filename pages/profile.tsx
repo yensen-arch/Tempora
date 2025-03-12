@@ -1,16 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
 function Profile() {
   const { user, isLoading } = useUser();
-  const [isEditing, setIsEditing] = useState(false);
+  const router = useRouter();
   const [name, setName] = useState("");
   const [nickName, setNickName] = useState("");
   const [email, setEmail] = useState("");
   const [pictureUrl, setPictureUrl] = useState("");
+  const [userType, setUserType] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -18,9 +20,20 @@ function Profile() {
       setNickName(user.nickname || "");
       setEmail(user.email || "");
       setPictureUrl(user.picture || "");
+
+      // Fetch userType from API
+      const fetchUserType = async () => {
+        try {
+          const res = await fetch(`/api/users/${user.sub}`);
+          const data = await res.json();
+          setUserType(data.userType);
+        } catch (error) {
+          console.error("Error fetching user type:", error);
+        }
+      };
+
+      fetchUserType();
     }
-    console.log(user);
-    console.log(pictureUrl);
   }, [user]);
 
   if (isLoading) return <p className="text-center text-gray-500">Loading...</p>;
@@ -35,14 +48,25 @@ function Profile() {
         <div className="flex flex-col items-center mt-4">
           {/* Avatar */}
           <img
-            src={"/default-avatar.jpg"}
+            src={pictureUrl || "/default-avatar.jpg"}
             alt="Profile"
             className="w-24 h-24 rounded-full border border-gray-300"
           />
           <div className="text-center mt-4 flex flex-col gap-4">
             <h3 className="text-lg font-semibold"> Name: {name}</h3>
-            <p className="text-gray-600"> <span className="font-semibold">Nick Name:</span> {nickName || "No bio available"}</p>
+            <p className="text-gray-600"><span className="font-semibold">Nick Name:</span> {nickName || "No bio available"}</p>
             <p className="text-gray-600"><span className="font-semibold">Email:</span> {email || "No bio available"}</p>
+            <p className="text-gray-600"><span className="font-semibold">User Type:</span> {userType || "Loading..."}</p>
+
+            {/* Show Dashboard button only for admin */}
+            {userType === "admin" && (
+              <button
+                onClick={() => router.push("/admin/dashboard")}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700"
+              >
+                Go to Dashboard
+              </button>
+            )}
           </div>
         </div>
       </div>
