@@ -26,14 +26,14 @@ interface Order {
   status: string;
   totalAmount: number;
   createdAt: string;
-  items: OrderItem[];
+  products: OrderItem[];
 }
 
 interface OrderItem {
   productId: string;
-  productName: string;
+  name: string;
   quantity: number;
-  price: number;
+  cost: number;
 }
 
 const ConsumersPanel: React.FC = () => {
@@ -442,14 +442,14 @@ const ConsumersPanel: React.FC = () => {
                           {orders.map((order) => (
                             <tr key={order._id}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {order.orderNumber}
+                                {order._id}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {formatDate(order.createdAt)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  order.status === 'delivered' ? 'bg-green-100 text-green-800' :
                                   order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
                                   order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                                   'bg-blue-100 text-blue-800'
@@ -462,9 +462,9 @@ const ConsumersPanel: React.FC = () => {
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-500">
                                 <ul className="list-disc pl-5">
-                                  {order.items.map((item, index) => (
+                                  {order.products.map((item, index) => (
                                     <li key={index}>
-                                      {item.quantity} x {item.productName} (${item.price.toFixed(2)})
+                                      {item.quantity} x {item.name} (${item.cost.toFixed(2)})
                                     </li>
                                   ))}
                                 </ul>
