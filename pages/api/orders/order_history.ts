@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const filter: any = {};
     
     if (userId) {
-      filter.userId = userId;
+      filter.email = userId;
     }
     
     if (status) {
@@ -46,6 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const sort: any = {};
     sort[sortField] = sortOrder;
+
+    console.log(filter)
     
     const orders = await Order.find(filter)
       .sort(sort)
