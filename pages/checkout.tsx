@@ -11,12 +11,14 @@ import CheckoutForm from "./components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
+// Load stripe outside of component render
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
 export default function Checkout() {
   const router = useRouter();
   const [product, setProduct] = useState([]);
   const { user, isLoading } = useUser();
   const [loading, setLoading] = useState(false);
-  const stripePromise = loadStripe("your-publishable-key-here");//will take on Sunday
 
   useEffect(() => {
     const productFromQuery = {
@@ -89,11 +91,33 @@ export default function Checkout() {
     fetchCartData();
   }, [router.query, user, isLoading]);
 
-  const handleCheckout = async () => {};
+  const handleCheckout = async (formData) => {
+    if (user) {
+      try {
+        await fetch("/api/cart/clear_cart", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email }),
+        });
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+      }
+    } else {
+      localStorage.removeItem("cartProduct");
+    }
+  };
 
   if (loading || isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="animate-pulse text-xl">Loading...</div>
+        </div>
+      </div>
+    );
   }
+  
   if (
     !product ||
     !Array.isArray(product) ||
@@ -101,24 +125,43 @@ export default function Checkout() {
     product[0].id === "empty"
   ) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-lg text-stone-600">No product in the cart.</h1>
-        <Link href="/" className="mt-4 text-blue-500 hover:underline">
-          Go back to products
-        </Link>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="flex-grow flex flex-col items-center justify-center">
+          <h1 className="text-lg text-stone-600">No product in the cart.</h1>
+          <Link href="/" className="mt-4 text-blue-500 hover:underline">
+            Go back to products
+          </Link>
+        </div>
+        <Footer />
       </div>
     );
   }
 
+  // Configure Stripe Elements
+  const stripeOptions = {
+    // Passing the client locale helps Stripe present localized error messages
+    locale: 'en',
+    // Pass appearance options to customize the look and feel of Stripe Elements
+    appearance: {
+      theme: 'stripe',
+      variables: {
+        colorPrimary: '#4F46E5',
+      },
+    },
+  };
+
   return (
-    <div className="flex flex-col bg-stone-100">
+    <div className="flex flex-col bg-stone-100 min-h-screen">
       {/* Navbar */}
       <Navbar />
       {/* Main Content */}
-      <div className="min-h-screen flex-grow py-16 px-4 sm:px-6 lg:px-8 relative">
+      <div className="flex-grow py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {product.length > 0 ? (
             <>
+              <h1 className="text-2xl font-bold text-stone-800 mb-6">Your Cart</h1>
+              
               {product.map((item) => (
                 <motion.div
                   key={item.id}
@@ -166,12 +209,13 @@ export default function Checkout() {
                   </div>
                 </motion.div>
               ))}
-              <Elements stripe={stripePromise}>
+              
+              <Elements stripe={stripePromise} options={stripeOptions}>
                 <CheckoutForm products={product} onCheckout={handleCheckout} />
               </Elements>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center min-h-screen">
+            <div className="flex flex-col items-center justify-center">
               <h1 className="text-lg text-stone-600">
                 No product in the cart.
               </h1>
@@ -180,6 +224,7 @@ export default function Checkout() {
               </Link>
             </div>
           )}
+          
           <Link
             href="/"
             className="flex items-center mt-6 text-stone-600 hover:text-stone-800 transition duration-300 ease-in-out"

@@ -15,6 +15,7 @@ function EditMachine({
   const [processedAudio, setProcessedAudio] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
   const waveformRef = useRef(null);
   const waveSurferInstance = useRef(null);
   const { user } = useUser();
@@ -23,8 +24,14 @@ function EditMachine({
   useEffect(() => {
     const runFFmpeg = async () => {
       if (submitClicked) {
+        console.log(edits)
         setProcessing(true);
-        const outputUrl = await processAudio(audioUrl, edits);
+        let outputUrl
+        if(edits.length!==0){
+          outputUrl = await processAudio(audioUrl, edits);
+        } else{
+          outputUrl = audioUrl;
+        }
         setProcessedAudio(outputUrl);
         setIsModalOpen(true);
         setProcessing(false);
@@ -75,6 +82,7 @@ function EditMachine({
   };
 
   const handleProceed = async (fileUrl) => {
+    setCheckingOut(true);
     const file = await getFileFromBlob(fileUrl, "processedAudio");
     const formData = new FormData();
     formData.append("file", file);
@@ -83,10 +91,10 @@ function EditMachine({
       body: formData,
     });
     if (resp.status === 200) {
-      alert("File uploaded successfully");
       window.location.href = "/checkout";
     } else {
       alert("Failed to upload file, Try again later");
+      setCheckingOut(false);
     }
   };
 
@@ -105,9 +113,10 @@ function EditMachine({
           <div className="flex gap-4 mt-4">
             <button
               onClick={() => handleProceed(processedAudio)}
-              className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md"
+              className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md disabled:bg-opacity-50"
+              disabled={checkingOut}
             >
-              Checkout
+              {checkingOut? "Please Wait": "Checkout"}
             </button>
             <button
               onClick={() => setIsModalOpen(false)}

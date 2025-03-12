@@ -78,11 +78,19 @@ function EditorDisplay({
   }, [videoUrl]);
 
   const handleDelete = async () => {
-    console.log(videoUrl);
+    
     if (!email || !videoUrl) {
       console.log("No email or videoUrl");
       return;
     }
+  
+    const confirmed = window.confirm("Are you sure you want to delete this file?");
+    
+    if (!confirmed) {
+      console.log("File deletion cancelled.");
+      return;
+    }
+  
     try {
       const response = await fetch("/api/cart/delete_media", {
         method: "DELETE",
@@ -93,10 +101,12 @@ function EditorDisplay({
           resourceType: "video",
         }),
       });
+  
       const data = await response.json();
+      
       if (response.ok) {
         alert("File deleted successfully");
-        router.push("/"); // Redirect after deletion
+        router.push("/");
       } else {
         alert(data.message || "Failed to delete file");
       }
@@ -105,6 +115,7 @@ function EditorDisplay({
       alert("An error occurred while deleting the file");
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center p-4">
@@ -129,9 +140,9 @@ function EditorDisplay({
         <>
           <button
             onClick={handleDelete}
-            className="absolute top-10 right-10 px-3 py-2 bg-black text-white border-none cursor-pointer rounded-full"
+            className="absolute top-15 right-10 px-3 py-2 bg-black text-white border-none cursor-pointer rounded-full"
           >
-            X
+            Remove this Media
           </button>
           <video
             ref={videoRef}
