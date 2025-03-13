@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "../../../lib/dbConnect";
 import Order from "../../models/orders";
-import User from "@/pages/models/User";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -10,7 +9,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   try {
     await dbConnect();
-    
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const sortField = (req.query.sortField as string) || "createdAt";
@@ -19,7 +17,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const status = req.query.status as string;
     const startDate = req.query.startDate as string;
     const endDate = req.query.endDate as string;
-    
     const filter: any = {};
     
     if (userId) {
