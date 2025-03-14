@@ -10,9 +10,11 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import CheckoutForm from "./components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-
+import { getAccessToken } from "@auth0/nextjs-auth0";
 // Load stripe outside of component render
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+);
 
 export default function Checkout() {
   const router = useRouter();
@@ -36,11 +38,15 @@ export default function Checkout() {
       try {
         if (user) {
           let updatedCart = [];
-
+          const res = await fetch("/api/auth/token");
+          const { accessToken } = await res.json();
           if (productFromQuery.id !== "empty") {
             const addProductResponse = await fetch("/api/cart/add_items", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
               body: JSON.stringify({
                 email: user.email,
                 product: productFromQuery,
@@ -117,7 +123,7 @@ export default function Checkout() {
       </div>
     );
   }
-  
+
   if (
     !product ||
     !Array.isArray(product) ||
@@ -141,12 +147,12 @@ export default function Checkout() {
   // Configure Stripe Elements
   const stripeOptions = {
     // Passing the client locale helps Stripe present localized error messages
-    locale: 'en',
+    locale: "en",
     // Pass appearance options to customize the look and feel of Stripe Elements
     appearance: {
-      theme: 'stripe',
+      theme: "stripe",
       variables: {
-        colorPrimary: '#4F46E5',
+        colorPrimary: "#4F46E5",
       },
     },
   };
@@ -160,8 +166,10 @@ export default function Checkout() {
         <div className="max-w-7xl mx-auto">
           {product.length > 0 ? (
             <>
-              <h1 className="text-2xl font-bold text-stone-800 mb-6">Your Cart</h1>
-              
+              <h1 className="text-2xl font-bold text-stone-800 mb-6">
+                Your Cart
+              </h1>
+
               {product.map((item) => (
                 <motion.div
                   key={item.id}
@@ -209,7 +217,7 @@ export default function Checkout() {
                   </div>
                 </motion.div>
               ))}
-              
+
               <Elements stripe={stripePromise} options={stripeOptions}>
                 <CheckoutForm products={product} onCheckout={handleCheckout} />
               </Elements>
@@ -224,7 +232,7 @@ export default function Checkout() {
               </Link>
             </div>
           )}
-          
+
           <Link
             href="/"
             className="flex items-center mt-6 text-stone-600 hover:text-stone-800 transition duration-300 ease-in-out"
