@@ -9,7 +9,6 @@ import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import MediaUpload from "./components/MediaUpload";
 import { EditHistoryProvider } from "./context/EditHistoryContext";
-import { getAccessToken } from "@auth0/nextjs-auth0";
 
 export default function Cart() {
   const router = useRouter();
@@ -35,14 +34,11 @@ export default function Cart() {
       try {
         if (user) {
           let updatedCart = [];
-          const res = await fetch("/api/auth/token");
-          const { accessToken } = await res.json();
           if (productFromQuery.id !== "empty") {
             const addProductResponse = await fetch("/api/cart/add_items", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
               },
               body: JSON.stringify({
                 email: user.email,
