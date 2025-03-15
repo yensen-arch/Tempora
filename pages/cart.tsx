@@ -127,11 +127,16 @@ export default function Cart() {
     product[0].id === "empty"
   ) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-lg text-stone-600">No product in the cart.</h1>
-        <Link href="/" className="mt-4 text-blue-500 hover:underline">
-          Go back to products
-        </Link>
+      <div>
+        {" "}
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <h1 className="text-lg text-stone-600">No product in the cart.</h1>
+          <Link href="/" className="mt-4 text-blue-500 hover:underline">
+            Go back to products
+          </Link>
+        </div>{" "}
+        <Footer />
       </div>
     );
   }
