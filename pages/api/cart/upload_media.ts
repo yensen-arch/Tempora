@@ -1,8 +1,9 @@
 // pages/api/cart/upload_media.ts
 import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
-import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import formidable from "formidable";
+import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
+
 
 export const config = {
   api: {
@@ -37,8 +38,13 @@ export default withApiAuthRequired(async function handler(
       res.status(500).json({ error: "Failed to parse form data" });
       return;
     }
-
-    const { email } = req.query;
+    const session = getSession(req, res);
+    if (!session || !session.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No session found" });
+    }
+    const email = session.user.email;
     if (!email) {
       res.status(400).json({ error: "Email is required" });
       return;

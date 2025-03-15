@@ -1,15 +1,21 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 import dbConnect from "../../../lib/dbConnect";
-import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
+import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2023-10-16" });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
 
-export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { accessToken } = await getAccessToken(req, res);
-  if (!accessToken) {
-    return res.status(401).json({ message: "Unauthorized: No access token" });
+export default withApiAuthRequired(async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  const { user } = getSession(req, res);
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -17,7 +23,18 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest, r
   await dbConnect();
 
   try {
-    const { firstName, lastName, email, address, city, state, zipCode, contactNumber, products, totalAmount } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      address,
+      city,
+      state,
+      zipCode,
+      contactNumber,
+      products,
+      totalAmount,
+    } = req.body;
 
     // Create a PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -26,7 +43,18 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest, r
       payment_method_types: ["card"],
       receipt_email: email,
     });
-    console.log(firstName, lastName, email, address, city, state, zipCode, contactNumber, products, totalAmount);
+    console.log(
+      firstName,
+      lastName,
+      email,
+      address,
+      city,
+      state,
+      zipCode,
+      contactNumber,
+      products,
+      totalAmount
+    );
 
     return res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {

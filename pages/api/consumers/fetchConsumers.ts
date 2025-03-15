@@ -1,19 +1,25 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "../../../lib/dbConnect";
-import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
+import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 import User from "@/pages/models/User";
 
-export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { accessToken } = await getAccessToken(req, res);
-  if (!accessToken) {
-    return res.status(401).json({ message: "Unauthorized: No access token" });
-  }
+export default withApiAuthRequired(async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     await dbConnect();
+
+    const session = getSession(req, res);
+    if (!session || !session.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No session found" });
+    }
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -27,7 +33,7 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest, r
     const filter: any = {};
 
     if (email) {
-      filter.email = { $regex: email, $options: 'i' };
+      filter.email = { $regex: email, $options: "i" };
     }
 
     if (userType) {
@@ -43,16 +49,13 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest, r
     }
 
     const skip = (page - 1) * limit;
-
-    const sort: any = {};
-    sort[sortField] = sortOrder;
+    const sort: any = { [sortField]: sortOrder };
 
     const users = await User.find(filter)
       .sort(sort)
       .skip(skip)
       .limit(limit)
       .lean();
-
     const totalUsers = await User.countDocuments(filter);
     const totalPages = Math.ceil(totalUsers / limit);
 
@@ -66,16 +69,15 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest, r
           limit,
           totalPages,
           hasNextPage: page < totalPages,
-          hasPrevPage: page > 1
-        }
-      }
+          hasPrevPage: page > 1,
+        },
+      },
     });
-
   } catch (error) {
     console.error("User list error:", error);
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch users"
+      error: "Failed to fetch users",
     });
   }
 });

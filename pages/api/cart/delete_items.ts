@@ -1,31 +1,32 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
+import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 import Cart from "../../models/Cart";
 import dbConnect from "@/lib/dbConnect";
 
 export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Only allow DELETE requests
   if (req.method !== "DELETE") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { accessToken } = await getAccessToken(req, res);
-    if (!accessToken) {
-      return res.status(401).json({ message: "Unauthorized: No access token" });
-    }
     await dbConnect();
-    const { email, productId } = req.body;
-    // Validate email and productId
-    if (!email || typeof email !== "string") {
-      return res.status(400).json({ error: "Valid email is required" });
+    const session = await getSession(req, res);
+    if (!session || !session.user) {
+      return res.status(401).json({ error: "Unauthorized: No session found" });
     }
+
+    const userEmail = session.user.email;
+    if (!userEmail) {
+      return res.status(403).json({ error: "Forbidden: No email in session" });
+    }
+
+    const { productId } = req.body;
     if (!productId || typeof productId !== "string") {
       return res.status(400).json({ error: "Valid productId is required" });
     }
 
     // Find the cart
-    const cart = await Cart.findOne({ email });
+    const cart = await Cart.findOne({ email: userEmail });
     if (!cart) {
       return res.status(404).json({ error: "Cart not found" });
     }

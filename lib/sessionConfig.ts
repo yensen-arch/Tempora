@@ -6,7 +6,7 @@ export interface SessionData{
 
 export const sessionOptions: SessionOptions = {
   cookieName: "myapp_session",
-  password: process.env.SESSION_SECRET as string, // Store this in an env file
+  password: process.env.SESSION_SECRET as string,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
   },

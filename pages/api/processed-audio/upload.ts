@@ -1,7 +1,7 @@
 import { getIronSession, IronSession } from "iron-session"
 import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
-import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
+import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 import formidable from "formidable";
 import { sessionOptions, SessionData } from "../../../lib/sessionConfig";
 
@@ -13,9 +13,9 @@ export const config = {
 };
 
 export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { accessToken } = await getAccessToken(req, res);
-  if (!accessToken) {
-    return res.status(401).json({ message: "Unauthorized: No access token" });
+  const user = getSession(req, res);
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
