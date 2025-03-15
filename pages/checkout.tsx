@@ -188,6 +188,7 @@ export default function Checkout() {
                           layout="fill"
                           objectFit="cover"
                           className="rounded-md"
+                          loading="lazy"
                         />
                       )}
                     </div>

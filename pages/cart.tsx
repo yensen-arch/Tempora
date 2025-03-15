@@ -167,6 +167,7 @@ export default function Cart() {
                         layout="fill"
                         objectFit="cover"
                         className="rounded-md"
+                        loading="lazy"
                       />
                     )}
                   </div>

@@ -9,7 +9,7 @@ const steps = [
     description:
       "Choose the products you want to buy and add them to your cart.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684532/samples/cup-on-a-table.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684532/samples/cup-on-a-table.jpg",
     buttonText: "Start Shopping",
   },
   {
@@ -17,7 +17,7 @@ const steps = [
     description:
       "Upload your memories and edit them seamlessly through our Inbuilt editor.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684532/samples/coffee.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684532/samples/coffee.jpg",
     buttonText: "Proceed to Editor",
   },
   {
@@ -25,7 +25,7 @@ const steps = [
     description:
       "Sit back and relax as we deliver your products right to your doorstep.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684527/samples/ecommerce/accessories-bag.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684527/samples/ecommerce/accessories-bag.jpg",
     buttonText: "Complete the Order",
   },
 ];
@@ -57,6 +57,7 @@ export default function Help() {
                   <Image
                     src={step.image}
                     alt={step.title}
+                    loading="lazy"
                     fill
                     style={{ objectFit: "cover" }}
                     className="rounded-lg"

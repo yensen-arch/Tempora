@@ -10,7 +10,7 @@ const seasons = [
     description:
       "A time of new beginnings, fresh starts, and blooming possibilities. Every dawn brings the promise of growth and renewal.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684526/samples/animals/three-dogs.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684526/samples/animals/three-dogs.jpg",
     color: "bg-[#f5e6d3]",
   },
   {
@@ -19,7 +19,7 @@ const seasons = [
     description:
       "Basking in the warmth of achievement and joy. These are the days of fullness and abundance.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684526/samples/animals/three-dogs.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684526/samples/animals/three-dogs.jpg",
     color: "bg-[#e8d5c4]",
   },
   {
@@ -28,7 +28,7 @@ const seasons = [
     description:
       "A season of gathering wisdom, embracing change, and finding beauty in transformation.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684526/samples/animals/three-dogs.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684526/samples/animals/three-dogs.jpg",
     color: "bg-[#d4c3b3]",
   },
   {
@@ -37,7 +37,7 @@ const seasons = [
     description:
       "In the quiet moments of rest and contemplation, we find our deepest strength and prepare for renewal.",
     image:
-      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684526/samples/animals/three-dogs.jpg",
+      "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684526/samples/animals/three-dogs.jpg",
     color: "bg-[#c2b2a3]",
   },
 ];
@@ -106,9 +106,9 @@ export default function SeasonsOfLife() {
                       src={season.image}
                       alt={`Illustration for ${season.title}`}
                       fill
+                      loading="lazy"
                       className="object-cover rounded-lg shadow-lg"
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      priority={index === 0}
                     />
                   </motion.div>
                 </>
@@ -127,7 +127,7 @@ export default function SeasonsOfLife() {
                       fill
                       className="object-cover rounded-lg shadow-lg"
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      priority={index === 0}
+                      loading="lazy"
                     />
                   </motion.div>
                   <motion.div

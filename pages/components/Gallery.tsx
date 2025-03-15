@@ -7,23 +7,23 @@ const images = [
   {
     title: "A Perfect Gift",
     subtitle: "%10 DISCOUNT",
-    url: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690530/v1_lonfrm.jpg",
+    url: "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734690530/v1_lonfrm.jpg",
   },
   {
     title: "The Seasons of Life",
-    url: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690612/v2_e7izqn.jpg",
+    url: "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734690612/v2_e7izqn.jpg",
   },
   {
     title: "Memories That Last Forever",
-    url: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690697/v3_rdam3n.jpg",
+    url: "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734690697/v3_rdam3n.jpg",
   },
   {
     title: "The TEMPORA Life",
-    url: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690756/v4_mzebep.jpg",
+    url: "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734690756/v4_mzebep.jpg",
   },
   {
     title: "FLORALS",
-    url: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734690928/v6_u0snfi.jpg",
+    url: "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734690928/v6_u0snfi.jpg",
   },
 ];
 
