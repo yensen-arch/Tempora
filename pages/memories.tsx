@@ -43,7 +43,7 @@ function Memories() {
                 Your browser does not support the audio tag.
               </audio>
             ) : (
-              !loadingAudio && <p>No audio found.</p>
+              !loadingAudio && <p>No Memories found.</p>
             )}
           </>
         ) : (

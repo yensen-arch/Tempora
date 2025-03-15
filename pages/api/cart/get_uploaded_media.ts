@@ -32,6 +32,7 @@ export default withApiAuthRequired(async function handler(
     }
 
     const fileDetails = { ...media.file, editHistory: media.editHistory };
+    console.log("Media found:", fileDetails);
     return res.status(200).json(fileDetails);
   } catch (error) {
     console.error("Error fetching media:", error);

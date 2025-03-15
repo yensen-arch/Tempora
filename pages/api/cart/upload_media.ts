@@ -20,10 +20,6 @@ export default withApiAuthRequired(async function handler(
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
-  const { accessToken } = await getAccessToken(req, res);
-  if (!accessToken) {
-    return res.status(401).json({ message: "Unauthorized: No access token" });
-  }
 
   const form = formidable({
     multiples: true, // Allow multiple files
