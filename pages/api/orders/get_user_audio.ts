@@ -17,11 +17,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const order = await Order.findOne({ email }).sort({ createdAt: -1 }).lean();
 
-    if (!order || !order.mediaUrl) {
+    if (!order || !order.fileUrl) {
       return res.status(404).json({ error: "Media clip not found" });
     }
 
-    return res.status(200).json({ success: true, mediaUrl: order.mediaUrl });
+    return res.status(200).json({ success: true, mediaUrl: order.fileUrl });
 
   } catch (error) {
     console.error("Error fetching media URL:", error);
