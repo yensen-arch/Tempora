@@ -23,7 +23,8 @@ export default withApiAuthRequired(async function handler(
 
   const form = formidable({
     multiples: true, // Allow multiple files
-    maxFileSize: 100 * 1024 * 1024, // 100MB max file size
+    maxFileSize: 1000 * 1024 * 1024, // 100MB max file size
+    maxTotalFileSize: 5000 * 1024 * 1024, // 500MB total
     maxFields: 10, // Max number of non-file fields
     keepExtensions: true, // Keep original file extensions
   });
