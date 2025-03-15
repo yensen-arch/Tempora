@@ -1,8 +1,14 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "../../../lib/dbConnect";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import { Media } from "../../models/media";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
+
+  const { accessToken } = await getAccessToken(req, res);
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized: No access token" });
+  }
   if (req.method !== "PUT") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
@@ -17,8 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const updatedMedia = await Media.findOneAndUpdate(
-      { email }, 
-      { $set: { editHistory } }, 
+      { email },
+      { $set: { editHistory } },
       { new: true }
     );
 
@@ -32,4 +38,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error("Error updating edit history:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+});

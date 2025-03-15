@@ -1,7 +1,9 @@
 import dbConnect from '../../../lib/dbConnect';
+import { NextApiRequest, NextApiResponse } from "next";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import User from '../../models/User';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res:NextApiResponse) {
   await dbConnect();
 
   const { id } = req.query;

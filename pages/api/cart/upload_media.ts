@@ -1,6 +1,7 @@
 // pages/api/cart/upload_media.ts
 import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import formidable from "formidable";
 
 export const config = {
@@ -10,13 +11,17 @@ export const config = {
   },
 };
 
-export default async function handler(
+export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
+  }
+  const { accessToken } = await getAccessToken(req, res);
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized: No access token" });
   }
 
   const form = formidable({
@@ -96,4 +101,4 @@ export default async function handler(
       res.status(500).json({ error: "Failed to process files" });
     }
   });
-}
+});

@@ -1,10 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import Cart from '../../models/Cart'; 
 
-const getCartItems = async (req: NextApiRequest, res: NextApiResponse) => {
+export default withApiAuthRequired(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
+  const { accessToken } = await getAccessToken(req, res);
+    if (!accessToken) {
+      return res.status(401).json({ message: "Unauthorized: No access token" });
+    }
 
   const { email } = req.body;
 
@@ -23,6 +28,4 @@ const getCartItems = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (error) {
     return res.status(500).json({ message: 'Server error', error });
   }
-};
-
-export default getCartItems;
+});

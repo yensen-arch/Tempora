@@ -2,15 +2,7 @@ import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import { NextApiRequest, NextApiResponse } from "next";
 import mongoose from "mongoose";
 import Cart from "../../models/Cart";
-
-const connectToDB = async () => {
-  if (mongoose.connections[0].readyState !== 1) {
-    await mongoose.connect(process.env.MONGODB_URI as string, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  }
-};
+import dbConnect from "@/lib/dbConnect";
 
 export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -23,7 +15,7 @@ export default withApiAuthRequired(async function handler(req: NextApiRequest, r
       return res.status(401).json({ message: "Unauthorized: No access token" });
     }
 
-    await connectToDB();
+    await dbConnect();
     const { email, product } = req.body;
     if (!email || !product) {
       return res.status(400).json({ message: "Email and product details are required." });

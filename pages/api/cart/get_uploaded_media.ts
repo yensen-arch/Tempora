@@ -1,10 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import { Media } from "../../models/media";
 
-export default async function handler(
+export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const { accessToken } = await getAccessToken(req, res);
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized: No access token" });
+  }
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -27,4 +32,4 @@ export default async function handler(
     console.error("Error fetching media:", error);
     return res.status(500).json({ error: "Failed to fetch media" });
   }
-}
+});

@@ -1,25 +1,20 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import mongoose from "mongoose";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import Cart from "../../models/Cart";
+import dbConnect from "@/lib/dbConnect";
 
-const connectDB = async () => {
-  if (mongoose.connections[0].readyState) {
-    return; // Already connected
-  }
-  await mongoose.connect(process.env.MONGODB_URI as string, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-};
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow DELETE requests
   if (req.method !== "DELETE") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    await connectDB();
+    const { accessToken } = await getAccessToken(req, res);
+    if (!accessToken) {
+      return res.status(401).json({ message: "Unauthorized: No access token" });
+    }
+    await dbConnect();
     const { email, productId } = req.body;
     // Validate email and productId
     if (!email || typeof email !== "string") {
@@ -36,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Check if the product exists in the cart
-    const itemIndex = cart.items.findIndex((item) => item.productId === productId);
+    const itemIndex = cart.items.findIndex((item: any) => item.productId === productId);
     if (itemIndex === -1) {
       return res.status(404).json({ error: "Product not found in the cart" });
     }
@@ -50,4 +45,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error("Error deleting cart item:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-}
+});

@@ -1,8 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import dbConnect from "../../../lib/dbConnect";
 import Order from "../../models/orders";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { accessToken } = await getAccessToken(req, res);
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized: No access token" });
+  }
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -27,4 +32,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error("Error fetching media URL:", error);
     return res.status(500).json({ success: false, error: "Internal server error" });
   }
-}
+});

@@ -1,9 +1,14 @@
-// pages/api/cart/delete_media.ts
 import cloudinary from "../../../lib/cloudinary";
+import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "../../../lib/dbConnect";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 import { Media } from "../../models/media";
 
-export default async function handler(req, res) {
+export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { accessToken } = await getAccessToken(req, res);
+    if (!accessToken) {
+      return res.status(401).json({ message: "Unauthorized: No access token" });
+    }
   if (req.method === "DELETE") {
     const { email, fileUrl, resourceType } = req.body;
     if (!email || !fileUrl || !resourceType) {
@@ -12,6 +17,7 @@ export default async function handler(req, res) {
         .json({ message: "Email, fileUrl, and resourceType are required." });
     }
     try {
+
       const public_id = fileUrl.split("/").slice(-1)[0].split(".")[0];
       const validResourceTypes = ["video", "raw"];
       if (!validResourceTypes.includes(resourceType)) {
@@ -66,4 +72,4 @@ export default async function handler(req, res) {
   } else {
     res.status(405).json({ message: "Method Not Allowed. Use DELETE." });
   }
-}
+});

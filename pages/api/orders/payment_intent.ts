@@ -1,10 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 import dbConnect from "../../../lib/dbConnect";
+import { withApiAuthRequired, getAccessToken } from "@auth0/nextjs-auth0";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2023-10-16" });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withApiAuthRequired(async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { accessToken } = await getAccessToken(req, res);
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized: No access token" });
+  }
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -28,4 +33,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error("Stripe payment error:", error);
     return res.status(500).json({ error: "Payment processing failed" });
   }
-}
+});
