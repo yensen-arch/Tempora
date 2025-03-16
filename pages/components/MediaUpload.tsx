@@ -6,7 +6,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import { toast } from "react-hot-toast";
 import { useMediaLoader } from "./hooks/useMediaLoader";
 import Router from "next/router";
-
+import CustomLoader from "./CustomLoader";
 function MediaUpload() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -220,144 +220,152 @@ function MediaUpload() {
   const isDurationExceeded = totalDuration > MAX_DURATION_MINUTES * 60;
 
   return (
-    <div className="pt-4 flex items-center justify-center">
-      <div className="w-full">
-        {!decodedUrl ? (
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="h-40 bg-cover bg-center"></div>
-            <div className="p-6">
-              <h2 className="text-2xl font-serif text-amber-800 mb-4">
-                Upload Your Media (If you haven't alredy)
-              </h2>
-              <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
-                <input
-                  type="file"
-                  accept={allowedFormats.join(",")}
-                  multiple
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="fileInput"
-                  disabled={uploading}
-                />
-                <label
-                  htmlFor="fileInput"
-                  className={`cursor-pointer inline-block px-6 py-3 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
-                    uploading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
-                  Select Audio & Video Files
-                </label>
-                <p className="mt-2 text-amber-700">
-                  or drag and drop files here
-                </p>
-                <p className="text-red-700 text-xs">
-                  *Your files can have a total duration upto 20 minutes
-                </p>
-              </div>
-              {files.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-amber-800 mb-2">
-                    Selected Files:
-                  </h3>
-                  <ul className="space-y-2">
-                    {files.map((file, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center justify-between bg-amber-50 p-3 rounded-md"
-                      >
-                        <div className="flex items-center">
-                          {file.type.startsWith("audio/") ? (
-                            <Music className="text-amber-600 mr-2" />
-                          ) : (
-                            <Video className="text-amber-600 mr-2" />
-                          )}
-                          <span className="text-amber-800 truncate">
-                            {file.name}
-                          </span>
-                          {fileDurations[index] && (
-                            <span className="ml-2 text-amber-600 text-sm">
-                              ({formatDuration(fileDurations[index])})
-                            </span>
-                          )}
-                        </div>
-                        {!uploading && (
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="text-amber-600 hover:text-amber-800"
-                          >
-                            <X size={20} />
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Total duration indicator */}
-                  <div className="mt-3 flex items-center">
-                    <span className="text-amber-800 font-medium">
-                      Total Duration: {formatDuration(totalDuration)}
-                    </span>
-                    {isDurationExceeded && (
-                      <div className="ml-2 flex items-center text-red-600">
-                        <AlertCircle size={16} className="mr-1" />
-                        <span>Exceeds {MAX_DURATION_MINUTES} minute limit</span>
-                      </div>
-                    )}
+    <div>
+      {uploading ? (
+        <CustomLoader />
+      ) : (
+        <div className="pt-4 flex items-center justify-center">
+          <div className="w-full">
+            {!decodedUrl ? (
+              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div className="h-40 bg-cover bg-center"></div>
+                <div className="p-6">
+                  <h2 className="text-2xl font-serif text-amber-800 mb-4">
+                    Upload Your Media (If you haven't alredy)
+                  </h2>
+                  <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
+                    <input
+                      type="file"
+                      accept={allowedFormats.join(",")}
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="fileInput"
+                      disabled={uploading}
+                    />
+                    <label
+                      htmlFor="fileInput"
+                      className={`cursor-pointer inline-block px-6 py-3 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
+                        uploading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      Select Audio & Video Files
+                    </label>
+                    <p className="mt-2 text-amber-700">
+                      or drag and drop files here
+                    </p>
+                    <p className="text-red-700 text-xs">
+                      *Your files can have a total duration upto 20 minutes
+                    </p>
                   </div>
-                </div>
-              )}
-              {files.length > 0 && (
-                <button
-                  onClick={handleUpload}
-                  disabled={uploading || isDurationExceeded}
-                  className={`mt-4 px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
-                    uploading || isDurationExceeded
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                  title={
-                    isDurationExceeded
-                      ? `Maximum duration is ${MAX_DURATION_MINUTES} minutes`
-                      : ""
-                  }
-                >
-                  {uploading ? (
-                    <span className="flex items-center">
-                      <Loader2 className="animate-spin mr-2" />
-                      Uploading...
-                    </span>
-                  ) : (
-                    "Upload"
+                  {files.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold text-amber-800 mb-2">
+                        Selected Files:
+                      </h3>
+                      <ul className="space-y-2">
+                        {files.map((file, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center justify-between bg-amber-50 p-3 rounded-md"
+                          >
+                            <div className="flex items-center">
+                              {file.type.startsWith("audio/") ? (
+                                <Music className="text-amber-600 mr-2" />
+                              ) : (
+                                <Video className="text-amber-600 mr-2" />
+                              )}
+                              <span className="text-amber-800 truncate">
+                                {file.name}
+                              </span>
+                              {fileDurations[index] && (
+                                <span className="ml-2 text-amber-600 text-sm">
+                                  ({formatDuration(fileDurations[index])})
+                                </span>
+                              )}
+                            </div>
+                            {!uploading && (
+                              <button
+                                onClick={() => removeFile(index)}
+                                className="text-amber-600 hover:text-amber-800"
+                              >
+                                <X size={20} />
+                              </button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Total duration indicator */}
+                      <div className="mt-3 flex items-center">
+                        <span className="text-amber-800 font-medium">
+                          Total Duration: {formatDuration(totalDuration)}
+                        </span>
+                        {isDurationExceeded && (
+                          <div className="ml-2 flex items-center text-red-600">
+                            <AlertCircle size={16} className="mr-1" />
+                            <span>
+                              Exceeds {MAX_DURATION_MINUTES} minute limit
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </button>
-              )}
-            </div>
+                  {files.length > 0 && (
+                    <button
+                      onClick={handleUpload}
+                      disabled={uploading || isDurationExceeded}
+                      className={`mt-4 px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
+                        uploading || isDurationExceeded
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
+                      title={
+                        isDurationExceeded
+                          ? `Maximum duration is ${MAX_DURATION_MINUTES} minutes`
+                          : ""
+                      }
+                    >
+                      {uploading ? (
+                        <span className="flex items-center">
+                          <Loader2 className="animate-spin mr-2" />
+                          Uploading...
+                        </span>
+                      ) : (
+                        "Upload"
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 text-center">
+                <a
+                  href={`/editor`}
+                  className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
+                >
+                  Proceed to Editor
+                </a>
+              </div>
+            )}
+            {concatenatedUrl && duration !== null && audioPath && (
+              <div className="mt-4 text-center">
+                <a
+                  href={`/editor?videoUrl=${encodeURIComponent(
+                    concatenatedUrl
+                  )}&duration=${duration}&audioPath=${encodeURIComponent(
+                    audioPath
+                  )}`}
+                  className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
+                >
+                  Proceed to Editor
+                </a>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="mt-4 text-center">
-            <a
-              href={`/editor`}
-              className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
-            >
-              Proceed to Editor
-            </a>
-          </div>
-        )}
-        {concatenatedUrl && duration !== null && audioPath && (
-          <div className="mt-4 text-center">
-            <a
-              href={`/editor?videoUrl=${encodeURIComponent(
-                concatenatedUrl
-              )}&duration=${duration}&audioPath=${encodeURIComponent(
-                audioPath
-              )}`}
-              className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
-            >
-              Proceed to Editor
-            </a>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
