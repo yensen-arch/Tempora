@@ -2,6 +2,7 @@ import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
+import { Media } from "../../models/media";
 
 export const config = {
   api: {
@@ -19,20 +20,18 @@ export default withApiAuthRequired(async function handler(
   }
 
   try {
-    // Get session first, before parsing the form
     const session = await getSession(req, res);
-    console.log("Session:", session);
-    
     if (!session || !session.user) {
-      return res.status(401).json({ message: "Unauthorized: No session found" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No session found" });
     }
-    
+
     const email = session.user.email;
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
     }
 
-    // Now parse the form
     const form = formidable({
       multiples: true,
       maxFileSize: 1000 * 1024 * 1024,
@@ -82,26 +81,41 @@ export default withApiAuthRequired(async function handler(
         ],
       };
 
-      console.log(`Uploading file: ${file.originalFilename} (${fileType})`);
-
       // Upload file to Cloudinary
       const result = await cloudinary.uploader.upload(
         file.filepath,
         uploadOptions
       );
-      console.log("Cloudinary upload result:", result);
       return result.secure_url;
     });
 
     // Wait for all uploads to complete
     const fileUrls = await Promise.all(uploadPromises);
+
+    await Media.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          file: {
+            fileUrl: fileUrls[0],
+            mediaType: "video",
+            duration: fileUrls[0].duration,
+            audioPath: fileUrls[0].secure_url,
+            isConcatenated: true,
+            uploadedAt: new Date(), // Ensures uploadedAt is updated
+          },
+          editHistory: [],
+        },
+      },
+      { upsert: true, new: true }
+    );
+
     return res.status(200).json({ fileUrls });
-    
   } catch (error) {
     console.error("Error processing files:", error);
-    return res.status(500).json({ 
-      error: "Failed to process files", 
-      message: error.message || "Unknown error" 
+    return res.status(500).json({
+      error: "Failed to process files",
+      message: error.message || "Unknown error",
     });
   }
 });

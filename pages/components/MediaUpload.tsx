@@ -132,8 +132,6 @@ function MediaUpload() {
       }
 
       const data = await response.json();
-      console.log("Upload successful:", data.fileUrls);
-
       // Only concatenate if there are multiple videos
       if (data.fileUrls && data.fileUrls.length > 1) {
         setUploading(true); // Keep loading state for concatenation
