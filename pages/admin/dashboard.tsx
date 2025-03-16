@@ -39,7 +39,11 @@ const Dashboard = () => {
   }, [user, router]);
 
   if (isLoading || userType === null) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-center text-gray-500">Loading...</p>
+      </div>
+    );
   }
 
   return (

@@ -27,12 +27,17 @@ function Memories() {
     }
   }, [user]);
 
-  if (isLoading) return <div>Loading...</div>;
+  // if (isLoading) return <div>Loading...</div>;
 
   return (
     <div>
       <Navbar />
       <div className="bg-white h-screen flex flex-col justify-center items-center">
+        {
+          isLoading && (
+            <div>Loading...</div>
+          )
+        }
         {user ? (
           <>
             <p>Welcome, {user.name}!</p>
