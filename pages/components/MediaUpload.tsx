@@ -119,7 +119,7 @@ function MediaUpload() {
           const xhr = new XMLHttpRequest();
           const formData = new FormData();
           
-          files.forEach((file, index) => {
+          files.forEach((file) => {
             formData.append("file", file);
           });
   
@@ -142,30 +142,39 @@ function MediaUpload() {
                 const response = JSON.parse(xhr.responseText);
                 resolve(response);
               } catch (e) {
-                reject(new Error("Invalid JSON response"));
+                // Instead of rejecting with an error, resolve with an error object
+                resolve({ error: true, message: "Invalid JSON response" });
               }
             } else {
               try {
                 const errorData = JSON.parse(xhr.responseText);
-                reject(new Error(errorData.message || "Upload failed"));
+                // Instead of rejecting with an error, resolve with an error object
+                resolve({ error: true, message: errorData.message || "Upload failed" });
               } catch {
-                reject(new Error("Server error, please try again."));
+                resolve({ error: true, message: "Server error, please try again." });
               }
             }
           };
   
-          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.onerror = () => resolve({ error: true, message: "Network error" });
           
           xhr.open("POST", `/api/cart/upload_media?email=${email}`);
           xhr.send(formData);
         });
       };
   
-      // Execute the upload with progress tracking
       const data = await uploadWithProgress();
   
+      // Check if there was an error returned
+      if (data?.error) {
+        toast.error(`Failed to upload files: ${data?.message}`);
+        setUploadProgress([]);
+        setUploading(false);
+        return;
+      }
+  
       // Only concatenate if there are multiple videos
-      if (data.fileUrls && data.fileUrls.length > 1) {
+      if (data?.fileUrls && data?.fileUrls.length > 1) {
         setUploading(true); // Keep loading state for concatenation
         
         // Update UI to show concatenation is in progress
@@ -187,41 +196,42 @@ function MediaUpload() {
           );
   
           if (!concatenateResponse.ok) {
-            throw new Error("Concatenation failed");
-          }
+            const errorData = await concatenateResponse.json().catch(() => ({}));
+            toast.error(`Concatenation failed: ${errorData.message || "Unknown error"}`);
+          } else {
+            const concatenateData = await concatenateResponse.json();
+            setConcatenatedUrl(concatenateData.concatenatedUrl);
+            setAudioPath(concatenateData.audioPath);
+            setDuration(concatenateData.duration);
+            toast.success("Media uploaded & combined successfully!");
   
-          const concatenateData = await concatenateResponse.json();
-          setConcatenatedUrl(concatenateData.concatenatedUrl);
-          setAudioPath(concatenateData.audioPath);
-          setDuration(concatenateData.duration);
-          toast.success("Media uploaded & combined successfully!");
+            // Call delete API for original uploaded files
+            await Promise.all(
+              data.fileUrls.map(async (fileUrl) => {
+                try {
+                  const deleteResponse = await fetch("/api/cart/delete_media", {
+                    method: "DELETE",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      email: email,
+                      fileUrl: fileUrl,
+                      resourceType: "video",
+                    }),
+                  });
   
-          // Call delete API for original uploaded files
-          await Promise.all(
-            data.fileUrls.map(async (fileUrl) => {
-              try {
-                const deleteResponse = await fetch("/api/cart/delete_media", {
-                  method: "DELETE",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    email: email,
-                    fileUrl: fileUrl,
-                    resourceType: "video",
-                  }),
-                });
-  
-                if (!deleteResponse.ok) {
-                  console.error(`Failed to delete file: ${fileUrl}`);
-                } else {
-                  console.log(`Deleted successfully: ${fileUrl}`);
+                  if (!deleteResponse.ok) {
+                    console.error(`Failed to delete file: ${fileUrl}`);
+                  } else {
+                    console.log(`Deleted successfully: ${fileUrl}`);
+                  }
+                } catch (deleteError) {
+                  console.error(`Error deleting file ${fileUrl}:`, deleteError);
                 }
-              } catch (deleteError) {
-                console.error(`Error deleting file ${fileUrl}:`, deleteError);
-              }
-            })
-          );
+              })
+            );
+          }
         } catch (concatenateError) {
           console.error("Concatenation error:", concatenateError);
           toast.error(
@@ -242,7 +252,7 @@ function MediaUpload() {
       Router.push("/editor");
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error(`Failed to upload files: ${error.message}`);
+      toast.error(`Failed to upload files: ${error.message || "Unknown error"}`);
       setUploadProgress([]);
     } finally {
       setUploading(false);
