@@ -86,23 +86,43 @@ export default withApiAuthRequired(async function handler(
         file.filepath,
         uploadOptions
       );
-      return result.secure_url;
+      return result;
     });
 
     // Wait for all uploads to complete
-    const fileUrls = await Promise.all(uploadPromises);
-
+    const uploadResults = await Promise.all(uploadPromises);
+    const fileUrls = uploadResults.map(result => result.secure_url);
+    
+    // Get the first uploaded result
+    const firstUploadResult = uploadResults[0];
+    
+    // Get duration of the video from Cloudinary
+    const publicId = firstUploadResult.public_id;
+    const videoResource = await cloudinary.api.resource(publicId, { 
+      resource_type: "video", 
+      media_metadata: true 
+    });
+    const videoDuration = videoResource.duration || 0;
+    
+    // Extract audio from the video
+    const audioResult = await cloudinary.uploader.upload(firstUploadResult.secure_url, {
+      resource_type: "video",
+      format: "mp3",
+      transformation: [{ resource_type: "video", format: "mp3", audio_codec: "mp3" }]
+    });
+    
+    // Save to database
     await Media.findOneAndUpdate(
       { email },
       {
         $set: {
           file: {
-            fileUrl: fileUrls[0],
+            fileUrl: firstUploadResult.secure_url,
             mediaType: "video",
-            duration: fileUrls[0].duration,
-            audioPath: fileUrls[0].secure_url,
-            isConcatenated: true,
-            uploadedAt: new Date(), // Ensures uploadedAt is updated
+            duration: videoDuration,
+            audioPath: audioResult.secure_url,
+            isConcatenated: false, // Single file, not concatenated
+            uploadedAt: new Date(),
           },
           editHistory: [],
         },
@@ -110,12 +130,16 @@ export default withApiAuthRequired(async function handler(
       { upsert: true, new: true }
     );
 
-    return res.status(200).json({ fileUrls });
+    return res.status(200).json({ 
+      fileUrls,
+      duration: videoDuration,
+      audioPath: audioResult.secure_url
+    });
   } catch (error) {
     console.error("Error processing files:", error);
     return res.status(500).json({
       error: "Failed to process files",
-      message: error.message || "Unknown error",
+      message: error instanceof Error ? error.message : "Unknown error",
     });
   }
 });
