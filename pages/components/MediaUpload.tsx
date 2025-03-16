@@ -108,33 +108,69 @@ function MediaUpload() {
   const handleUpload = async () => {
     if (files.length === 0) return;
     setUploading(true);
-
+    
+    // Initialize progress tracking for each file
+    setUploadProgress(files.map(() => 0));
+  
     try {
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("file", file);
-      });
-
-      const response = await fetch(`/api/cart/upload_media?email=${email}`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        let errorMessage = "Upload failed";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          errorMessage = "Server error, please try again.";
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
+      // For client-side progress tracking, we need to use XMLHttpRequest instead of fetch
+      const uploadWithProgress = () => {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const formData = new FormData();
+          
+          files.forEach((file, index) => {
+            formData.append("file", file);
+          });
+  
+          // Track upload progress
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              // Calculate overall progress percentage across all files
+              const percentComplete = (event.loaded / event.total) * 100;
+              setUploadProgress(prev => {
+                const newProgress = [...prev];
+                // Update progress for all files with the same percentage for simplicity
+                return newProgress.map(() => percentComplete);
+              });
+            }
+          };
+  
+          xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch (e) {
+                reject(new Error("Invalid JSON response"));
+              }
+            } else {
+              try {
+                const errorData = JSON.parse(xhr.responseText);
+                reject(new Error(errorData.message || "Upload failed"));
+              } catch {
+                reject(new Error("Server error, please try again."));
+              }
+            }
+          };
+  
+          xhr.onerror = () => reject(new Error("Network error"));
+          
+          xhr.open("POST", `/api/cart/upload_media?email=${email}`);
+          xhr.send(formData);
+        });
+      };
+  
+      // Execute the upload with progress tracking
+      const data = await uploadWithProgress();
+  
       // Only concatenate if there are multiple videos
       if (data.fileUrls && data.fileUrls.length > 1) {
         setUploading(true); // Keep loading state for concatenation
+        
+        // Update UI to show concatenation is in progress
+        toast.info("Files uploaded. Now combining the videos...");
+        
         try {
           const concatenateResponse = await fetch(
             "/api/cart/concatenate_media",
@@ -149,17 +185,17 @@ function MediaUpload() {
               }),
             }
           );
-
+  
           if (!concatenateResponse.ok) {
             throw new Error("Concatenation failed");
           }
-
+  
           const concatenateData = await concatenateResponse.json();
           setConcatenatedUrl(concatenateData.concatenatedUrl);
           setAudioPath(concatenateData.audioPath);
           setDuration(concatenateData.duration);
           toast.success("Media uploaded & combined successfully!");
-
+  
           // Call delete API for original uploaded files
           await Promise.all(
             data.fileUrls.map(async (fileUrl) => {
@@ -175,7 +211,7 @@ function MediaUpload() {
                     resourceType: "video",
                   }),
                 });
-
+  
                 if (!deleteResponse.ok) {
                   console.error(`Failed to delete file: ${fileUrl}`);
                 } else {
@@ -193,9 +229,12 @@ function MediaUpload() {
           );
         }
       } else {
+        // Single file case - display the duration and other details returned from the API
+        setDuration(data.duration || 0);
+        setAudioPath(data.audioPath || null);
         toast.success("File uploaded successfully!");
       }
-
+  
       setFiles([]);
       setFileDurations([]);
       setTotalDuration(0);
@@ -203,7 +242,8 @@ function MediaUpload() {
       Router.push("/editor");
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload files. Please try again.");
+      toast.error(`Failed to upload files: ${error.message}`);
+      setUploadProgress([]);
     } finally {
       setUploading(false);
     }

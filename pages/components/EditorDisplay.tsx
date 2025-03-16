@@ -78,19 +78,20 @@ function EditorDisplay({
   }, [videoUrl]);
 
   const handleDelete = async () => {
-    
     if (!email || !videoUrl) {
       console.log("No email or videoUrl");
       return;
     }
-  
-    const confirmed = window.confirm("Are you sure you want to delete this file?");
-    
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this file?"
+    );
+
     if (!confirmed) {
       console.log("File deletion cancelled.");
       return;
     }
-  
+
     try {
       const response = await fetch("/api/cart/delete_media", {
         method: "DELETE",
@@ -101,9 +102,9 @@ function EditorDisplay({
           resourceType: "video",
         }),
       });
-  
+
       const data = await response.json();
-      
+
       if (response.ok) {
         alert("File deleted successfully");
         router.push("/");
@@ -115,7 +116,6 @@ function EditorDisplay({
       alert("An error occurred while deleting the file");
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center p-4">
@@ -134,7 +134,7 @@ function EditorDisplay({
       ) : !loading && videoUrl ? (
         <>{/* Existing video player code */}</>
       ) : (
-        !loading && <p>Go back and upload your videos</p>
+        !loading && <div className="flex items-center min-h-screen"> <p>Go back and upload your videos</p></div>
       )}
       {!loading && videoUrl ? (
         <>
@@ -155,10 +155,7 @@ function EditorDisplay({
           </video>
           <Timeline videoRef={videoRef} duration={duration} />
         </>
-      ) : (<div className="h-80 flex justify-center items-center text-center"> 
-        <p>Go back and upload your videos</p>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }
