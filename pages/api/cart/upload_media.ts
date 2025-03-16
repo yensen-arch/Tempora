@@ -48,68 +48,115 @@ export default withApiAuthRequired(async function handler(
       });
     });
 
-    const uploadedFiles = Array.isArray(files.file) ? files.file : [files.file];
-    if (!uploadedFiles || uploadedFiles.length === 0) {
+    // Handle both array and single file cases
+    const fileArray = files.file;
+    const uploadedFiles = Array.isArray(fileArray) ? fileArray : (fileArray ? [fileArray] : []);
+    
+    if (uploadedFiles.length === 0) {
       return res.status(400).json({ error: "No files uploaded" });
     }
 
-    const uploadPromises = uploadedFiles.map(async (file) => {
-      const fileType = file.mimetype;
+    // Function to properly handle upload_large stream
+    const uploadLargeFile = (file) => {
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          return reject(new Error("No file provided"));
+        }
+        
+        const fileType = file.mimetype;
+    
+        // Validate file type
+        if (!fileType?.startsWith("video/") && !fileType?.startsWith("audio/")) {
+          return reject(new Error(`Unsupported file type: ${fileType}`));
+        }
+    
+        // Use "video" as the resource type for both audio and video files
+        const resourceType = "video";
+    
+        // Cloudinary upload options
+        const uploadOptions = {
+          resource_type: resourceType,
+          timeout: 240000,
+          chunk_size: 10000000,
+          transformation: [
+            {
+              width: 480,
+              height: 270,
+              crop: "fill",
+              quality: "auto:low",
+              bitrate: "500k",
+              fps: "24",
+            },
+          ],
+        };
+    
+        // Use the Promise-based approach instead of event listeners
+        cloudinary.uploader.upload_large(
+          file.filepath,
+          uploadOptions,
+          (error, result) => {
+            if (error) {
+              console.error("Upload failed:", error);
+              reject(error)
+            } else {
+              console.log("Upload completed successfully:", result);
+              resolve(result);
+            }
+          }
+        );
+      });
+    };
 
-      // Validate file type
-      if (!fileType?.startsWith("video/") && !fileType?.startsWith("audio/")) {
-        throw new Error(`Unsupported file type: ${fileType}`);
-      }
-
-      // Use "video" as the resource type for both audio and video files
-      const resourceType = "video";
-
-      // Cloudinary upload options
-      const uploadOptions = {
-        resource_type: resourceType,
-        timeout: 240000,
-        chunk_size: 10000000,
-        transformation: [
-          {
-            width: 480,
-            height: 270,
-            crop: "fill",
-            quality: "auto:low",
-            bitrate: "500k",
-            fps: "24",
-          },
-        ],
-      };
-
-      // Upload file to Cloudinary
-      const result = await cloudinary.uploader.upload(
-        file.filepath,
-        uploadOptions
-      );
-      return result;
-    });
-
+    // Upload all files
+    const uploadPromises = uploadedFiles.map(uploadLargeFile);
+    
     // Wait for all uploads to complete
     const uploadResults = await Promise.all(uploadPromises);
+    
+    if (uploadResults.length === 0) {
+      return res.status(400).json({ error: "Failed to upload any files" });
+    }
+    
     const fileUrls = uploadResults.map(result => result.secure_url);
     
     // Get the first uploaded result
     const firstUploadResult = uploadResults[0];
     
+    // Check if we have a valid result
+    if (!firstUploadResult || !firstUploadResult.public_id) {
+      return res.status(500).json({ error: "Failed to get valid upload result from Cloudinary" });
+    }
+    
     // Get duration of the video from Cloudinary
     const publicId = firstUploadResult.public_id;
-    const videoResource = await cloudinary.api.resource(publicId, { 
-      resource_type: "video", 
-      media_metadata: true 
-    });
-    const videoDuration = videoResource.duration || 0;
+    console.log("Public ID:", publicId);
+    
+    let videoDuration = 0;
+    try {
+      const videoResource = await cloudinary.api.resource(publicId, { 
+        resource_type: "video", 
+        media_metadata: true 
+      });
+      videoDuration = videoResource.duration || 0;
+      console.log("Video duration:", videoDuration);
+    } catch (error) {
+      console.error("Error getting video resource:", error);
+      // Continue with processing if we can't get the duration
+    }
     
     // Extract audio from the video
-    const audioResult = await cloudinary.uploader.upload(firstUploadResult.secure_url, {
-      resource_type: "video",
-      format: "mp3",
-      transformation: [{ resource_type: "video", format: "mp3", audio_codec: "mp3" }]
-    });
+    let audioResult;
+    try {
+      audioResult = await cloudinary.uploader.upload(firstUploadResult.secure_url, {
+        resource_type: "video",
+        format: "mp3",
+        transformation: [{ resource_type: "video", format: "mp3", audio_codec: "mp3" }]
+      });
+      console.log("Audio extraction result:", audioResult);
+    } catch (error) {
+      console.error("Error extracting audio:", error);
+      // Continue with processing if audio extraction fails
+    }
     
     // Save to database
     await Media.findOneAndUpdate(
@@ -120,7 +167,7 @@ export default withApiAuthRequired(async function handler(
             fileUrl: firstUploadResult.secure_url,
             mediaType: "video",
             duration: videoDuration,
-            audioPath: audioResult.secure_url,
+            audioPath: audioResult?.secure_url || null,
             isConcatenated: false, // Single file, not concatenated
             uploadedAt: new Date(),
           },
@@ -133,7 +180,7 @@ export default withApiAuthRequired(async function handler(
     return res.status(200).json({ 
       fileUrls,
       duration: videoDuration,
-      audioPath: audioResult.secure_url
+      audioPath: audioResult?.secure_url || null
     });
   } catch (error) {
     console.error("Error processing files:", error);
