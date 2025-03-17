@@ -308,59 +308,65 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   return (
     <>
       <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
-        <div className="relative">
-          <TimelineControls
-            onUndo={handleUndo}
-            onRedo={handleRedo}
-            onTrim={() => {
-              setShowTrim(true);
-              setShowSplice(false);
-            }}
-            onSplice={() => {
-              setShowSplice(true);
-              setShowTrim(false);
-            }}
-            processing={processing}
-            onSubmit={() => setSubmitClicked(true)}
-            onSave={handleSave}
-            canUndo={editHistory.length > 0}
-            canRedo={undoneEdits.length > 0}
-            isSaving={isSaving}
-          />
+        <div className="relative w-full">
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <div className="w-full sm:w-auto">
+              <TimelineControls
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                onTrim={() => {
+                  setShowTrim(true);
+                  setShowSplice(false);
+                }}
+                onSplice={() => {
+                  setShowSplice(true);
+                  setShowTrim(false);
+                }}
+                processing={processing}
+                onSubmit={() => setSubmitClicked(true)}
+                onSave={handleSave}
+                canUndo={editHistory.length > 0}
+                canRedo={undoneEdits.length > 0}
+                isSaving={isSaving}
+              />
+            </div>
 
-          {/* Zoom controls */}
-          <div className="flex items-center justify-end mb-2 space-x-2">
-            <span className="text-xs text-gray-500">
-              Zoom: {zoomPercentage}%
-            </span>
-            <button
-              className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
-              onClick={() => handleZoom(-1)}
-              aria-label="Zoom out"
-            >
-              -
-            </button>
-            <button
-              className="p-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
-              onClick={() => handleZoom(1)}
-              aria-label="Zoom in"
-            >
-              +
-            </button>
-            <button
-              className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
-              onClick={handleResetZoom}
-            >
-              Reset
-            </button>
-            <div className="text-xs text-gray-500">
-              {formatTime(visibleStart)} - {formatTime(visibleEnd)}
+            {/* Zoom controls */}
+            <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2">
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                Zoom: {zoomPercentage}%
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  className="p-1 w-8 h-8 flex items-center justify-center text-sm bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={() => handleZoom(-1)}
+                  aria-label="Zoom out"
+                >
+                  -
+                </button>
+                <button
+                  className="p-1 w-8 h-8 flex items-center justify-center text-sm bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={() => handleZoom(1)}
+                  aria-label="Zoom in"
+                >
+                  +
+                </button>
+                <button
+                  className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={handleResetZoom}
+                >
+                  Reset
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 whitespace-nowrap">
+                {formatTime(visibleStart)} - {formatTime(visibleEnd)}
+              </div>
             </div>
           </div>
 
           <div
             ref={containerRef}
-            className="relative w-full h-20 overflow-visible border-b border-gray-200"
+            className="relative w-full h-16 sm:h-20 overflow-visible border-b border-gray-200"
           >
             {showTrim && (
               <TrimOverlay
@@ -398,7 +404,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             />
 
             <motion.div
-              className="absolute top-0 w-0.5 h-12 bg-red-500 z-10"
+              className="absolute top-0 w-0.5 h-10 sm:h-12 bg-red-500 z-10"
               style={{ x: sliderX }}
               drag="x"
               dragConstraints={containerRef}
@@ -408,7 +414,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
               onDragStart={() => setIsDragging(true)}
               onDragEnd={() => setIsDragging(false)}
             >
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-1" />
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-0.5 sm:mt-1" />
             </motion.div>
           </div>
         </div>
