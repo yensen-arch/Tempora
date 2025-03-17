@@ -147,7 +147,7 @@ const Testimonials: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           Join other satisfied customers and experience the Tempora
-          difference today.
+          life today.
         </motion.p>
       </div>
     </section>

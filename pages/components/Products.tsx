@@ -46,7 +46,7 @@ const Products = forwardRef((props, ref) => {
         <h2 className="text-3xl md:text-4xl font-serif text-stone-800 mb-8 text-center">
           Featured Products
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 sm:px-20 gap-8">
           {products.map((product, index) => (
             <motion.div
               key={product._id || index}
@@ -63,11 +63,11 @@ const Products = forwardRef((props, ref) => {
                   objectFit="cover"
                   className="transition-transform duration-300 hover:scale-110"
                 />
-                {product.tags && product.tags.length > 0 && (
+                {/* {product.tags && product.tags.length > 0 && (
                   <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full">
                     {product.tags[0]}
                   </div>
-                )}
+                )} */}
               </div>
               <div className="p-6 bg-white bg-opacity-90 backdrop-blur-sm">
                 <h3 className="text-xl font-semibold text-stone-800 mb-2">

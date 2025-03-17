@@ -119,7 +119,7 @@ function EditorDisplay({
 
   return (
     <div className="flex flex-col items-center p-4">
-      {loading && <p className="text-gray-500">Loading video...</p>}
+      {loading && <div className="text-center flex justify-center"><p className="text-gray-500">Loading video...</p></div>}
       {error ? (
         <div className="text-center">
           {error === "go back and upload your videos first" && (
@@ -134,7 +134,12 @@ function EditorDisplay({
       ) : !loading && videoUrl ? (
         <>{/* Existing video player code */}</>
       ) : (
-        !loading && <div className="flex items-center min-h-screen"> <p>Go back and upload your videos</p></div>
+        !loading && (
+          <div className="flex items-center min-h-screen">
+            {" "}
+            <p>Go back and upload your videos</p>
+          </div>
+        )
       )}
       {!loading && videoUrl ? (
         <>

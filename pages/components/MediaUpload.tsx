@@ -50,7 +50,7 @@ function MediaUpload() {
     "video/mpeg",
     "video/webm",
   ];
-  const { decodedUrl } = useMediaLoader(user.email);
+  const { decodedUrl } = useMediaLoader(user?.email);
 
   if (isLoading) {
     return (

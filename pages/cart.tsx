@@ -157,9 +157,9 @@ export default function Cart() {
                 transition={{ duration: 0.5 }}
                 className="bg-white shadow-md rounded-lg overflow-hidden mb-4"
               >
-                <div className="flex flex-col md:flex-row items-center justify-between p-6">
+                <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4">
                   {/* Product Image */}
-                  <div className="w-28 h-28 flex-shrink-0 relative rounded-md overflow-hidden">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 relative rounded-md overflow-hidden">
                     {item.image && (
                       <Image
                         src={item.image}
@@ -173,22 +173,22 @@ export default function Cart() {
                   </div>
 
                   {/* Product Details */}
-                  <div className="flex flex-1 mx-8 flex-col md:flex-row items-center md:items-start justify-between md:ml-6 text-center md:text-left">
-                    <div className="flex-1">
-                      <h2 className="text-xl font-semibold text-stone-800">
+                  <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-start justify-between w-full gap-4">
+                    <div className="flex-1 text-center sm:text-left">
+                      <h2 className="text-lg sm:text-xl font-semibold text-stone-800 line-clamp-2">
                         {item.name}
                       </h2>
                     </div>
-                    <div className="mt-4 md:mt-0">
-                      <div className="flex items-center justify-center md:justify-start">
-                        <DollarSign className="h-5 w-5 text-stone-500 mr-1" />
-                        <p className="text-md font-medium text-stone-700">
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end gap-4 sm:gap-2">
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-stone-500 mr-1" />
+                        <p className="text-sm sm:text-md font-medium text-stone-700">
                           {item.cost}
                         </p>
                       </div>
-                      <div className="flex items-center justify-center md:justify-start mt-2">
-                        <Clock className="h-5 w-5 text-stone-500 mr-1" />
-                        <p className="text-sm text-stone-600">
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-stone-500 mr-1" />
+                        <p className="text-xs sm:text-sm text-stone-600">
                           {item.minutes} minutes
                         </p>
                       </div>
@@ -196,20 +196,17 @@ export default function Cart() {
                   </div>
 
                   {/* Buttons */}
-                  <div className="flex flex-col gap-2 mt-4 md:mt-0">
+                  <div className="flex flex-row sm:flex-col gap-2 mt-2 sm:mt-0 w-full sm:w-auto">
                     {/* Edit Button */}
-                    <Link
-                      href="/editor"
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <button className="flex items-center justify-center gap-2 bg-stone-800 text-white text-sm px-6 py-3 rounded-md hover:bg-transparent hover:border-2 hover:border-black hover:text-black transition focus:outline-none">
+                    <Link href="/editor" className="flex-1 sm:flex-auto">
+                      <button className="w-full flex items-center justify-center gap-2 bg-stone-800 text-white text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-transparent hover:border-2 hover:border-black hover:text-black transition focus:outline-none">
                         <span>Edit</span>
                       </button>
                     </Link>
 
                     {/* Delete Button */}
                     <button
-                      className="flex items-center justify-center gap-2 text-white text-sm px-6 py-3 rounded-md hover:bg-gray-200 transition focus:outline-none"
+                      className="flex-1 sm:flex-auto w-full flex items-center justify-center gap-2 border border-gray-200 bg-white text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-gray-200 transition focus:outline-none"
                       onClick={() => handleDelete(item.productId)}
                     >
                       <Trash2 className="w-4 h-4 text-black" />
