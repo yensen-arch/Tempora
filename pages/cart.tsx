@@ -118,7 +118,7 @@ export default function Cart() {
   };
 
   if (loading || isLoading) {
-    return <div>Loading...</div>;
+    return <div className=" h-screen text-center flex justify-center items-center"><p >Loading...</p></div>;
   }
   if (
     !product ||

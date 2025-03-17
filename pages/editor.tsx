@@ -11,7 +11,6 @@ function Editor() {
   const { user, isLoading } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
-
   const videoUrl = searchParams.get("videoUrl");
   const duration = searchParams.get("duration");
   const audioPath = searchParams.get("audioPath");
@@ -20,7 +19,7 @@ function Editor() {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user || !videoUrl) {
+      if (!user ) {
         router.push("/api/auth/login");
       } else {
         setIsAuthorized(true);
