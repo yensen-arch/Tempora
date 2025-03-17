@@ -178,7 +178,7 @@ function MediaUpload() {
         setUploading(true); // Keep loading state for concatenation
         
         // Update UI to show concatenation is in progress
-        toast.info("Files uploaded. Now combining the videos...");
+        toast.success("Files uploaded. Now combining the videos...");
         
         try {
           const concatenateResponse = await fetch(

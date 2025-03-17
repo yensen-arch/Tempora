@@ -170,12 +170,15 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     return () => video.removeEventListener("timeupdate", updateSlider);
   }, [videoRef, sliderX, isDragging, visibleStart, visibleEnd, editHistory]);
 
-  const handleDrag = (_, info: { point: { x: number } }) => {
+  const handleDrag = (_, info: { point: { x: number}}) => {
     if (videoRef.current && containerRef.current) {
-      const containerWidth = containerRef.current.offsetWidth;
-      const progress = Math.max(0, Math.min(1, info.point.x / containerWidth));
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const relativeX = info.point.x - containerRect.left;
+      const containerWidth = containerRect.width;
+      
+      const progress = Math.max(0, Math.min(1, relativeX / containerWidth));
       const newTime = visibleStart + progress * (visibleEnd - visibleStart);
-
+      
       if (!isNaN(newTime) && isFinite(newTime)) {
         videoRef.current.currentTime = Math.max(
           visibleStart,
@@ -184,7 +187,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       }
     }
   };
-
   const currentTrim = editHistory[editHistory.length - 1] || {
     start: 0,
     end: duration,
