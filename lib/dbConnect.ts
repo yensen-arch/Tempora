@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import dotenv from "dotenv";
 
 const dbConnect = async () => {
     console.log("heres the env var", process.env.MONGODB_URI)
