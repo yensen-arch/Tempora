@@ -16,32 +16,25 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
 }) => {
   // Calculate the visible duration
   const visibleDuration = visibleEnd - visibleStart;
-  
+
   // Calculate the interval between each of the 20 markers
   const interval = visibleDuration / 19; // 19 intervals for 20 markers
-  
+
   // Format time for display with the new requirements
   const formatTimeLabel = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
-    
-    // If exactly at a minute marker, show "X(minute finished)"
-    if (seconds === 0 && minutes > 0) {
-      return `${minutes}(minute finished)`;
-    }
-    
     // For all other cases, just show the seconds
     return `${seconds}`;
   };
-  
+
   const generateBoldMinuteMarkers = () => {
     const markers = [];
     const startMinute = Math.ceil(visibleStart / 60);
     const endMinute = Math.floor(visibleEnd / 60);
-    
+
     for (let min = startMinute; min <= endMinute; min++) {
       const timeInSeconds = min * 60;
-      
+
       if ((timeInSeconds - visibleStart) % interval === 0) {
         continue;
       }
@@ -56,9 +49,9 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
           displayTime += spliceLength;
         }
       }
-      
+
       const position = ((timeInSeconds - visibleStart) / visibleDuration) * 100;
-      
+
       if (position >= 0 && position <= 100) {
         markers.push(
           <div
@@ -68,7 +61,7 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
               left: `${position}%`,
             }}
           >
-            <div className="h-full w-1 bg-black" />
+            <div className="h-full w-[1.5px] bg-black" />
             <div className="absolute top-full transform -translate-x-1/2 text-sm font-bold text-black mt-1">
               {min}:00
             </div>
@@ -76,14 +69,14 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
         );
       }
     }
-    
+
     return markers;
   };
-  
+
   // Generate exactly 20 markers
   const markers = Array.from({ length: 20 }, (_, i) => {
-    const time = visibleStart + (i * interval);
-    
+    const time = visibleStart + i * interval;
+
     // Get actual video time by accounting for all previous splices
     let displayTime = time;
     const orderedSplices = editHistory
@@ -99,12 +92,15 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
 
     // Calculate position percentage within the visible window
     const position = (i / 19) * 100; // Evenly distributed positions
-    
+
     // Determine marker style - make minute markers taller
-    const isMinuteMarker = Math.round(displayTime) % 60 === 0 && Math.floor(displayTime / 60) > 0;
+    const isMinuteMarker =
+      Math.round(displayTime) % 60 === 0 && Math.floor(displayTime / 60) > 0;
     const markerHeight = isMinuteMarker ? "h-10" : "h-8";
-    const textClass = isMinuteMarker ? "font-medium text-black" : "text-gray-500";
-    
+    const textClass = isMinuteMarker
+      ? "font-medium text-black"
+      : "text-gray-500";
+
     return (
       <div
         key={i}
@@ -114,7 +110,9 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
         }}
       >
         <div className="h-full w-px bg-black" />
-        <div className={`absolute top-full transform -translate-x-1/2 text-xs ${textClass} mt-1`}>
+        <div
+          className={`absolute top-full transform -translate-x-1/2 text-xs ${textClass} mt-1`}
+        >
           {formatTimeLabel(displayTime)}
         </div>
       </div>

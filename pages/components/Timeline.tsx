@@ -170,15 +170,15 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
     return () => video.removeEventListener("timeupdate", updateSlider);
   }, [videoRef, sliderX, isDragging, visibleStart, visibleEnd, editHistory]);
 
-  const handleDrag = (_, info: { point: { x: number}}) => {
+  const handleDrag = (_, info: { point: { x: number } }) => {
     if (videoRef.current && containerRef.current) {
       const containerRect = containerRef.current.getBoundingClientRect();
       const relativeX = info.point.x - containerRect.left;
       const containerWidth = containerRect.width;
-      
+
       const progress = Math.max(0, Math.min(1, relativeX / containerWidth));
       const newTime = visibleStart + progress * (visibleEnd - visibleStart);
-      
+
       if (!isNaN(newTime) && isFinite(newTime)) {
         videoRef.current.currentTime = Math.max(
           visibleStart,
@@ -301,12 +301,6 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
   // Calculate zoom percentage
   const zoomPercentage = Math.round(zoom * 100);
 
-  // Reset zoom to show full timeline
-  const handleResetZoom = () => {
-    setVisibleStart(currentTrim.start);
-    setVisibleEnd(currentTrim.end);
-  };
-
   return (
     <>
       <div className="relative w-full max-w-3xl mt-4 rounded-lg p-8">
@@ -353,71 +347,66 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
                 >
                   +
                 </button>
-                <button
-                  className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
-                  onClick={handleResetZoom}
-                >
-                  Reset
-                </button>
               </div>
               <div className="text-xs text-gray-500 whitespace-nowrap">
                 {formatTime(visibleStart)} - {formatTime(visibleEnd)}
               </div>
             </div>
           </div>
-
-          <div
-            ref={containerRef}
-            className="relative w-full h-16 sm:h-20 overflow-visible border-b border-gray-200"
-          >
-            {showTrim && (
-              <TrimOverlay
-                duration={1}
-                onTrimChange={handleTrimUpdate}
-                onClose={() => setShowTrim(false)}
-                initialStart={0}
-                initialEnd={1}
-              />
-            )}
-
-            {showSplice && (
-              <SpliceOverlay
-                duration={1}
-                onSpliceChange={handleSpliceUpdate}
-                onClose={() => setShowSplice(false)}
-                initialStart={0}
-                initialEnd={1}
-              />
-            )}
-
+          <div className="p-2 border border-gray-400 rounded-lg">
             <div
-              className="absolute bg-opacity-50"
-              style={{
-                width: `${trimWidthPercent}%`,
-                left: `${trimStartPercent}%`,
-              }}
-            />
-
-            <TimelineSlider
-              visibleStart={visibleStart}
-              visibleEnd={visibleEnd}
-              zoom={zoom}
-              editHistory={editHistory}
-            />
-
-            <motion.div
-              className="absolute top-0 w-0.5 h-10 sm:h-12 bg-red-500 z-10"
-              style={{ x: sliderX }}
-              drag="x"
-              dragConstraints={containerRef}
-              dragElastic={0}
-              dragMomentum={false}
-              onDrag={handleDrag}
-              onDragStart={() => setIsDragging(true)}
-              onDragEnd={() => setIsDragging(false)}
+              ref={containerRef}
+              className="relative w-full h-16 sm:h-20 overflow-visible bg-gray-200"
             >
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-0.5 sm:mt-1" />
-            </motion.div>
+              {showTrim && (
+                <TrimOverlay
+                  duration={1}
+                  onTrimChange={handleTrimUpdate}
+                  onClose={() => setShowTrim(false)}
+                  initialStart={0}
+                  initialEnd={1}
+                />
+              )}
+
+              {showSplice && (
+                <SpliceOverlay
+                  duration={1}
+                  onSpliceChange={handleSpliceUpdate}
+                  onClose={() => setShowSplice(false)}
+                  initialStart={0}
+                  initialEnd={1}
+                />
+              )}
+
+              <div
+                className="absolute bg-opacity-50"
+                style={{
+                  width: `${trimWidthPercent}%`,
+                  left: `${trimStartPercent}%`,
+                }}
+              />
+
+              <TimelineSlider
+                visibleStart={visibleStart}
+                visibleEnd={visibleEnd}
+                zoom={zoom}
+                editHistory={editHistory}
+              />
+
+              <motion.div
+                className="absolute top-0 w-0.5 h-10 sm:h-12 bg-red-500 z-10"
+                style={{ x: sliderX }}
+                drag="x"
+                dragConstraints={containerRef}
+                dragElastic={0}
+                dragMomentum={false}
+                onDrag={handleDrag}
+                onDragStart={() => setIsDragging(true)}
+                onDragEnd={() => setIsDragging(false)}
+              >
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rotate-45 mt-0.5 sm:mt-1" />
+              </motion.div>
+            </div>
           </div>
         </div>
         {decodedUrl ? (
