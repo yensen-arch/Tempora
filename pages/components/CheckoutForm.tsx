@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useRouter } from "next/router";
+import { useUser } from "@auth0/nextjs-auth0/client";
+
 const CheckoutForm = ({ products, onCheckout }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -17,9 +19,14 @@ const CheckoutForm = ({ products, onCheckout }) => {
   const [paymentError, setPaymentError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [errorDetails, setErrorDetails] = useState(null);
+  const { user, isLoading } = useUser();
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
+
+  formData.email = user?.email || "";
+  formData.firstName = user?.given_name || "";
+  formData.lastName = user?.family_name || "";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -295,6 +302,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
           <input
             type="email"
             name="email"
+            disabled={true}
             value={formData.email}
             onChange={handleInputChange}
             placeholder="Email"

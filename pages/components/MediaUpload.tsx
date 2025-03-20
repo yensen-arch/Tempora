@@ -171,7 +171,6 @@ function MediaUpload() {
       };
 
       const data = await uploadWithProgress();
-
       // Check if there was an error returned
       if (data?.error) {
         toast.error(`Failed to upload files: ${data?.message}`);
@@ -179,7 +178,6 @@ function MediaUpload() {
         setUploading(false);
         return;
       }
-
       // Only concatenate if there are multiple videos
       if (data?.fileUrls && data?.fileUrls.length > 1) {
         setUploading(true); // Keep loading state for concatenation
@@ -279,7 +277,11 @@ function MediaUpload() {
   };
 
   const isDurationExceeded = totalDuration > MAX_DURATION_MINUTES * 60;
-
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setShow(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <div>
       {uploading ? (
@@ -287,7 +289,7 @@ function MediaUpload() {
       ) : (
         <div className="pt-4 flex items-center justify-center">
           <div className="w-full">
-            {!decodedUrl ? (
+            {!decodedUrl && show ? (
               <div className="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div className="h-40 bg-cover bg-center"></div>
                 <div className="p-6">
