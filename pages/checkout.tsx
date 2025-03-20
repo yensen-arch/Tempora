@@ -10,7 +10,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import CheckoutForm from "./components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { getAccessToken } from "@auth0/nextjs-auth0";
+
 // Load stripe outside of component render
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -38,14 +38,12 @@ export default function Checkout() {
       try {
         if (user) {
           let updatedCart = [];
-          const res = await fetch("/api/auth/token");
-          const { accessToken } = await res.json();
+          
           if (productFromQuery.id !== "empty") {
             const addProductResponse = await fetch("/api/cart/add_items", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
               },
               body: JSON.stringify({
                 email: user.email,

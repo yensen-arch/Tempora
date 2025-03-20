@@ -14,7 +14,7 @@ export default withApiAuthRequired(async function handler(
   try {
     await dbConnect();
 
-    const session = getSession(req, res);
+    const session =await getSession(req, res);
     if (!session || !session.user) {
       return res
         .status(401)

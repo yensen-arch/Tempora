@@ -10,6 +10,7 @@ import TimelineSlider from "./TimelineSlider";
 import { useEditHistoryContext } from "../context/EditHistoryContext";
 import { useTimelineState } from "./hooks/useTimelineState";
 import { useMediaLoader } from "./hooks/useMediaLoader";
+import { toast } from "react-hot-toast";
 
 interface TimelineProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -247,6 +248,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
       });
       setHasUnsavedChanges(false);
       console.log("saved edits:", await res.json());
+      toast.success("Edits saved successfully!");
     } catch {
       console.log("Cannot save edits, try again later");
     } finally {
