@@ -11,7 +11,7 @@ export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { user } = getSession(req, res);
+  const { user } = await getSession(req, res);
   if (!user) {
     return res.status(401).json({ error: "Unauthorized" });
   }

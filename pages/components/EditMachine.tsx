@@ -102,7 +102,7 @@ function EditMachine({
     <>
       {isModalOpen && processedAudio && (
         <div className="modal">
-          <h2>Your final edit will be:</h2>
+          <h2>Your final Audio will be:</h2>
           <div ref={waveformRef} className="waveform" />
           <button
             onClick={togglePlayPause}

@@ -3,36 +3,18 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Link from "next/link";
-import { CheckCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 export default function OrderConfirmation() {
   const router = useRouter();
   const { orderId } = router.query;
   const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     // Fetch order details if needed
     if (orderId) {
       setLoading(false);
-      // You could fetch order details here if needed:
-      /*
-      const fetchOrderDetails = async () => {
-        try {
-          const response = await fetch(`/api/orders/get_order?id=${orderId}`);
-          if (!response.ok) throw new Error("Failed to fetch order");
-          const data = await response.json();
-          setOrder(data);
-        } catch (error) {
-          setError("Unable to load order details");
-          console.error(error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchOrderDetails();
-      */
     }
   }, [orderId]);
 
@@ -76,14 +58,14 @@ export default function OrderConfirmation() {
               
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
-                  href="/"
+                  href="/memories"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Continue Shopping
+                  Go to Memories
                 </Link>
                 
                 <Link 
-                  href="#"
+                  href="/profile"
                   className="inline-flex items-center justify-center px-5 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   View Order History

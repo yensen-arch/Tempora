@@ -18,7 +18,7 @@ export default withApiAuthRequired(async function handler(
     await dbConnect();
 
     // Get user session
-    const session = getSession(req, res);
+    const session =await getSession(req, res);
     if (!session || !session.user || !session.user.email) {
       return res.status(401).json({ error: "Unauthorized: No valid session" });
     }
