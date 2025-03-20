@@ -417,18 +417,6 @@ function MediaUpload() {
                 </a>
               </div>
             )}
-            {
-              decodedUrl && (
-                <div className="mt-4 text-center">
-                <a
-                  href={`/editor`}
-                  className="px-6 py-2 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 inline-block"
-                >
-                  Proceed to Editor
-                </a>
-              </div>
-              )
-            }
           </div>
         </div>
       )}
