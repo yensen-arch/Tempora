@@ -60,9 +60,14 @@ function Profile() {
           />
           <div className="text-center mt-4 flex flex-col gap-4">
             <h3 className="text-lg font-semibold"> Name: {name}</h3>
-            <p className="text-gray-600"><span className="font-semibold">Nick Name:</span> {nickName || "No bio available"}</p>
-            <p className="text-gray-600"><span className="font-semibold">Email:</span> {email || "No bio available"}</p>
-            <p className="text-gray-600"><span className="font-semibold">User Type:</span> {userType || "Loading..."}</p>
+            <p className="text-gray-600">
+              <span className="font-semibold">Nick Name:</span>{" "}
+              {nickName || "No bio available"}
+            </p>
+            <p className="text-gray-600">
+              <span className="font-semibold">Email:</span>{" "}
+              {email || "No bio available"}
+            </p>
 
             {/* Show Dashboard button only for admin */}
             {userType === "admin" && (
