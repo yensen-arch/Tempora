@@ -6,7 +6,6 @@ export default function Document() {
       <Head>
         <link rel="icon" href="/temp_fav.jpeg" />
       </Head>
-
       <body className="antialiased">
         <Main />
         <NextScript />

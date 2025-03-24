@@ -19,8 +19,7 @@ export default withApiAuthRequired(async function handler(
     if (
       !session ||
       !session.user ||
-      !session.user.email ||
-      session.user.userType !== "admin"
+      session.user.email!==process.env.ADMIN_EMAIL
     ) {
       return res.status(401).json({ error: "Unauthorized: No valid session" });
     }
