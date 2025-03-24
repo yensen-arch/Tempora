@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import OrderDetailsModal from "./OrderDetailsModal";
-import { useUser } from "@auth0/nextjs-auth0/client";
 import UpdateOrderModal from "./UpdateOrderModal";
 
 interface Product {
@@ -56,9 +55,6 @@ const OrdersPanel: React.FC = () => {
   const [endDate, setEndDate] = useState("");
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
-
-  const { user, isLoading } = useUser();
-
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -76,10 +72,8 @@ const OrdersPanel: React.FC = () => {
       if (status) queryParams.append("status", status);
       if (startDate) queryParams.append("startDate", startDate);
       if (endDate) queryParams.append("endDate", endDate);
-
       const response = await fetch(`/api/orders/order_history?${queryParams}`);
       const data = await response.json();
-
       if (data.success) {
         setOrders(data.data.orders);
         setPagination(data.data.pagination);
