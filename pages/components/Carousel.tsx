@@ -40,7 +40,7 @@ export default function CarouselWithAudioToggle() {
       <div className="absolute right-0 w-[70%] h-full">
         <video
           ref={videoRef}
-          src="https://res.cloudinary.com/dqh2tacov/video/upload/q_auto,f_auto,w_auto/v1734692404/CarouselVideo_fvw8uy.mp4"
+          src="https://res.cloudinary.com/doubgqqme/video/upload/v1742887182/CarouselVideo_fvw8uy_ra85yv.mp4"
           className="w-full h-full object-cover"
           loop
           playsInline
