@@ -109,80 +109,73 @@ function MediaUpload() {
     if (files.length === 0) return;
     setUploading(true);
 
-    // Initialize progress tracking for each file
+    // Initialize progress tracking with weighted stages
+    const totalStages = 100; // Total percentage
+    const uploadStage = 40; // Upload stage
+    const concatStage = 50; // Concatenation stage
+
+    // Initialize progress array with zeros
     setUploadProgress(files.map(() => 0));
 
     try {
-      // For client-side progress tracking, we need to use XMLHttpRequest instead of fetch
-      const uploadWithProgress = () => {
-        return new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          const formData = new FormData();
+      // Upload stage with XMLHttpRequest for progress tracking
+      const uploadData = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const formData = new FormData();
 
-          files.forEach((file) => {
-            formData.append("file", file);
-          });
-
-          // Track upload progress
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              // Calculate overall progress percentage across all files
-              const percentComplete = (event.loaded / event.total) * 100;
-              setUploadProgress((prev) => {
-                const newProgress = [...prev];
-                // Update progress for all files with the same percentage for simplicity
-                return newProgress.map(() => percentComplete);
-              });
-            }
-          };
-
-          xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response);
-              } catch (e) {
-                // Instead of rejecting with an error, resolve with an error object
-                resolve({ error: true, message: "Invalid JSON response" });
-              }
-            } else {
-              try {
-                const errorData = JSON.parse(xhr.responseText);
-                // Instead of rejecting with an error, resolve with an error object
-                resolve({
-                  error: true,
-                  message: errorData.message || "Upload failed",
-                });
-              } catch {
-                resolve({
-                  error: true,
-                  message: "Server error, please try again.",
-                });
-              }
-            }
-          };
-
-          xhr.onerror = () =>
-            resolve({ error: true, message: "Network error" });
-
-          xhr.open("POST", `/api/cart/upload_media?email=${email}`);
-          xhr.send(formData);
+        files.forEach((file) => {
+          formData.append("file", file);
         });
-      };
 
-      const data = await uploadWithProgress();
+        // Track upload progress
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            // Calculate upload progress (0-40%)
+            const uploadPercentComplete =
+              (event.loaded / event.total) * uploadStage;
+            setUploadProgress((prev) =>
+              prev.map(() => Math.min(uploadPercentComplete, uploadStage))
+            );
+          }
+        };
+
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (e) {
+              reject(new Error("Invalid JSON response"));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              reject(new Error(errorData.message || "Upload failed"));
+            } catch {
+              reject(new Error("Server error, please try again."));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network error"));
+
+        xhr.open("POST", `/api/cart/upload_media?email=${email}`);
+        xhr.send(formData);
+      });
+
       // Check if there was an error returned
-      if (data?.error) {
-        toast.error(`Failed to upload files: ${data?.message}`);
+      if (uploadData?.error) {
+        toast.error(`Failed to upload files: ${uploadData?.message}`);
         setUploadProgress([]);
         setUploading(false);
         return;
       }
-      // Only concatenate if there are multiple videos
-      if (data?.fileUrls && data?.fileUrls.length > 1) {
-        setUploading(true); // Keep loading state for concatenation
 
-        // Update UI to show concatenation is in progress
+      // Concatenation stage (if multiple files)
+      if (uploadData?.fileUrls && uploadData?.fileUrls.length > 1) {
+        // Update progress to 40% (upload complete)
+        setUploadProgress((prev) => prev.map(() => uploadStage));
+
         toast.success("Files uploaded. Now combining the videos...");
 
         try {
@@ -194,7 +187,7 @@ function MediaUpload() {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                videoUrls: data.fileUrls,
+                videoUrls: uploadData.fileUrls,
                 email: email,
               }),
             }
@@ -207,57 +200,66 @@ function MediaUpload() {
             toast.error(
               `Concatenation failed: ${errorData.message || "Unknown error"}`
             );
-          } else {
-            const concatenateData = await concatenateResponse.json();
-            setConcatenatedUrl(concatenateData.concatenatedUrl);
-            setAudioPath(concatenateData.audioPath);
-            setDuration(concatenateData.duration);
-            toast.success("Media uploaded & combined successfully!");
-
-            // Call delete API for original uploaded files
-            await Promise.all(
-              data.fileUrls.map(async (fileUrl) => {
-                try {
-                  const deleteResponse = await fetch("/api/cart/delete_media", {
-                    method: "DELETE",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      email: email,
-                      fileUrl: fileUrl,
-                      resourceType: "video",
-                    }),
-                  });
-
-                  if (!deleteResponse.ok) {
-                    console.error(`Failed to delete file: ${fileUrl}`);
-                  } else {
-                    console.log(`Deleted successfully: ${fileUrl}`);
-                  }
-                } catch (deleteError) {
-                  console.error(`Error deleting file ${fileUrl}:`, deleteError);
-                }
-              })
-            );
+            throw new Error("Concatenation failed");
           }
+
+          // Update progress to 90% (concatenation complete)
+          setUploadProgress((prev) =>
+            prev.map(() => uploadStage + concatStage)
+          );
+
+          const concatenateData = await concatenateResponse.json();
+          setConcatenatedUrl(concatenateData.concatenatedUrl);
+          setAudioPath(concatenateData.audioPath);
+          setDuration(concatenateData.duration);
+
+          // Deletion stage
+          await Promise.all(
+            uploadData.fileUrls.map(async (fileUrl) => {
+              try {
+                const deleteResponse = await fetch("/api/cart/delete_media", {
+                  method: "DELETE",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    email: email,
+                    fileUrl: fileUrl,
+                    resourceType: "video",
+                  }),
+                });
+
+                if (!deleteResponse.ok) {
+                  console.error(`Failed to delete file: ${fileUrl}`);
+                }
+              } catch (deleteError) {
+                console.error(`Error deleting file ${fileUrl}:`, deleteError);
+              }
+            })
+          );
+
+          // Final progress at 100%
+          setUploadProgress((prev) => prev.map(() => totalStages));
+
+          toast.success("Media uploaded & combined successfully!");
         } catch (concatenateError) {
           console.error("Concatenation error:", concatenateError);
           toast.error(
             "Files uploaded but concatenation failed. Please try again."
           );
+          throw concatenateError;
         }
       } else {
-        // Single file case - display the duration and other details returned from the API
-        setDuration(data.duration || 0);
-        setAudioPath(data.audioPath || null);
+        // Single file case
+        setUploadProgress((prev) => prev.map(() => totalStages));
+        setDuration(uploadData.duration || 0);
+        setAudioPath(uploadData.audioPath || null);
         toast.success("File uploaded successfully!");
       }
 
       setFiles([]);
       setFileDurations([]);
       setTotalDuration(0);
-      setUploadProgress([]);
       Router.push("/editor");
     } catch (error) {
       console.error("Upload error:", error);
@@ -269,7 +271,6 @@ function MediaUpload() {
       setUploading(false);
     }
   };
-
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
@@ -285,7 +286,7 @@ function MediaUpload() {
   return (
     <div>
       {uploading ? (
-        <CustomLoader />
+        <CustomLoader progress={uploadProgress[0]} />
       ) : (
         <div className="pt-4 flex items-center justify-center">
           <div className="w-full">
@@ -294,7 +295,7 @@ function MediaUpload() {
                 <div className="h-40 bg-cover bg-center"></div>
                 <div className="p-6">
                   <h2 className="text-2xl font-serif text-amber-800 mb-4">
-                    Upload Your Media (If you haven't alredy)
+                    Upload Your Media
                   </h2>
                   <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
                     <input

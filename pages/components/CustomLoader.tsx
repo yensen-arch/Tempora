@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-const CustomLoader: React.FC = () => {
-  const [progress, setProgress] = useState(0);
+interface LoaderProps {
+  progress: number;
+}
+
+const CustomLoader: React.FC<LoaderProps> = ({ progress }) => {
+  // const [progress, setProgress] = useState(0);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   
   const motivationalQuotes = [
@@ -12,31 +16,31 @@ const CustomLoader: React.FC = () => {
     "The journey of a thousand memories begins with a single photo..."
   ];
 
-  useEffect(() => {
-    // Simulate loading progress
-    const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        const newProgress = prevProgress + 1;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return newProgress;
-      });
-    }, 100);
+  // useEffect(() => {
+  //   // Simulate loading progress
+  //   const interval = setInterval(() => {
+  //     setProgress((prevProgress) => {
+  //       const newProgress = prevProgress + 1;
+  //       if (newProgress >= 100) {
+  //         clearInterval(interval);
+  //         return 100;
+  //       }
+  //       return newProgress;
+  //     });
+  //   }, 100);
 
-    // Rotate through quotes
-    const quoteInterval = setInterval(() => {
-      setCurrentQuoteIndex((prevIndex) => 
-        (prevIndex + 1) % motivationalQuotes.length
-      );
-    }, 3000);
+  //   // Rotate through quotes
+  //   const quoteInterval = setInterval(() => {
+  //     setCurrentQuoteIndex((prevIndex) => 
+  //       (prevIndex + 1) % motivationalQuotes.length
+  //     );
+  //   }, 3000);
 
-    return () => {
-      clearInterval(interval);
-      clearInterval(quoteInterval);
-    };
-  }, []);
+  //   return () => {
+  //     clearInterval(interval);
+  //     clearInterval(quoteInterval);
+  //   };
+  // }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
