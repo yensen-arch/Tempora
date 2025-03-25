@@ -147,7 +147,7 @@ function EditorDisplay({
             onClick={handleDelete}
             className="absolute top-15 right-10 px-3 py-2 bg-black text-white border-none cursor-pointer rounded-full"
           >
-            Delete this Media
+            Delete
           </button>
           <video
             ref={videoRef}

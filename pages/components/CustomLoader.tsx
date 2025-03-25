@@ -1,46 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface LoaderProps {
   progress: number;
 }
 
 const CustomLoader: React.FC<LoaderProps> = ({ progress }) => {
-  // const [progress, setProgress] = useState(0);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-  
+  const [displayProgress, setDisplayProgress] = useState(0);
+
   const motivationalQuotes = [
     "Your story is waiting to be told...",
     "Your memories deserve to last forever...",
     "Just a little more before you get to create your beautiful story...",
     "Every moment captured is a treasure preserved...",
-    "The journey of a thousand memories begins with a single photo..."
+    "The journey of a thousand memories begins with a single photo...",
   ];
 
-  // useEffect(() => {
-  //   // Simulate loading progress
-  //   const interval = setInterval(() => {
-  //     setProgress((prevProgress) => {
-  //       const newProgress = prevProgress + 1;
-  //       if (newProgress >= 100) {
-  //         clearInterval(interval);
-  //         return 100;
-  //       }
-  //       return newProgress;
-  //     });
-  //   }, 100);
+  useEffect(() => {
+    // Quote rotation logic
+    const quoteInterval = setInterval(() => {
+      setCurrentQuoteIndex((prev) => (prev + 1) % motivationalQuotes.length);
+    }, 3000);
 
-  //   // Rotate through quotes
-  //   const quoteInterval = setInterval(() => {
-  //     setCurrentQuoteIndex((prevIndex) => 
-  //       (prevIndex + 1) % motivationalQuotes.length
-  //     );
-  //   }, 3000);
+    return () => clearInterval(quoteInterval);
+  }, []);
 
-  //   return () => {
-  //     clearInterval(interval);
-  //     clearInterval(quoteInterval);
-  //   };
-  // }, []);
+  useEffect(() => {
+    // Progress counter logic
+    if (progress === 40 || progress === 90) {
+      let startTime = Date.now();
+      const counterDuration = 20000; // 20 seconds
+      let animationFrameId: number;
+
+      const updateProgress = () => {
+        const elapsedTime = Date.now() - startTime;
+        const percentage = Math.min(elapsedTime / counterDuration, 1);
+        
+        let adjustedProgress: number;
+        if (progress === 40) {
+          // From 0 to 40
+          adjustedProgress = percentage * 40;
+        } else {
+          // From 40 to 90
+          adjustedProgress = 40 + (percentage * 50);
+        }
+
+        setDisplayProgress(Math.round(adjustedProgress));
+
+        if (percentage < 1) {
+          animationFrameId = requestAnimationFrame(updateProgress);
+        }
+      };
+
+      animationFrameId = requestAnimationFrame(updateProgress);
+
+      return () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      };
+    } else if (progress === 100) {
+      setDisplayProgress(100);
+    } else if (progress > displayProgress) {
+      // Ensure progress can continue beyond the counters
+      setDisplayProgress(progress);
+    }
+  }, [progress]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -52,7 +77,7 @@ const CustomLoader: React.FC<LoaderProps> = ({ progress }) => {
             alt="Three dogs"
             className="w-full h-full object-cover"
           />
-          
+
           {/* Quote Overlay */}
           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
             <div className="text-center px-6">
@@ -62,23 +87,29 @@ const CustomLoader: React.FC<LoaderProps> = ({ progress }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Loading Bar Container */}
         <div className="p-6">
           <div className="mb-2 flex justify-between">
-            <span className="text-sm font-medium text-gray-700">Loading your experience</span>
-            <span className="text-sm font-medium text-gray-700">{progress}%</span>
+            <span className="text-sm font-medium text-gray-700">
+              Loading your experience
+            </span>
+            <span className="text-sm font-medium text-gray-700">
+              {displayProgress}%
+            </span>
           </div>
-          
+
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-in-out"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${displayProgress}%` }}
             />
           </div>
-          
+
           <p className="mt-4 text-sm text-gray-500 text-center">
-            Preparing your memories... Please wait
+            {progress === 100 
+              ? "Your memories are ready!" 
+              : "Preparing your memories... Please wait"}
           </p>
         </div>
       </div>
