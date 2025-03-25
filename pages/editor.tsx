@@ -6,20 +6,34 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import EditorDisplay from "./components/EditorDisplay";
 import { EditHistoryProvider } from "./context/EditHistoryContext";
+import toast from "react-hot-toast";
 
 function Editor() {
+  useEffect(() => {
+    const handleResize = () => {
+      if (
+        window.innerWidth < window.innerHeight &&
+        /Mobi|Android/i.test(navigator.userAgent)
+      ) {
+        toast.error("Please switch to landscape mode");
+      }
+    };
+    handleResize(); // Run on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const { user, isLoading } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
   const videoUrl = searchParams.get("videoUrl");
   const duration = searchParams.get("duration");
   const audioPath = searchParams.get("audioPath");
-
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user ) {
+      if (!user) {
         router.push("/api/auth/login");
       } else {
         setIsAuthorized(true);
@@ -27,7 +41,7 @@ function Editor() {
     }
   }, [user, isLoading, videoUrl, router]);
 
-  if (isLoading || !isAuthorized) return null; // Prevent UI flickering
+  if (isLoading || !isAuthorized) return null;
 
   return (
     <div>
