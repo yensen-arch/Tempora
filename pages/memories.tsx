@@ -64,7 +64,7 @@ export default function Memories() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8f5f0]">
-      <Navbar />
+      <Navbar productsRef={undefined} />
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-12">
         <h1 className="text-4xl md:text-5xl font-serif text-[#5c4a38] text-center mb-2">

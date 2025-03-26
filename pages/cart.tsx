@@ -129,7 +129,7 @@ export default function Cart() {
     return (
       <div>
         {" "}
-        <Navbar />
+        <Navbar productsRef={undefined} />
         <div className="flex flex-col items-center justify-center min-h-screen">
           <h1 className="text-lg text-stone-600">No product in the cart.</h1>
           <Link href="/" className="mt-4 text-blue-500 hover:underline">
@@ -144,7 +144,7 @@ export default function Cart() {
   return (
     <div className="flex flex-col bg-stone-100">
       {/* Navbar */}
-      <Navbar />
+      <Navbar productsRef={undefined} />
       {/* Main Content */}
       <div className="min-h-screen flex-grow py-16 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">

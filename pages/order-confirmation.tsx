@@ -20,8 +20,7 @@ export default function OrderConfirmation() {
 
   return (
     <div className="flex flex-col min-h-screen bg-stone-50">
-      <Navbar />
-      
+      <Navbar productsRef={undefined} />
       <main className="flex-grow flex items-center justify-center p-4">
         <div className="max-w-3xl w-full bg-white rounded-lg shadow-md p-8">
           {loading ? (

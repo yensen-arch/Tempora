@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 const terms: NextPage = () => {
   return (
     <>
-      <Navbar />
+      <Navbar productsRef={undefined} />
       <div className="mt-20">
         <Head>
           <title>Terms & Conditions</title>

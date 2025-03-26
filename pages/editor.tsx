@@ -45,7 +45,7 @@ function Editor() {
 
   return (
     <div>
-      <Navbar />
+      <Navbar productsRef={undefined} />
       <EditHistoryProvider>
         <EditorDisplay
           videoUrl={videoUrl}

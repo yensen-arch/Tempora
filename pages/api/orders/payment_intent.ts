@@ -4,7 +4,7 @@ import dbConnect from "../../../lib/dbConnect";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2025-02-24.acacia",
 });
 
 export default withApiAuthRequired(async function handler(

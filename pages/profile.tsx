@@ -163,7 +163,7 @@ function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f9f3ee] text-[#5d4037] font-serif">
-      <Navbar />
+      <Navbar productsRef={undefined} />
 
       {/* Custom CSS for decorative elements */}
       <style jsx>{`

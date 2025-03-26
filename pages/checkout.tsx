@@ -10,6 +10,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import CheckoutForm from "./components/CheckoutForm";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { StripeElementsOptions } from "@stripe/stripe-js";
 
 // Load stripe outside of component render
 const stripePromise = loadStripe(
@@ -38,7 +39,7 @@ export default function Checkout() {
       try {
         if (user) {
           let updatedCart = [];
-          
+
           if (productFromQuery.id !== "empty") {
             const addProductResponse = await fetch("/api/cart/add_items", {
               method: "POST",
@@ -114,7 +115,7 @@ export default function Checkout() {
   if (loading || isLoading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar productsRef={undefined} />
         <div className="flex-grow flex items-center justify-center">
           <div className="animate-pulse text-xl">Loading...</div>
         </div>
@@ -130,7 +131,7 @@ export default function Checkout() {
   ) {
     return (
       <div className="flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar productsRef={undefined} />
         <div className="flex-grow flex flex-col items-center justify-center">
           <h1 className="text-lg text-stone-600">No product in the cart.</h1>
           <Link href="/" className="mt-4 text-blue-500 hover:underline">
@@ -143,10 +144,8 @@ export default function Checkout() {
   }
 
   // Configure Stripe Elements
-  const stripeOptions = {
-    // Passing the client locale helps Stripe present localized error messages
-    locale: "en",
-    // Pass appearance options to customize the look and feel of Stripe Elements
+  const stripeOptions: StripeElementsOptions = {
+    locale: "en", // Ensures TypeScript recognizes it as a valid locale
     appearance: {
       theme: "stripe",
       variables: {
@@ -158,7 +157,7 @@ export default function Checkout() {
   return (
     <div className="flex flex-col bg-stone-100 min-h-screen">
       {/* Navbar */}
-      <Navbar />
+      <Navbar productsRef={undefined} />
       {/* Main Content */}
       <div className="flex-grow py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
