@@ -1,11 +1,11 @@
 "use client";
-import React, { forwardRef, useState, useEffect } from 'react';
+import React, { forwardRef,RefObject, useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Leaf } from "lucide-react";
 
-const Products = forwardRef((props, ref) => {
+const Products = forwardRef((props, ref: RefObject<HTMLElement>) => {
   const [products, setProducts] = useState([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();

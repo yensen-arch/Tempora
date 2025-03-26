@@ -109,7 +109,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
 
   const handleRedo = () => {
     redo({
-      onTrim: (start, number, end) => {
+      onTrim: (start, end) => {
         setVisibleStart(start);
         setVisibleEnd(end);
         if (videoRef.current) videoRef.current.currentTime = start;
@@ -418,6 +418,7 @@ const Timeline: React.FC<TimelineProps> = ({ videoRef, duration }) => {
             setSubmitClicked={setSubmitClicked}
             setProcessing={setProcessing}
             audioUrl={decodedAudioUrl}
+            handleSave={handleSave}
           />
         ) : (
           <div>Loading video...</div>

@@ -123,49 +123,49 @@ function MediaUpload() {
 
     try {
       // Upload stage with XMLHttpRequest for progress tracking
-      const uploadData = await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const formData = new FormData();
+      const uploadData:any =
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const formData = new FormData();
+          files.forEach((file) => {
+            formData.append("file", file);
+          });
 
-        files.forEach((file) => {
-          formData.append("file", file);
+          // Track upload progress
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              // Calculate upload progress (0-40%)
+              const uploadPercentComplete =
+                (event.loaded / event.total) * uploadStage;
+              setUploadProgress((prev) =>
+                prev.map(() => Math.min(uploadPercentComplete, uploadStage))
+              );
+            }
+          };
+
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch (e) {
+                reject(new Error("Invalid JSON response"));
+              }
+            } else {
+              try {
+                const errorData = JSON.parse(xhr.responseText);
+                reject(new Error(errorData.message || "Upload failed"));
+              } catch {
+                reject(new Error("Server error, please try again."));
+              }
+            }
+          };
+
+          xhr.onerror = () => reject(new Error("Network error"));
+
+          xhr.open("POST", `/api/cart/upload_media?email=${email}`);
+          xhr.send(formData);
         });
-
-        // Track upload progress
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            // Calculate upload progress (0-40%)
-            const uploadPercentComplete =
-              (event.loaded / event.total) * uploadStage;
-            setUploadProgress((prev) =>
-              prev.map(() => Math.min(uploadPercentComplete, uploadStage))
-            );
-          }
-        };
-
-        xhr.onload = function () {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              resolve(response);
-            } catch (e) {
-              reject(new Error("Invalid JSON response"));
-            }
-          } else {
-            try {
-              const errorData = JSON.parse(xhr.responseText);
-              reject(new Error(errorData.message || "Upload failed"));
-            } catch {
-              reject(new Error("Server error, please try again."));
-            }
-          }
-        };
-
-        xhr.onerror = () => reject(new Error("Network error"));
-
-        xhr.open("POST", `/api/cart/upload_media?email=${email}`);
-        xhr.send(formData);
-      });
 
       // Check if there was an error returned
       if (uploadData?.error) {

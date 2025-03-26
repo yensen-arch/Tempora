@@ -1,6 +1,7 @@
 "use client";
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
+import { Buffer } from 'buffer';
 
 type Edit = {
   type: "trim" | "splice";
@@ -154,7 +155,8 @@ export const processAudio = async (audioUrl: string, edits: Edit[]) => {
     }
 
     const data = await ffmpeg.readFile('output.mp3');
-    const uint8Array = new Uint8Array(data as ArrayBuffer);
+    const buffer = Buffer.from(data);
+    const uint8Array = new Uint8Array(buffer);
 
     return URL.createObjectURL(new Blob([uint8Array], { type: "audio/mp3" }));
   } catch (error) {

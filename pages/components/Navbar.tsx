@@ -185,7 +185,9 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                   <div
                     className="px-4 py-2 text-gray-800 cursor-pointer hover:bg-gray-100"
                     onClick={() => {
-                      window.location.href = user ? "/api/auth/logout" : "/api/auth/login";
+                      window.location.href = user
+                        ? "/api/auth/logout"
+                        : "/api/auth/login";
                     }}
                   >
                     <p className="font-medium">{user ? "Logout" : "Login"}</p>
@@ -239,7 +241,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                     <X className="h-6 w-6" />
                   </motion.button>
                 </div>
-                {!isLoading && user && (
+                {!isLoading && user && typeof user.given_name === "string" && (
                   <div className="text-lg font-medium text-gray-800 mb-4">
                     Welcome, {user.given_name}
                   </div>

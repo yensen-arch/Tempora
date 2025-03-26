@@ -59,7 +59,6 @@ function EditMachine({
         progressColor: "#357ABD",
         cursorColor: "#FF0000",
         height: 80,
-        responsive: true,
         normalize: true,
       });
       waveSurferInstance.current.load(processedAudio);
@@ -88,7 +87,7 @@ function EditMachine({
     return new File([blob], filename, { type: blob.type });
   };
 
-  const getAudioDuration = (file: any) => {
+  const getAudioDuration = (file: any): Promise<number> => {
     return new Promise((resolve) => {
       const audio = new Audio(URL.createObjectURL(file));
       audio.addEventListener("loadedmetadata", () => {
@@ -96,7 +95,6 @@ function EditMachine({
       });
     });
   };
-
   const handleProceed = async (fileUrl) => {
     const response = await fetch("/api/cart/get_items", {
       method: "POST",
