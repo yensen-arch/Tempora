@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html lang="en">
+    <Html lang="en">  
       <Head>
       <title>Tempora</title>
         <link rel="icon" href="/temp_fav.jpeg" />
