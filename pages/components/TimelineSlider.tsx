@@ -12,7 +12,7 @@ const TimelineSlider: React.FC<TimelineSliderProps> = ({
   visibleStart,
   visibleEnd,
   zoom,
-  editHistory,
+  editHistory=[],
 }) => {
   // Calculate the visible duration
   const visibleDuration = visibleEnd - visibleStart;

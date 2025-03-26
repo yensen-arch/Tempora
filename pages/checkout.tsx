@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Navbar from "./components/Navbar";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,7 +8,9 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Clock, DollarSign } from "lucide-react";
 import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
-import CheckoutForm from "./components/CheckoutForm";
+const CheckoutForm = dynamic(() => import("./components/CheckoutForm"), {
+  ssr: false,
+});
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { StripeElementsOptions } from "@stripe/stripe-js";
