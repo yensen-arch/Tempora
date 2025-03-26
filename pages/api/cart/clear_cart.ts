@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import Cart from "../../models/Cart";
+import Cart from "../../../lib/models/Cart";
 import dbConnect from "../../../lib/dbConnect";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 

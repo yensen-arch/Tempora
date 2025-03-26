@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit } from "./types";
+import { Edit } from "../../lib/hooks/types";
 
 interface TimelineSliderProps {
   visibleStart: number;

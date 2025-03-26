@@ -1,6 +1,6 @@
 import dbConnect from "../../../lib/dbConnect";
 import { NextApiRequest, NextApiResponse } from "next";
-import User from "../../models/User";
+import User from "../../../lib/models/User";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
 
 export default withApiAuthRequired(async function handler(

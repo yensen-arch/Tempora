@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
-import { Media } from "../../models/media";
+import { Media } from "../../../lib/models/media";
 
 export default withApiAuthRequired(async function handler(
   req: NextApiRequest,

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import cloudinary from "../../../lib/cloudinary";
-import { Media } from "../../models/media";
+import { Media } from "../../../lib/models/media";
+
 import { UploadApiOptions } from "cloudinary";
 
 interface ConcatenateRequest {

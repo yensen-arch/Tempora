@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getIronSession, IronSession } from "iron-session";
 import dbConnect from "../../../lib/dbConnect";
-import Order from "../../models/orders";
+import Order from "../../../lib/models/orders";
 import { sessionOptions, SessionData } from "../../../lib/sessionConfig";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

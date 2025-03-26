@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
-import Cart from "../../models/Cart";
+import Cart from "../../../lib/models/Cart";
 
 export default withApiAuthRequired(
   async (req: NextApiRequest, res: NextApiResponse) => {

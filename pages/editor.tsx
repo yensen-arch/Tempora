@@ -5,7 +5,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import EditorDisplay from "./components/EditorDisplay";
-import { EditHistoryProvider } from "./context/EditHistoryContext";
+import { EditHistoryProvider } from "../lib/context/EditHistoryContext";
 import toast from "react-hot-toast";
 
 function Editor() {

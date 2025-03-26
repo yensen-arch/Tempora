@@ -2,7 +2,7 @@ import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
 import formidable, { Files, Fields } from "formidable";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
-import { Media } from "../../models/media";
+import { Media } from "../../../lib/models/media";
 
 // Extend formidable types
 interface CustomFile {

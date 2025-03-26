@@ -2,7 +2,7 @@ import cloudinary from "../../../lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "../../../lib/dbConnect";
 import { withApiAuthRequired, getSession } from "@auth0/nextjs-auth0";
-import { Media } from "../../models/media";
+import { Media } from "../../../lib/models/media";
 
 export default withApiAuthRequired(async function handler(
   req: NextApiRequest,

@@ -7,9 +7,9 @@ import SpliceOverlay from "./SpliceOverlay";
 import EditMachine from "./EditMachine";
 import TimelineControls from "./TimelineControls";
 import TimelineSlider from "./TimelineSlider";
-import { useEditHistoryContext } from "../context/EditHistoryContext";
-import { useTimelineState } from "./hooks/useTimelineState";
-import { useMediaLoader } from "./hooks/useMediaLoader";
+import { useEditHistoryContext } from "../../lib/context/EditHistoryContext";
+import { useTimelineState } from "../../lib/hooks/useTimelineState";
+import { useMediaLoader } from "../../lib/hooks/useMediaLoader";
 import { toast } from "react-hot-toast";
 
 interface TimelineProps {

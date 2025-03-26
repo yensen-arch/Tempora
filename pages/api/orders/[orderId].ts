@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from "../../../lib/dbConnect";
-import Order from "../../models/orders";
+import Order from "../../../lib/models/orders";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "PATCH") {

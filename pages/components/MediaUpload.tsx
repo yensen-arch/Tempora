@@ -4,7 +4,7 @@ import React, { useState, type ChangeEvent, useEffect } from "react";
 import { Music, Video, X, Loader2, AlertCircle } from "lucide-react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { toast } from "react-hot-toast";
-import { useMediaLoader } from "./hooks/useMediaLoader";
+import { useMediaLoader } from "../../lib/hooks/useMediaLoader";
 import Router from "next/router";
 import CustomLoader from "./CustomLoader";
 function MediaUpload() {

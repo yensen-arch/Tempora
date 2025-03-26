@@ -1,7 +1,7 @@
 // hooks/useMediaLoader.ts
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useEditHistoryContext } from '../../context/EditHistoryContext';
+import { useEditHistoryContext } from '../context/EditHistoryContext';
 
 export const useMediaLoader = (email?: string) => {
   const router = useRouter();

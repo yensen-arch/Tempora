@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from "../../../lib/dbConnect";
-import Order from "../../models/orders";
+import Order from "../../../lib/models/orders";
 import { getSession } from '@auth0/nextjs-auth0';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
