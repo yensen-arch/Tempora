@@ -18,8 +18,12 @@ function MediaUpload() {
   const [duration, setDuration] = useState<number | null>(null);
   const [fileDurations, setFileDurations] = useState<number[]>([]);
   const [totalDuration, setTotalDuration] = useState<number>(0);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setShow(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
   const MAX_DURATION_MINUTES = 20;
-
   const getFileDuration = (file: File): Promise<number> => {
     return new Promise((resolve) => {
       const element = file.type.startsWith("audio/")
@@ -278,11 +282,6 @@ function MediaUpload() {
   };
 
   const isDurationExceeded = totalDuration > MAX_DURATION_MINUTES * 60;
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setShow(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
   return (
     <div>
       {uploading ? (

@@ -4,7 +4,6 @@ export default function Document() {
   return (
     <Html lang="en">  
       <Head>
-      <title>Tempora</title>
         <link rel="icon" href="/temp_fav.jpeg" />
       </Head>
       <body className="antialiased">
