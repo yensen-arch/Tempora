@@ -24,10 +24,9 @@ const CheckoutForm = ({ products, onCheckout }) => {
   const elements = useElements();
   const router = useRouter();
 
-  formData.email = user?.email || "";
-  formData.firstName = user?.given_name || "";
-  formData.lastName = user?.family_name || "";
-
+  formData.email = (user?.email as string) || "";
+  formData.firstName = (user?.given_name as string) || "";
+  formData.lastName = (user?.family_name as string) || "";
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
