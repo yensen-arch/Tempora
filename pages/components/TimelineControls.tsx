@@ -1,4 +1,6 @@
 // TimelineControls.tsx
+"use client";
+
 import React from "react";
 import { Undo, Redo } from "lucide-react";
 

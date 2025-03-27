@@ -17,10 +17,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   activeTab, 
   onTabChange 
 }) => {
+  
   return (
     <div className="border-b border-gray-200">
       <nav className="flex space-x-8">
-        {tabs.map((tab) => (
+        {tabs?.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}

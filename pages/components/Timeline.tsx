@@ -1,4 +1,6 @@
 // Timeline.tsx - Enhanced with zoom controls
+"use client";
+
 import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { useUser } from "@auth0/nextjs-auth0/client";

@@ -1,5 +1,5 @@
-// 1. First, adjust the EditHistoryProvider to not manage visibleStart/visibleEnd directly
 // context/EditHistoryContext.tsx
+"use client";
 import React, { createContext, useContext, useState } from 'react';
 import { Edit } from '../hooks/types';
 

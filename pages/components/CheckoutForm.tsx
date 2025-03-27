@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useRouter } from "next/router";
@@ -36,11 +37,10 @@ const CheckoutForm = ({ products, onCheckout }) => {
   };
 
   const calculateTotal = () => {
-    return products
-      .reduce((sum, product) => sum + parseFloat(product.cost), 0)
+    return (products || [])
+      .reduce((sum: number, product:any) => sum + parseFloat(product.cost), 0)
       .toFixed(2);
   };
-
   const getErrorMessage = (error) => {
     // Extract useful information from different error types
     if (error.type === "card_error" || error.type === "validation_error") {
