@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 const steps = [
   {
@@ -10,7 +11,6 @@ const steps = [
       "Choose the products you want to buy and add them to your cart.",
     image:
       "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684532/samples/cup-on-a-table.jpg",
-    buttonText: "Start Shopping",
   },
   {
     title: "Edit Your Memories",
@@ -18,7 +18,6 @@ const steps = [
       "Upload your memories and edit them seamlessly through our Inbuilt editor.",
     image:
       "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684532/samples/coffee.jpg",
-    buttonText: "Proceed to Editor",
   },
   {
     title: "Checkout",
@@ -26,7 +25,6 @@ const steps = [
       "Sit back and relax as we deliver your products right to your doorstep.",
     image:
       "https://res.cloudinary.com/dqh2tacov/image/upload/q_auto,f_auto,w_auto/v1734684527/samples/ecommerce/accessories-bag.jpg",
-    buttonText: "Complete the Order",
   },
 ];
 
@@ -66,12 +64,9 @@ export default function Help() {
                 <h3 className="text-xl font-semibold text-center mb-2">
                   {step.title}
                 </h3>
-                <p className="text-gray-600 text-center mb-4">
+                <p className="text-gray-600 text-center">
                   {step.description}
                 </p>
-                <motion.button className="w-full py-2 bg-white text-black border-2 border-black rounded-lg hover:bg-black hover:text-white transition-all duration-300">
-                  {step.buttonText}
-                </motion.button>
               </div>
             </motion.div>
           ))}

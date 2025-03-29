@@ -66,7 +66,17 @@ function MediaUpload() {
 
   if (!user?.email) {
     return (
-      <div className="p-8 text-center">Please sign in to upload files.</div>
+      <div className="p-8 text-center">
+        <p className="mb-4">Please sign in to upload files.</p>
+        <button
+          onClick={() => {
+            window.location.href = "/api/auth/login";
+          }}
+          className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200"
+        >
+          Sign In
+        </button>
+      </div>
     );
   }
 

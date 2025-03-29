@@ -96,19 +96,26 @@ export default function Cart() {
 
   const handleDelete = async (productId?: string) => {
     try {
-      const response = await fetch("/api/cart/delete_items", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: user?.email,
-          productId,
-        }),
-      });
+      if (user?.email) {
+        // If user is logged in, delete from database
+        const response = await fetch("/api/cart/delete_items", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email,
+            productId,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete product from cart");
+        if (!response.ok) {
+          throw new Error("Failed to delete product from cart");
+        }
+      } else {
+        // If user is not logged in, remove from localStorage
+        localStorage.removeItem("cartProduct");
       }
 
+      // Update the UI state regardless of auth status
       const updatedCart = product.filter(
         (item) => item.productId !== productId
       );
@@ -194,24 +201,6 @@ export default function Cart() {
                         </p>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="flex flex-row sm:flex-col gap-2 mt-2 sm:mt-0 w-full sm:w-auto">
-                    {/* Edit Button */}
-                    <Link href="/editor" className="flex-1 sm:flex-auto">
-                      <button className="w-full flex items-center justify-center gap-2 bg-stone-800 text-white text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-transparent hover:border-2 hover:border-black hover:text-black transition focus:outline-none">
-                        <span>Edit</span>
-                      </button>
-                    </Link>
-
-                    {/* Delete Button */}
-                    <button
-                      className="flex-1 sm:flex-auto w-full flex items-center justify-center gap-2 border border-gray-200 bg-white text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-gray-200 transition focus:outline-none"
-                      onClick={() => handleDelete(item.productId)}
-                    >
-                      <Trash2 className="w-4 h-4 text-black" />
-                    </button>
                   </div>
                 </div>
               </motion.div>
