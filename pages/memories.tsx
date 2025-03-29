@@ -214,7 +214,12 @@ export default function Memories() {
                     <p className="text-[#8a7968] mb-6">
                       Sign in to access your audio memories
                     </p>
-                    <button className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200">
+                    <button
+                      onClick={() => {
+                        window.location.href = "/api/auth/login";
+                      }}
+                      className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200"
+                    >
                       Sign In
                     </button>
                   </div>

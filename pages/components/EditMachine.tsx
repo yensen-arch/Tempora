@@ -31,9 +31,9 @@ function EditMachine({
   useEffect(() => {
     const runFFmpeg = async () => {
       if (submitClicked) {
-        console.log(edits)
+        console.log(edits);
         setProcessing(true);
-        let outputUrl
+        let outputUrl;
         if (edits.length !== 0) {
           outputUrl = await processAudio(audioUrl, edits);
         } else {
@@ -76,9 +76,17 @@ function EditMachine({
       }
     }
   };
-
   if (!user?.email) {
-    return <p>Please sign in to upload files.</p>;
+    return (
+      <button
+        onClick={() => {
+          window.location.href = "/api/auth/login";
+        }}
+        className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200"
+      >
+        Sign In
+      </button>
+    );
   }
 
   const getFileFromBlob = async (blobUrl: any, filename: string) => {
@@ -123,7 +131,9 @@ function EditMachine({
         (product: any) => product.minutes * 60 >= duration
       );
       if (!largerProduct) {
-        alert("You caught us! Your audio duration exceeds the maximum duration for all available products. Please contact support for assistance.");
+        alert(
+          "You caught us! Your audio duration exceeds the maximum duration for all available products. Please contact support for assistance."
+        );
         setCheckingOut(false);
         return;
       }
@@ -135,7 +145,6 @@ function EditMachine({
   };
 
   const proceedToCheckout = async (file) => {
-
     const formData = new FormData();
     formData.append("file", file);
     const resp = await fetch(`api/processed-audio/upload?email=${email}`, {
@@ -148,7 +157,6 @@ function EditMachine({
       alert("Failed to upload file, Try again later");
       setCheckingOut(false);
     }
-
   };
 
   const handleSwitchToLargerProduct = async () => {
@@ -158,7 +166,7 @@ function EditMachine({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
-          audioDuration: audioDuration
+          audioDuration: audioDuration,
         }),
       });
 
@@ -181,8 +189,7 @@ function EditMachine({
         // Delay to ensure navigation is complete before scrolling
         setTimeout(() => {
           // Access the productsRef on the home page
-          const productsSection =
-            document.getElementById("products-section");
+          const productsSection = document.getElementById("products-section");
           if (productsSection) {
             productsSection.scrollIntoView({
               behavior: "smooth",
@@ -190,49 +197,49 @@ function EditMachine({
           }
         }, 200); // Adjust the delay as needed
       });
-    };
-  }
+    }
+  };
 
-    return (
-      <>
-        {isModalOpen && processedAudio && (
-          <div className="modal">
-            <h2>Your final Audio will be:</h2>
-            <div ref={waveformRef} className="waveform" />
+  return (
+    <>
+      {isModalOpen && processedAudio && (
+        <div className="modal">
+          <h2>Your final Audio will be:</h2>
+          <div ref={waveformRef} className="waveform" />
+          <button
+            onClick={togglePlayPause}
+            className="bg-black hover:bg-gray-600 text-white px-2 py-2 rounded-full mt-2 flex items-center gap-2"
+          >
+            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+          </button>
+          <div className="flex gap-4 mt-4">
             <button
-              onClick={togglePlayPause}
-              className="bg-black hover:bg-gray-600 text-white px-2 py-2 rounded-full mt-2 flex items-center gap-2"
+              onClick={() => handleProceed(processedAudio)}
+              className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md disabled:bg-opacity-50"
+              disabled={checkingOut}
             >
-              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+              {checkingOut ? "Please Wait" : "Checkout"}
             </button>
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={() => handleProceed(processedAudio)}
-                className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md disabled:bg-opacity-50"
-                disabled={checkingOut}
-              >
-                {checkingOut ? "Please Wait" : "Checkout"}
-              </button>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md"
-              >
-                Edit
-              </button>
-            </div>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="bg-black text-white border border-black hover:bg-white hover:text-black px-4 py-2 rounded-md"
+            >
+              Edit
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        <UpgradeProductModal
-          isOpen={isDurationWarningOpen}
-          onClose={() => setIsDurationWarningOpen(false)}
-          productMinutes={cartData?.[0]?.minutes || 0}
-          audioDuration={audioDuration}
-          onSwitchProduct={handleSwitchToLargerProduct}
-          onBrowseProducts={handleBrowseProducts}
-        />
-      </>
-    );
-  }
+      <UpgradeProductModal
+        isOpen={isDurationWarningOpen}
+        onClose={() => setIsDurationWarningOpen(false)}
+        productMinutes={cartData?.[0]?.minutes || 0}
+        audioDuration={audioDuration}
+        onSwitchProduct={handleSwitchToLargerProduct}
+        onBrowseProducts={handleBrowseProducts}
+      />
+    </>
+  );
+}
 
-  export default EditMachine;
+export default EditMachine;
