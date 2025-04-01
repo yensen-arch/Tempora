@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useRouter } from "next/router";
 import { useUser } from "@auth0/nextjs-auth0/client";
+import toast from "react-hot-toast";
 
 const CheckoutForm = ({ products, onCheckout }) => {
   const [formData, setFormData] = useState({
@@ -13,21 +14,31 @@ const CheckoutForm = ({ products, onCheckout }) => {
     city: "",
     state: "",
     zipCode: "",
+    referralCode: "",
     contactNumber: "",
     cardName: "",
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [isCodeapplied, setIsCodeApplied] = useState(false);
   const [errorDetails, setErrorDetails] = useState(null);
+  const [total, setTotal] = useState(0);
   const { user, isLoading } = useUser();
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
 
-  formData.email = (user?.email as string) || "";
-  formData.firstName = (user?.given_name as string) || "";
-  formData.lastName = (user?.family_name as string) || "";
+  useEffect(() => {
+    if (user) {
+      setFormData(prevData => ({
+        ...prevData,
+        email: user.email || "",
+        firstName: (user.given_name as string) || "",
+        lastName: (user.family_name as string) || ""
+      }));
+    }
+  }, [user]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -37,10 +48,44 @@ const CheckoutForm = ({ products, onCheckout }) => {
   };
 
   const calculateTotal = () => {
-    return (products || [])
+    const t = (products || [])
       .reduce((sum: number, product:any) => sum + parseFloat(product.cost), 0)
       .toFixed(2);
+    setTotal(t);
   };
+
+  const applyDiscount = (discount: number) =>{
+    const discountedTotal = total - total*(discount/100);
+    setTotal(Number(discountedTotal.toFixed(2)));
+  }
+
+  useEffect(() => {
+    calculateTotal();
+  }, [products]);
+
+  const checkCodeValidity = async (code: string) => {
+    try {
+      const response = await fetch("/api/referrals/check-code-validity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        toast.error((await response.json()).error);
+        return;
+      }
+
+      const data = await response.json();
+      applyDiscount(data.discount);
+      setIsCodeApplied(true);
+      toast.success(data.message);
+      return data;
+    } catch (error) {
+      console.error("Error checking referral code:", error);
+      return null;
+    }
+  }
   const getErrorMessage = (error) => {
     // Extract useful information from different error types
     if (error.type === "card_error" || error.type === "validation_error") {
@@ -116,7 +161,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
         body: JSON.stringify({
           ...formData,
           products,
-          totalAmount: calculateTotal(),
+          totalAmount: total,
         }),
       });
 
@@ -163,7 +208,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
             body: JSON.stringify({
               ...formData,
               products,
-              totalAmount: calculateTotal(),
+              totalAmount: total,
               paymentIntentId: paymentResult.paymentIntent.id,
               paymentStatus: "completed",
             }),
@@ -359,6 +404,36 @@ const CheckoutForm = ({ products, onCheckout }) => {
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              disabled={isCodeapplied}
+              name="referralCode"
+              value={formData.referralCode}
+              onChange={handleInputChange}
+              placeholder="Referral Code (optional)"
+              className="w-full px-3 py-2 border rounded-md"
+            />
+            {!isCodeapplied? (
+              <button
+              type="button"
+              onClick={() => checkCodeValidity(formData.referralCode)}
+              className="w-full bg-green-400 hover:bg-gray-300 text-black py-2 px-4 rounded-md"
+            >
+              Apply Code
+            </button>
+            ):(
+              <button
+              type="button"
+              onClick={() => {setIsCodeApplied(false); calculateTotal(); setFormData({...formData, referralCode: ""})}}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
+              >
+                Reset Code
+              </button>
+            )}
+            
+          </div>
+
           <hr className="my-4" />
 
           <h3 className="text-lg font-semibold">Payment Information</h3>
@@ -385,7 +460,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
 
           <div className="flex justify-between text-lg font-semibold mt-6">
             <span>Total:</span>
-            <span>${calculateTotal()}</span>
+            <span>${total}</span>
           </div>
 
           <button

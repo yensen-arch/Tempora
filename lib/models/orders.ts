@@ -26,6 +26,7 @@ const OrderSchema: Schema = new Schema(
     state: { type: String, required: true },
     zipcode: { type: String, required: true },
     products: { type: Array, required: true },
+    referralCode: { type: String, required: true, default: "none" },
     totalAmount: { type: Number, required: true },
     status: {
       type: String,

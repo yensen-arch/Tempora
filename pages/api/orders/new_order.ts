@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getIronSession, IronSession } from "iron-session";
 import dbConnect from "../../../lib/dbConnect";
 import Order from "../../../lib/models/orders";
+import referral from "../../../lib/models/referral";
 import { sessionOptions, SessionData } from "../../../lib/sessionConfig";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { firstName, lastName, email, address, city, state, zipCode, contactNumber, products } = req.body;
+    const { firstName, lastName, email, address, city, state, zipCode, contactNumber, products, referralCode } = req.body;
 
     if (!firstName || !lastName || !email || !address || !city || !state || !zipCode) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -31,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fileUrl: session.fileUrl,
       name: `${firstName} ${lastName}`,
       email,
+      referralCode: referralCode || "none",
       address,
       city,
       state,
@@ -39,6 +41,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       contactNumber: contactNumber || "N/A",
       totalAmount,
     });
+    if (referralCode) {
+      const ref = await referral.findOne({ code: referralCode });
+      if (ref) {
+        ref.usedBy.push(email);
+        await ref.save();
+      }
+    }
 
     await newOrder.save();
     console.log(newOrder);
