@@ -23,6 +23,7 @@ const OrderSchema: Schema = new Schema(
     email: { type: String, required: true },
     contactNumber: { type: String, required: true },
     city: { type: String, required: true },
+    promotionConsent: { type: Boolean, required: true, default: false },
     state: { type: String, required: true },
     zipcode: { type: String, required: true },
     products: { type: Array, required: true },

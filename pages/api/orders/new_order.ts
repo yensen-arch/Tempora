@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { firstName, lastName, email, address, city, state, zipCode, contactNumber, products, referralCode } = req.body;
+    const { firstName, lastName, email, address, city, state, zipCode, contactNumber, products, referralCode, promotionConsent } = req.body;
 
     if (!firstName || !lastName || !email || !address || !city || !state || !zipCode) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       email,
       referralCode: referralCode || "none",
       address,
+      promotionConsent: promotionConsent || false,
       city,
       state,
       zipcode: zipCode,

@@ -5,6 +5,29 @@ import { useRouter } from "next/router";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import toast from "react-hot-toast";
 
+const PromotionConsentModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 className="text-xl font-semibold">Promotion Consent</h2>
+        <p className="mt-2 text-gray-600">
+          By agreeing, you allow us to use your audio for promotional purposes.
+        </p>
+        <div className="mt-4 flex justify-end space-x-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CheckoutForm = ({ products, onCheckout }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -13,6 +36,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
     address: "",
     city: "",
     state: "",
+    promotionConsent: false,
     zipCode: "",
     referralCode: "",
     contactNumber: "",
@@ -24,6 +48,7 @@ const CheckoutForm = ({ products, onCheckout }) => {
   const [isCodeapplied, setIsCodeApplied] = useState(false);
   const [errorDetails, setErrorDetails] = useState(null);
   const [total, setTotal] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user, isLoading } = useUser();
   const stripe = useStripe();
   const elements = useElements();
@@ -311,7 +336,9 @@ const CheckoutForm = ({ products, onCheckout }) => {
   };
 
   return (
+    
     <div className="w-full max-w-2xl mx-auto mt-8 bg-white rounded-lg shadow-md p-6">
+      <PromotionConsentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Checkout Details
       </h2>
@@ -461,6 +488,16 @@ const CheckoutForm = ({ products, onCheckout }) => {
           <div className="flex justify-between text-lg font-semibold mt-6">
             <span>Total:</span>
             <span>${total}</span>
+          </div>
+
+          <div>
+            <input type="checkbox" id="promotionConsent" name="promotionConsent"
+              checked={formData.promotionConsent}
+              onChange={(e) => setFormData({ ...formData, promotionConsent: e.target.checked })}
+            />
+            <label htmlFor="promotionConsent" className="ml-2 text-sm text-gray-600">
+              I agree to use my audio for <span onClick={()=>setIsModalOpen(true)} className="underline">promotional purposes</span>.
+            </label>
           </div>
 
           <button
