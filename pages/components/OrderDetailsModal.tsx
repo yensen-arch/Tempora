@@ -16,6 +16,8 @@ interface Order {
   name: string;
   address: string;
   email: string;
+  referralCode: string;
+  promotionConsent: boolean;
   contactNumber: string;
   city: string;
   state: string;
@@ -56,6 +58,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
+  console.log(order.promotionConsent);
 
   // Close modal on escape key press
   useEffect(() => {
@@ -119,6 +122,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       {order.status}
                     </span>
                   </p>
+                  <p className="text-gray-600">Referral Code:</p>
+                  <p className="text-gray-900 font-semibold">{order.referralCode || 'NA'}</p>
+                  <p className="text-gray-600">Audio Promotion Consent</p>
+                  <p className="text-gray-900 font-semibold">{order.promotionConsent? "TRUE": "FALSE"}</p>
                   
                   <p className="text-gray-600">Total Amount:</p>
                   <p className="text-gray-900 font-semibold">${order.totalAmount.toFixed(2)}</p>

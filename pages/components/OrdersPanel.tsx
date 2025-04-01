@@ -17,6 +17,8 @@ interface Order {
   fileUrl: string;
   name: string;
   address: string;
+  referralCode: string;
+  promotionConsent: boolean;
   email: string;
   contactNumber: string;
   city: string;
@@ -122,6 +124,7 @@ const OrdersPanel: React.FC = () => {
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
+    console.log(order);
     setViewModalOpen(true);
   };
 
@@ -269,6 +272,18 @@ const OrdersPanel: React.FC = () => {
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSortChange("referralCode")}
+                  >
+                    Referral Code
+                    {sortField === "referralCode" && (
+                      <span className="ml-1">
+                        {sortOrder === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSortChange("createdAt")}
                   >
                     Date
@@ -319,6 +334,9 @@ const OrdersPanel: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {order.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.referralCode || "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {format(new Date(order.createdAt), "MMM dd, yyyy")}
