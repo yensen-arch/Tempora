@@ -53,6 +53,10 @@ function MediaUpload() {
     "video/mp4",
     "video/mpeg",
     "video/webm",
+    "video/quicktime",
+    "video/x-m4v",
+    "video/3gpp",
+    "video/3gpp2"
   ];
   const { decodedUrl } = useMediaLoader(user?.email);
 
