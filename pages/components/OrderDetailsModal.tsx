@@ -16,8 +16,8 @@ interface Order {
   name: string;
   address: string;
   email: string;
-  referralCode: string;
-  promotionConsent: boolean;
+  referralCode?: string;
+  promotionConsent?: boolean;
   contactNumber: string;
   city: string;
   state: string;
@@ -58,7 +58,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
-  console.log(order.promotionConsent);
 
   // Close modal on escape key press
   useEffect(() => {
@@ -78,6 +77,23 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen || !order) return null;
+
+  // Ensure all required properties exist before rendering
+  if (!order._id || !order.name || !order.email) {
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl p-6">
+          <p className="text-red-600">Invalid order data</p>
+          <button
+            onClick={onClose}
+            className="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
@@ -123,12 +139,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </span>
                   </p>
                   <p className="text-gray-600">Referral Code:</p>
-                  <p className="text-gray-900 font-semibold">{order.referralCode || 'NA'}</p>
+                  <p className="text-gray-900 font-semibold">{order?.referralCode || 'NA'}</p>
                   <p className="text-gray-600">Audio Promotion Consent</p>
-                  <p className="text-gray-900 font-semibold">{order.promotionConsent? "TRUE": "FALSE"}</p>
+                  <p className="text-gray-900 font-semibold">{order?.promotionConsent ? "TRUE" : "FALSE"}</p>
                   
                   <p className="text-gray-600">Total Amount:</p>
-                  <p className="text-gray-900 font-semibold">${order.totalAmount.toFixed(2)}</p>
+                  <p className="text-gray-900 font-semibold">${order?.totalAmount?.toFixed(2) || '0.00'}</p>
                 </div>
               </div>
 
