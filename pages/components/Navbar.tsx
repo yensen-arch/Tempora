@@ -16,6 +16,7 @@ import {
   Instagram,
   Facebook,
   TwitterIcon as TikTok,
+  CloudCog,
 } from "lucide-react";
 // Directly import useUser from @auth0/nextjs-auth0/client
 import { useUser } from "@auth0/nextjs-auth0/client";
@@ -152,6 +153,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                 }}
               />
               <NavItem href="/memories" icon={Disc} text="Memories" />
+              {user && <NavItem href="/editor" icon={CloudCog} text="Editor" />}
             </ul>
           </div>
           <div className="hidden lg:flex lg:items-center space-x-4">
@@ -271,6 +273,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                     }}
                   />
                   <NavItem href="/memories" icon={Disc} text="Memories" />
+                  {user && <NavItem href="/editor" icon={CloudCog} text="Editor" />}
                   <NavItem href="/cart" icon={ShoppingCart} text="Cart" />
                   <NavItem
                     href={user ? "/api/auth/logout" : "/api/auth/login"}
