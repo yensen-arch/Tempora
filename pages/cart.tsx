@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, DollarSign, Edit3, Trash2 } from "lucide-react";
+import { ArrowLeft, Clock, CloudCog, DollarSign, Edit3, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -103,23 +103,33 @@ export default function Cart() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: user.email,
-            productId,
+            productId: productId,
           }),
         });
 
         if (!response.ok) {
           throw new Error("Failed to delete product from cart");
         }
+
+        // Refetch cart data after successful deletion
+        const cartResponse = await fetch("/api/cart/get_items", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email }),
+        });
+
+        if (!cartResponse.ok) throw new Error("Failed to fetch updated cart data");
+
+        const cartData = await cartResponse.json();
+        const updatedCart = Array.isArray(cartData) ? cartData : [];
+        setProduct(updatedCart);
       } else {
         // If user is not logged in, remove from localStorage
         localStorage.removeItem("cartProduct");
+        setProduct([]);
       }
-
-      // Update the UI state regardless of auth status
-      const updatedCart = product.filter(
-        (item) => item.productId !== productId
-      );
-      setProduct(updatedCart);
     } catch (error) {
       console.error("Error deleting product:", error);
     }
@@ -200,6 +210,15 @@ export default function Cart() {
                           {item.minutes} minutes
                         </p>
                       </div>
+                      <button
+                        onClick={() => {
+                          handleDelete(item.productId)
+                        }}
+                        className="p-2 text-red-500 hover:text-red-700 transition-colors"
+                        aria-label="Delete item"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>
