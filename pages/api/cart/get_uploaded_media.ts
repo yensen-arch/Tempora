@@ -28,7 +28,12 @@ export default withApiAuthRequired(async function handler(
     const media = await Media.findOne({ email: userEmail });
 
     if (!media || !media.file) {
-      return res.status(404).json({ error: "No files found for this user" });
+      return res.status(200).json({ 
+        message: "No media found for this user",
+        fileUrl: null,
+        audioPath: null,
+        editHistory: []
+      });
     }
 
     const fileDetails = { ...media.file, editHistory: media.editHistory };

@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import Timeline from "./Timeline";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
+import { useMediaLoader } from "../../lib/hooks/useMediaLoader";
 
 function EditorDisplay({
   videoUrl: initialVideoUrl,
@@ -14,10 +15,14 @@ function EditorDisplay({
   const [duration, setDuration] = useState(initialDuration || 0);
   const [loading, setLoading] = useState(!initialVideoUrl);
   const [error, setError] = useState(null);
+  const [noMedia, setNoMedia] = useState(false);
   const videoRef = useRef(null);
   const { user } = useUser();
   const router = useRouter();
   const email = user?.email;
+  
+  // Use the improved useMediaLoader hook
+  const { decodedUrl, decodedAudioUrl, isLoading: mediaLoading, error: mediaError } = useMediaLoader(email);
 
   useEffect(() => {
     if (initialVideoUrl) {
@@ -37,39 +42,37 @@ function EditorDisplay({
       setAudioUrl(audioPath);
     }
   }, [audioPath]);
-
+  
+  // Update video and audio URLs when they're loaded from the hook
   useEffect(() => {
-    if (!initialVideoUrl && !videoUrl && email) {
-      setLoading(true);
-      fetch("/api/cart/get_uploaded_media", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errorText = res.statusText;
-            console.log(res);
-            // throw new Error(`HTTP ${res.status}: ${errorText}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          if (data.fileUrl) {
-            setVideoUrl(decodeURIComponent(data.fileUrl));
-            setAudioUrl(decodeURIComponent(data.audioPath));
-            setDuration(data.duration);
-          } else {
-            // throw new Error("No file URL found in the response.");
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching video:", error);
-          setError(error.message);
-        })
-        .finally(() => setLoading(false));
+    if (decodedUrl) {
+      setVideoUrl(decodedUrl);
+      setLoading(false);
+      setNoMedia(false);
+    } else if (!mediaLoading && !decodedUrl) {
+      // If loading is complete and we still don't have a URL, it means no media was found
+      setNoMedia(true);
+      setLoading(false);
     }
-  }, [initialVideoUrl, videoUrl, email]);
+  }, [decodedUrl, mediaLoading]);
+  
+  useEffect(() => {
+    if (decodedAudioUrl) {
+      setAudioUrl(decodedAudioUrl);
+    }
+  }, [decodedAudioUrl]);
+  
+  // Update loading and error states from the hook
+  useEffect(() => {
+    setLoading(mediaLoading);
+  }, [mediaLoading]);
+  
+  useEffect(() => {
+    if (mediaError) {
+      setError(mediaError);
+      console.warn("Media loading error:", mediaError);
+    }
+  }, [mediaError]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -120,8 +123,9 @@ function EditorDisplay({
   return (
     <div className="flex flex-col items-center p-4">
       {loading && <div className="text-center flex justify-center"><p className="text-gray-500">Loading video...</p></div>}
-      {error ? (
+      {error && error !== "Please upload your media file" ? (
         <div className="text-center">
+          <p className="text-red-500">{error}</p>
           {error === "Please go back and upload your videos first" && (
             <button
               onClick={() => router.push("/upload")}
@@ -131,17 +135,21 @@ function EditorDisplay({
             </button>
           )}
         </div>
-      ) : !loading && videoUrl ? (
-        <>{/* Existing video player code */}</>
-      ) : (
-        !loading && (
-          <div className="flex items-center min-h-screen">
-            {" "}
-            <p>Please go back and upload your videos</p>
+      ) : noMedia ? (
+        <div className=" h-screen justify-center items-center flex flex-col text-center p-8 max-w-md mx-auto">
+          <p className="text-xl mb-4">No media found</p>
+          <p className="mb-6">Please select a product and upload your media</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => router.push("/")}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Select a Product
+            </button>
+           
           </div>
-        )
-      )}
-      {!loading && videoUrl ? (
+        </div>
+      ) : !loading && videoUrl ? (
         <>
           <button
             onClick={handleDelete}
