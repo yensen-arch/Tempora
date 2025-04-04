@@ -17,6 +17,7 @@ export default function Cart() {
   const { user, isLoading } = useUser();
   const hasFetchedData = useRef(false);
   const [loading, setLoading] = useState(false);
+  const [mediaLoading, setMediaLoading] = useState(true);
 
   useEffect(() => {
     const productFromQuery = {
@@ -31,6 +32,7 @@ export default function Cart() {
       if (isLoading || hasFetchedData.current) return;
       hasFetchedData.current = true;
       setLoading(true);
+      setMediaLoading(true);
 
       try {
         if (user) {
@@ -88,6 +90,7 @@ export default function Cart() {
         console.error("Error fetching cart data:", error);
       } finally {
         setLoading(false);
+        setMediaLoading(false);
       }
     };
 
@@ -242,7 +245,18 @@ export default function Cart() {
             Back to Products
           </Link>
           <EditHistoryProvider>
-            <MediaUpload />
+            {mediaLoading ? (
+              <div className="mt-8 bg-white rounded-lg shadow-xl overflow-hidden animate-pulse">
+                <div className="h-40 bg-gray-200"></div>
+                <div className="p-6">
+                  <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+                  <div className="h-32 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-10 bg-gray-200 rounded w-1/4"></div>
+                </div>
+              </div>
+            ) : (
+              <MediaUpload />
+            )}
           </EditHistoryProvider>
         </div>
       </div>

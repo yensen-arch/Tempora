@@ -19,6 +19,8 @@ function MediaUpload() {
   const [fileDurations, setFileDurations] = useState<number[]>([]);
   const [totalDuration, setTotalDuration] = useState<number>(0);
   const [show, setShow] = useState(false);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [hasMedia, setHasMedia] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setShow(true), 2000);
     return () => clearTimeout(timer);
@@ -58,7 +60,16 @@ function MediaUpload() {
     "video/3gpp",
     "video/3gpp2"
   ];
-  const { decodedUrl } = useMediaLoader(user?.email);
+  const { decodedUrl, isLoading: mediaLoading } = useMediaLoader(user?.email);
+
+  useEffect(() => {
+    // Set apiLoading to false only when mediaLoading is complete
+    if (!mediaLoading) {
+      setApiLoading(false);
+      // Check if the user has media
+      setHasMedia(!!decodedUrl);
+    }
+  }, [mediaLoading, decodedUrl]);
 
   if (isLoading) {
     return (
@@ -416,7 +427,11 @@ function MediaUpload() {
                   )}
                 </div>
               </div>
-            ) : (
+            ) : apiLoading ? (
+              <div className="mt-4 text-center">
+                <div className="inline-block w-48 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+              </div>
+            ) : hasMedia ? (
               <div className="mt-4 text-center">
                 <a
                   href={`/editor`}
@@ -424,6 +439,40 @@ function MediaUpload() {
                 >
                   Proceed to Editor
                 </a>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div className="h-40 bg-cover bg-center"></div>
+                <div className="p-6">
+                  <h2 className="text-2xl font-serif text-amber-800 mb-4">
+                    Upload Your Media
+                  </h2>
+                  <div className="border-2 border-dashed border-amber-300 rounded-lg p-8 text-center hover:border-amber-500 transition-colors duration-300">
+                    <input
+                      type="file"
+                      accept={allowedFormats.join(",")}
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="fileInput"
+                      disabled={uploading}
+                    />
+                    <label
+                      htmlFor="fileInput"
+                      className={`cursor-pointer inline-block px-6 py-3 bg-amber-600 text-white rounded-full font-semibold hover:bg-amber-700 transition-colors duration-300 ${
+                        uploading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      Select Audio & Video Files
+                    </label>
+                    <p className="mt-2 text-amber-700">
+                      or drag and drop files here
+                    </p>
+                    <p className="text-red-700 text-xs">
+                      *Your files can have a total duration upto 20 minutes
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
             {concatenatedUrl && duration !== null && audioPath && (
