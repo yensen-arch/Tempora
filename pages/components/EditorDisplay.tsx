@@ -122,7 +122,7 @@ function EditorDisplay({
       {loading && <div className="text-center flex justify-center"><p className="text-gray-500">Loading video...</p></div>}
       {error ? (
         <div className="text-center">
-          {error === "go back and upload your videos first" && (
+          {error === "Please go back and upload your videos first" && (
             <button
               onClick={() => router.push("/upload")}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
@@ -137,7 +137,7 @@ function EditorDisplay({
         !loading && (
           <div className="flex items-center min-h-screen">
             {" "}
-            <p>Go back and upload your videos</p>
+            <p>Please go back and upload your videos</p>
           </div>
         )
       )}

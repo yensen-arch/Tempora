@@ -85,18 +85,8 @@ export default withApiAuthRequired(async function handler(
 
         const uploadOptions: any = {
           resource_type: resourceType,
-          timeout: 240000,
-          chunk_size: 10000000,
-          transformation: [
-            {
-              width: 480,
-              height: 270,
-              crop: "fill",
-              quality: "auto:low",
-              bitrate: "500k",
-              fps: "24",
-            },
-          ],
+          timeout: 1000000,
+          chunk_size: 20000000,
         };
 
         cloudinary.uploader.upload_large(
