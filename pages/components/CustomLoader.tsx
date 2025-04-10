@@ -46,7 +46,7 @@ const CustomLoader: React.FC<LoaderProps> = ({ progress }) => {
           adjustedProgress = 40 + (percentage * 50);
         }
 
-        setDisplayProgress(Math.round(adjustedProgress));
+        setDisplayProgress(Math.round(Number(adjustedProgress.toFixed(2))));
 
         if (percentage < 1) {
           animationFrameId = requestAnimationFrame(updateProgress);
@@ -64,7 +64,7 @@ const CustomLoader: React.FC<LoaderProps> = ({ progress }) => {
       setDisplayProgress(100);
     } else if (progress > displayProgress) {
       // Ensure progress can continue beyond the counters
-      setDisplayProgress(progress);
+      setDisplayProgress(Number(progress.toFixed(2)));
     }
   }, [progress]);
 
