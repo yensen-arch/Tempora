@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { motion } from "framer-motion";
+import ScrollToTop from "./components/ScrollToTop";
 
 export default function Memories() {
   const { user, isLoading } = useUser();
@@ -64,6 +66,7 @@ export default function Memories() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8f5f0]">
+      <ScrollToTop />
       <Navbar productsRef={undefined} />
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-12">
@@ -75,8 +78,14 @@ export default function Memories() {
         </p>
 
         {/* Two-column layout */}
-        <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, x: -500 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1 }}
+          className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto"
+        >
           {/* Left column - Audio memories */}
+
           <div className="w-full md:w-1/2">
             <div className="bg-white border border-[#d3c5b0] rounded-lg shadow-md overflow-hidden h-full">
               <div className="bg-[#efe8dd] border-b border-[#d3c5b0] px-6 py-5">
@@ -300,7 +309,7 @@ export default function Memories() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </main>
       <Footer />
 

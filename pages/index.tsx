@@ -8,7 +8,7 @@ import Help from "./components/Help";
 import Testimonials from "./components/Testimonials";
 import Products from "./components/Products";
 import Seasons from "./components/Seasons";
-
+import ScrollToTop from "./components/ScrollToTop";
 
 function Index() {
   const { user, error, isLoading } = useUser();
@@ -27,9 +27,9 @@ function Index() {
       </div>
     );
 
-
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       <div>
         <div className="absolute inset-0  opacity-5 pointer-events-none"></div>
         <Navbar productsRef={productsRef} />
@@ -59,10 +59,13 @@ function Index() {
           </section>
 
           {/* Products Section */}
-          <section  id="products-section" className="relative my-24 px-6 md:px-12 overflow-hidden">
+          <section
+            id="products-section"
+            className="relative my-24 px-6 md:px-12 overflow-hidden"
+          >
             <div className=" mx-auto">
               <div className="relative z-10">
-              <Products ref={productsRef} />
+                <Products ref={productsRef} />
               </div>
             </div>
           </section>

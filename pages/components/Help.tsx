@@ -36,7 +36,7 @@ export default function Help() {
           className="text-3xl md:text-4xl font-serif text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8 }}
         >
           In 3 Easy Steps !
         </motion.h2>
@@ -45,9 +45,10 @@ export default function Help() {
             <motion.div
               key={index}
               className="bg-white rounded-lg shadow-lg overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: index * 0.2 }}
+              initial={{ opacity: 0, x: -400 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: index * 0.3 }}
               whileHover={{ scale: 1.05 }}
             >
               <div className="p-6">
@@ -64,9 +65,7 @@ export default function Help() {
                 <h3 className="text-xl font-semibold text-center mb-2">
                   {step.title}
                 </h3>
-                <p className="text-gray-600 text-center">
-                  {step.description}
-                </p>
+                <p className="text-gray-600 text-center">{step.description}</p>
               </div>
             </motion.div>
           ))}

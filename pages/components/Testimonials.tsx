@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import Marquee from "react-fast-marquee";
 
 interface Testimonial {
   id: number;
@@ -16,21 +17,24 @@ const testimonials: Testimonial[] = [
   {
     id: 1,
     name: "Emma Thompson",
-    image: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684529/samples/two-ladies.jpg",
+    image:
+      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684529/samples/two-ladies.jpg",
     review:
       "Tempora has transformed my shopping experience. The elegance and quality of their products are unmatched. I particularly love their memory creation services - they've helped me capture some of the most precious moments of my life in the most beautiful way possible.",
   },
   {
     id: 2,
     name: "Michael Chen",
-    image: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684529/samples/two-ladies.jpg",
+    image:
+      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684529/samples/two-ladies.jpg",
     review:
       "I was skeptical at first, but Tempora has exceeded all my expectations. Their attention to detail and commitment to customer satisfaction is truly commendable. The products I've purchased have become cherished parts of my daily life.",
   },
   {
     id: 3,
     name: "Sophia Rodriguez",
-    image: "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684529/samples/two-ladies.jpg",
+    image:
+      "https://res.cloudinary.com/dqh2tacov/image/upload/v1734684529/samples/two-ladies.jpg",
     review:
       "Tempora isn't just a brand, it's an experience. From the moment you visit their website to the instant you receive your beautifully packaged product, every step is infused with elegance and care. I can't recommend them enough!",
   },
@@ -125,20 +129,22 @@ const Testimonials: React.FC = () => {
         >
           Discover the experiences of those who have embraced Tempora
         </motion.p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <div key={testimonial.id}>
-              <TestimonialCard
-                testimonial={testimonial}
-                isExpanded={expandedId === testimonial.id}
-                onClick={() =>
-                  setExpandedId(
-                    expandedId === testimonial.id ? null : testimonial.id
-                  )
-                }
-              />
-            </div>
-          ))}
+        <div className="flex justify-center gap-4">
+          <Marquee pauseOnClick={true}>
+            {testimonials.map((testimonial, index) => (
+              <div key={testimonial.id} className="w-96 ml-4">
+                <TestimonialCard
+                  testimonial={testimonial}
+                  isExpanded={expandedId === testimonial.id}
+                  onClick={() =>
+                    setExpandedId(
+                      expandedId === testimonial.id ? null : testimonial.id
+                    )
+                  }
+                />
+              </div>
+            ))}
+          </Marquee>
         </div>
         <motion.p
           className="text-black text-center mt-12"
@@ -146,8 +152,7 @@ const Testimonials: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          Join other satisfied customers and experience the Tempora
-          life today.
+          Join other satisfied customers and experience the Tempora life today.
         </motion.p>
       </div>
     </section>

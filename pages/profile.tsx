@@ -15,6 +15,7 @@ import {
   FaLeaf,
   FaFeather,
 } from "react-icons/fa";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Define the Order type to match your model
 interface Order {
@@ -163,6 +164,7 @@ function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f9f3ee] text-[#5d4037] font-serif">
+      <ScrollToTop />
       <Navbar productsRef={undefined} />
 
       {/* Custom CSS for decorative elements */}

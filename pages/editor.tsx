@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import EditorDisplay from "./components/EditorDisplay";
 import { EditHistoryProvider } from "../lib/context/EditHistoryContext";
 import toast from "react-hot-toast";
+import ScrollToTop from "./components/ScrollToTop";
 
 function Editor() {
   useEffect(() => {
@@ -45,6 +46,7 @@ function Editor() {
 
   return (
     <div>
+      <ScrollToTop />
       <Navbar productsRef={undefined} />
       <EditHistoryProvider>
         <EditorDisplay
