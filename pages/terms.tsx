@@ -2,6 +2,11 @@ import { NextPage } from "next";
 import Head from "next/head";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const terms: NextPage = () => {
   return (
@@ -12,12 +17,24 @@ const terms: NextPage = () => {
           <title>Terms & Conditions</title>
         </Head>
         <main className="bg-[#f4f1ea] text-[#3e2723] font-serif p-8 max-w-4xl mx-auto shadow-lg rounded-lg border border-[#d7ccc8]">
-          <h1 className="text-4xl font-bold text-center mb-6 border-b-2 pb-2 border-[#8d6e63]">
+          <h1
+            className="text-4xl font-bold text-center mb-6 border-b-2 pb-2 border-[#8d6e63]"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
             Terms & Conditions
           </h1>
 
           <section className="mb-6">
-            <h2 className="text-2xl font-semibold mb-2">Privacy Policy</h2>
+            <h2
+              className="text-2xl font-semibold mb-2"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
+              Privacy Policy
+            </h2>
             <p className="italic">Effective Date: 15th March 2025</p>
             <ol className="list-decimal list-inside space-y-2 mt-4">
               <li>
@@ -54,7 +71,14 @@ const terms: NextPage = () => {
           </section>
 
           <section className="mb-6">
-            <h2 className="text-2xl font-semibold mb-2">Terms of Service</h2>
+            <h2
+              className="text-2xl font-semibold mb-2"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
+              Terms of Service
+            </h2>
             <p className="italic">Effective Date: [Date]</p>
             <ol className="list-decimal list-inside space-y-2 mt-4">
               <li>
@@ -81,7 +105,14 @@ const terms: NextPage = () => {
           </section>
 
           <section className="mb-6">
-            <h2 className="text-2xl font-semibold mb-2">Return Policy</h2>
+            <h2
+              className="text-2xl font-semibold mb-2"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
+              Return Policy
+            </h2>
             <ol className="list-decimal list-inside space-y-2 mt-4">
               <li>
                 <strong>30-Day Return Eligibility</strong>

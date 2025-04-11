@@ -1,7 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Volume2, VolumeX } from "lucide-react";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 export default function CarouselWithAudioToggle() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -25,7 +30,14 @@ export default function CarouselWithAudioToggle() {
     <div className="relative w-full h-[600px] overflow-hidden flex">
       {/* Left Section */}
       <div className="w-[30%] p-8 bg-gradient-to-r from-gray-700 to-gray-300 flex flex-col justify-center z-10">
-        <h2 className="text-4xl font-bold text-white mb-4">Savour the Seasons of Life</h2>
+        <h2
+          className="text-4xl font-bold text-white mb-4"
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
+        >
+          Savour the Seasons of Life
+        </h2>
         <p className="text-xl text-gray-200 mb-8">Through Tempora</p>
         {/* Play/Pause Button */}
         <button

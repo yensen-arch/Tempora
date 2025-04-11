@@ -4,6 +4,11 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 export default function OrderConfirmation() {
   const router = useRouter();
@@ -25,12 +30,20 @@ export default function OrderConfirmation() {
         <div className="max-w-3xl w-full bg-white rounded-lg shadow-md p-8">
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-pulse text-xl">Loading order details...</div>
+              <div className="animate-pulse text-xl">
+                Loading order details...
+              </div>
             </div>
           ) : error ? (
             <div className="text-red-600 text-center py-8">
               <p className="text-xl font-semibold">{error}</p>
-              <Link href="/" className="mt-4 inline-block text-blue-500 hover:underline">
+              <Link
+                href="/"
+                className="mt-4 inline-block text-blue-500 hover:underline"
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+              >
                 Return to home page
               </Link>
             </div>
@@ -39,33 +52,46 @@ export default function OrderConfirmation() {
               <div className="mb-6 flex justify-center">
                 <CheckCircle className="h-20 w-20 text-green-500" />
               </div>
-              
-              <h1 className="text-3xl font-bold text-gray-800 mb-4">Thank You for Your Order!</h1>
-              
+
+              <h1
+                className="text-3xl font-bold text-gray-800 mb-4"
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+              >
+                Thank You for Your Order!
+              </h1>
+
               <p className="text-gray-600 mb-2">
                 Your payment has been processed successfully.
               </p>
-              
+
               <div className="bg-gray-50 rounded-md p-4 my-6">
                 <p className="text-sm text-gray-500 mb-1">Order ID:</p>
                 <p className="font-medium text-gray-800 break-all">{orderId}</p>
               </div>
-              
+
               <p className="text-gray-600 mb-6">
                 A confirmation email has been sent to your email address.
               </p>
-              
+
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                <Link 
+                <Link
                   href="/memories"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  style={{
+                    fontFamily: engraversFont.style.fontFamily,
+                  }}
                 >
                   Go to Memories
                 </Link>
-                
-                <Link 
+
+                <Link
                   href="/profile"
                   className="inline-flex items-center justify-center px-5 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  style={{
+                    fontFamily: engraversFont.style.fontFamily,
+                  }}
                 >
                   View Order History
                 </Link>
@@ -74,7 +100,7 @@ export default function OrderConfirmation() {
           )}
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

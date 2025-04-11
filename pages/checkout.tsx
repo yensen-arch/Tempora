@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -15,6 +15,11 @@ const CheckoutForm = dynamic(() => import("./components/CheckoutForm"), {
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { StripeElementsOptions } from "@stripe/stripe-js";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 // Load stripe outside of component render
 const stripePromise = loadStripe(
@@ -137,8 +142,21 @@ export default function Checkout() {
       <div className="flex flex-col min-h-screen">
         <Navbar productsRef={undefined} />
         <div className="flex-grow flex flex-col items-center justify-center">
-          <h1 className="text-lg text-stone-600">No product in the cart.</h1>
-          <Link href="/" className="mt-4 text-blue-500 hover:underline">
+          <h1
+            className="text-lg text-stone-600"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
+            No product in the cart.
+          </h1>
+          <Link
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+            href="/"
+            className="mt-4 text-blue-500 hover:underline"
+          >
             Go back to products
           </Link>
         </div>
@@ -167,7 +185,12 @@ export default function Checkout() {
         <div className="max-w-7xl mx-auto">
           {product.length > 0 ? (
             <>
-              <h1 className="text-2xl font-bold text-stone-800 mb-6">
+              <h1
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+                className="text-2xl font-bold text-stone-800 mb-6"
+              >
                 Your Cart
               </h1>
 
@@ -197,7 +220,12 @@ export default function Checkout() {
                     {/* Product Details */}
                     <div className="flex flex-1 mx-8 flex-col md:flex-row items-center md:items-start justify-between md:ml-6 text-center md:text-left">
                       <div className="flex-1">
-                        <h2 className="text-xl font-semibold text-stone-800">
+                        <h2
+                          style={{
+                            fontFamily: engraversFont.style.fontFamily,
+                          }}
+                          className="text-xl font-semibold text-stone-800"
+                        >
                           {item.name}
                         </h2>
                       </div>
@@ -226,16 +254,30 @@ export default function Checkout() {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center">
-              <h1 className="text-lg text-stone-600">
+              <h1
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+                className="text-lg text-stone-600"
+              >
                 No product in the cart.
               </h1>
-              <Link href="/" className="mt-4 text-blue-500 hover:underline">
+              <Link
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+                href="/"
+                className="mt-4 text-blue-500 hover:underline"
+              >
                 Go back to products
               </Link>
             </div>
           )}
 
           <Link
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
             href="/"
             className="flex items-center mt-6 text-stone-600 hover:text-stone-800 transition duration-300 ease-in-out"
           >

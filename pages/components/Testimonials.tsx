@@ -5,6 +5,11 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Marquee from "react-fast-marquee";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 interface Testimonial {
   id: number;
@@ -61,7 +66,12 @@ const TestimonialCard: React.FC<{
         height={100}
         className="rounded-full border-2 border-gray-500 mb-4"
       />
-      <h3 className="text-lg font-semibold text-black mb-1">
+      <h3
+        className="text-lg font-semibold text-black mb-1"
+        style={{
+          fontFamily: engraversFont.style.fontFamily,
+        }}
+      >
         {testimonial.name}
       </h3>
       <div className="flex mb-2">
@@ -91,6 +101,9 @@ const TestimonialCard: React.FC<{
           transition={{ duration: 0.2 }}
           onClick={onClick}
           className="mt-2 text-black transition-colors duration-300 flex items-center"
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
         >
           {isExpanded ? (
             <>
@@ -114,10 +127,13 @@ const Testimonials: React.FC = () => {
     <section className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2
-          className="text-3xl font-serif italic text-center text-black mb-4"
+          className="text-3xl text-center text-black mb-4"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
         >
           What Our Customers Say
         </motion.h2>

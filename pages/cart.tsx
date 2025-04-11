@@ -1,15 +1,27 @@
-'use client'
+"use client";
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, CloudCog, DollarSign, Edit3, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  CloudCog,
+  DollarSign,
+  Edit3,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import MediaUpload from "./components/MediaUpload";
 import { EditHistoryProvider } from "../lib/context/EditHistoryContext";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 export default function Cart() {
   const router = useRouter();
@@ -123,7 +135,8 @@ export default function Cart() {
           body: JSON.stringify({ email: user.email }),
         });
 
-        if (!cartResponse.ok) throw new Error("Failed to fetch updated cart data");
+        if (!cartResponse.ok)
+          throw new Error("Failed to fetch updated cart data");
 
         const cartData = await cartResponse.json();
         const updatedCart = Array.isArray(cartData) ? cartData : [];
@@ -139,7 +152,11 @@ export default function Cart() {
   };
 
   if (loading || isLoading) {
-    return <div className=" h-screen text-center flex justify-center items-center"><p >Loading...</p></div>;
+    return (
+      <div className=" h-screen text-center flex justify-center items-center">
+        <p>Loading...</p>
+      </div>
+    );
   }
   if (
     !product ||
@@ -152,8 +169,21 @@ export default function Cart() {
         {" "}
         <Navbar productsRef={undefined} />
         <div className="flex flex-col items-center justify-center min-h-screen">
-          <h1 className="text-lg text-stone-600">No product in the cart.</h1>
-          <Link href="/" className="mt-4 text-blue-500 hover:underline">
+          <h1
+            className="text-lg text-stone-600"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
+            No product in the cart.
+          </h1>
+          <Link
+            href="/"
+            className="mt-4 text-blue-500 hover:underline"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
             Go back to products
           </Link>
         </div>{" "}
@@ -196,7 +226,12 @@ export default function Cart() {
                   {/* Product Details */}
                   <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-start justify-between w-full gap-4">
                     <div className="flex-1 text-center sm:text-left">
-                      <h2 className="text-lg sm:text-xl font-semibold text-stone-800 line-clamp-2">
+                      <h2
+                        className="text-lg sm:text-xl font-semibold text-stone-800 line-clamp-2"
+                        style={{
+                          fontFamily: engraversFont.style.fontFamily,
+                        }}
+                      >
                         {item.name}
                       </h2>
                     </div>
@@ -215,7 +250,7 @@ export default function Cart() {
                       </div>
                       <button
                         onClick={() => {
-                          handleDelete(item.productId)
+                          handleDelete(item.productId);
                         }}
                         className="p-2 text-red-500 hover:text-red-700 transition-colors"
                         aria-label="Delete item"
@@ -229,10 +264,21 @@ export default function Cart() {
             ))
           ) : (
             <div className="flex flex-col items-center justify-center min-h-screen">
-              <h1 className="text-lg text-stone-600">
+              <h1
+                className="text-lg text-stone-600"
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+              >
                 No product in the cart.
               </h1>
-              <Link href="/" className="mt-4 text-blue-500 hover:underline">
+              <Link
+                href="/"
+                className="mt-4 text-blue-500 hover:underline"
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+              >
                 Go back to products
               </Link>
             </div>
@@ -240,6 +286,9 @@ export default function Cart() {
           <Link
             href="/"
             className="flex items-center mt-6 text-stone-600 hover:text-stone-800 transition duration-300 ease-in-out"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Products

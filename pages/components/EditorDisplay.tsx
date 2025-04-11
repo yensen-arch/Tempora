@@ -4,6 +4,11 @@ import Timeline from "./Timeline";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useRouter } from "next/navigation";
 import { useMediaLoader } from "../../lib/hooks/useMediaLoader";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 function EditorDisplay({
   videoUrl: initialVideoUrl,
@@ -20,9 +25,14 @@ function EditorDisplay({
   const { user } = useUser();
   const router = useRouter();
   const email = user?.email;
-  
+
   // Use the improved useMediaLoader hook
-  const { decodedUrl, decodedAudioUrl, isLoading: mediaLoading, error: mediaError } = useMediaLoader(email);
+  const {
+    decodedUrl,
+    decodedAudioUrl,
+    isLoading: mediaLoading,
+    error: mediaError,
+  } = useMediaLoader(email);
 
   useEffect(() => {
     if (initialVideoUrl) {
@@ -42,7 +52,7 @@ function EditorDisplay({
       setAudioUrl(audioPath);
     }
   }, [audioPath]);
-  
+
   // Update video and audio URLs when they're loaded from the hook
   useEffect(() => {
     if (decodedUrl) {
@@ -55,18 +65,18 @@ function EditorDisplay({
       setLoading(false);
     }
   }, [decodedUrl, mediaLoading]);
-  
+
   useEffect(() => {
     if (decodedAudioUrl) {
       setAudioUrl(decodedAudioUrl);
     }
   }, [decodedAudioUrl]);
-  
+
   // Update loading and error states from the hook
   useEffect(() => {
     setLoading(mediaLoading);
   }, [mediaLoading]);
-  
+
   useEffect(() => {
     if (mediaError) {
       setError(mediaError);
@@ -122,7 +132,11 @@ function EditorDisplay({
 
   return (
     <div className="flex flex-col items-center p-4">
-      {loading && <div className="text-center flex justify-center"><p className="text-gray-500">Loading video...</p></div>}
+      {loading && (
+        <div className="text-center flex justify-center">
+          <p className="text-gray-500">Loading video...</p>
+        </div>
+      )}
       {error && error !== "Please upload your media file" ? (
         <div className="text-center">
           <p className="text-red-500">{error}</p>
@@ -130,6 +144,9 @@ function EditorDisplay({
             <button
               onClick={() => router.push("/upload")}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
             >
               Go Back
             </button>
@@ -137,16 +154,25 @@ function EditorDisplay({
         </div>
       ) : noMedia ? (
         <div className=" h-screen justify-center items-center flex flex-col text-center p-8 max-w-md mx-auto">
-          <p className="text-xl mb-4">No media found</p>
+          <p
+            className="text-xl mb-4"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
+            No media found
+          </p>
           <p className="mb-6">Please select a product and upload your media</p>
           <div className="flex flex-col gap-3">
             <button
               onClick={() => router.push("/")}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
             >
               Select a Product
             </button>
-           
           </div>
         </div>
       ) : !loading && videoUrl ? (
@@ -154,6 +180,9 @@ function EditorDisplay({
           <button
             onClick={handleDelete}
             className="absolute top-15 right-10 px-3 py-2 bg-black text-white border-none cursor-pointer rounded-full"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
           >
             Delete
           </button>

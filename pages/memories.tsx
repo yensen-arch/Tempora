@@ -6,6 +6,11 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { motion } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 export default function Memories() {
   const { user, isLoading } = useUser();
@@ -70,7 +75,12 @@ export default function Memories() {
       <Navbar productsRef={undefined} />
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-12">
-        <h1 className="text-4xl md:text-5xl font-serif text-[#5c4a38] text-center mb-2">
+        <h1
+          className="text-4xl md:text-5xl text-[#5c4a38] text-center mb-2"
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
+        >
           Your Memories
         </h1>
         <p className="text-center text-[#8a7968] mb-12 font-serif italic">
@@ -89,7 +99,12 @@ export default function Memories() {
           <div className="w-full md:w-1/2">
             <div className="bg-white border border-[#d3c5b0] rounded-lg shadow-md overflow-hidden h-full">
               <div className="bg-[#efe8dd] border-b border-[#d3c5b0] px-6 py-5">
-                <h2 className="text-2xl font-serif text-[#5c4a38]">
+                <h2
+                  className="text-2xl text-[#5c4a38]"
+                  style={{
+                    fontFamily: engraversFont.style.fontFamily,
+                  }}
+                >
                   {isLoading
                     ? "Loading..."
                     : user
@@ -140,7 +155,12 @@ export default function Memories() {
                             </svg>
                           </div>
                           <div>
-                            <h3 className="font-serif text-[#5c4a38] text-lg">
+                            <h3
+                              className="font-serif text-[#5c4a38] text-lg"
+                              style={{
+                                fontFamily: engraversFont.style.fontFamily,
+                              }}
+                            >
                               Your Audio Memory
                             </h3>
                             <p className="text-sm text-[#8a7968]">
@@ -187,13 +207,23 @@ export default function Memories() {
                             />
                           </svg>
                         </div>
-                        <h3 className="text-xl font-serif text-[#5c4a38] mb-2">
+                        <h3
+                          className="text-xl font-serif text-[#5c4a38] mb-2"
+                          style={{
+                            fontFamily: engraversFont.style.fontFamily,
+                          }}
+                        >
                           No Memories Found
                         </h3>
                         <p className="text-[#8a7968] mb-6">
                           You don't have any audio memories yet.
                         </p>
-                        <button className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200">
+                        <button
+                          className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200 text-lg"
+                          style={{
+                            fontFamily: engraversFont.style.fontFamily,
+                          }}
+                        >
                           Create Your First Memory
                         </button>
                       </div>
@@ -217,17 +247,25 @@ export default function Memories() {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-serif text-[#5c4a38] mb-2">
+                    <h3
+                      className="text-xl text-[#5c4a38] mb-2"
+                      style={{
+                        fontFamily: engraversFont.style.fontFamily,
+                      }}
+                    >
                       Please Log In
                     </h3>
                     <p className="text-[#8a7968] mb-6">
                       Sign in to access your audio memories
                     </p>
                     <button
+                      style={{
+                        fontFamily: engraversFont.style.fontFamily,
+                      }}
                       onClick={() => {
                         window.location.href = "/api/auth/login";
                       }}
-                      className="bg-[#5c4a38] hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200"
+                      className="bg-[#5c4a38] text-lg hover:bg-[#4a3a2a] text-white font-serif px-6 py-2 rounded-md transition-colors duration-200"
                     >
                       Sign In
                     </button>
@@ -241,7 +279,12 @@ export default function Memories() {
           <div className="w-full md:w-1/2">
             <div className="bg-white border border-[#d3c5b0] rounded-lg shadow-md overflow-hidden h-full">
               <div className="bg-[#efe8dd] border-b border-[#d3c5b0] px-6 py-5">
-                <h2 className="text-2xl font-serif text-[#5c4a38]">
+                <h2
+                  className="text-2xl text-[#5c4a38]"
+                  style={{
+                    fontFamily: engraversFont.style.fontFamily,
+                  }}
+                >
                   Memory Gallery
                 </h2>
                 <p className="text-[#8a7968]">A visual journey through time</p>

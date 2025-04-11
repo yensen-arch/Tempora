@@ -7,6 +7,9 @@ import Head from "next/head";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { EditHistoryProvider } from "../lib/context/EditHistoryContext";
+import { Assistant } from "next/font/google";
+
+const assistant = Assistant({ subsets: ["latin"] });
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -21,7 +24,9 @@ export default function App({ Component, pageProps }: AppProps) {
         </Head>
         <Toaster position="top-right" reverseOrder={false} />
         <Elements stripe={stripePromise}>
-          <Component {...pageProps} />
+          <div className={assistant.className}>
+            <Component {...pageProps} />
+          </div>
         </Elements>
       </UserProvider>
     </EditHistoryProvider>

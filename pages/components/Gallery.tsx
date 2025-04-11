@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const images = [
   {
@@ -98,6 +103,9 @@ export default function Gallery() {
                     opacity: hoveredIndex === index ? 1 : 0.9,
                   }}
                   transition={{ duration: 0.3 }}
+                  style={{
+                    fontFamily: engraversFont.style.fontFamily,
+                  }}
                 >
                   {image.title}
                 </motion.h2>

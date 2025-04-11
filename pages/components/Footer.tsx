@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React from "react";
 import Link from "next/link";
 import {
@@ -13,8 +13,12 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { FaTiktok } from 'react-icons/fa';
+import { FaTiktok } from "react-icons/fa";
+import localFont from "next/font/local";
 
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const FooterLink: React.FC<{ href: string; children: React.ReactNode }> = ({
   href,
@@ -37,13 +41,25 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo Section */}
           <div className="flex flex-col items-center md:items-start">
-            <h2 className="text-3xl font-serif italic mb-4">Tempora</h2>
+            <h2
+              className="text-3xl mb-4"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
+              Tempora
+            </h2>
             <p className="text-md text-brown-800">The Seasons of Life.</p>
           </div>
 
           {/* About Us Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2">
+            <h3
+              className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
               Get to know us
             </h3>
             <p className="text-sm leading-relaxed text-brown-800">
@@ -57,7 +73,12 @@ const Footer: React.FC = () => {
 
           {/* Quick Links Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2">
+            <h3
+              className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
               Quick Links
             </h3>
             <ul className="space-y-2">
@@ -77,15 +98,18 @@ const Footer: React.FC = () => {
                 <ShoppingCart className="inline-block w-4 h-4 mr-2" />
                 Cart
               </FooterLink>
-              <FooterLink href="/terms">
-                Terms and Conditions
-              </FooterLink>
+              <FooterLink href="/terms">Terms and Conditions</FooterLink>
             </ul>
           </div>
 
           {/* Follow Us Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2">
+            <h3
+              className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2"
+              style={{
+                fontFamily: engraversFont.style.fontFamily,
+              }}
+            >
               Follow Us
             </h3>
             <div className="flex space-x-6">
@@ -125,7 +149,12 @@ const Footer: React.FC = () => {
 
             {/* Contact Us Section */}
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2">
+              <h3
+                className="text-lg font-semibold mb-4 border-b border-brown-700 pb-2"
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+              >
                 Contact Us
               </h3>
               <div className="flex flex-col space-y-4">

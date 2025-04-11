@@ -1,15 +1,20 @@
 "use client";
-import React, { forwardRef,RefObject, useState, useEffect } from 'react';
+import React, { forwardRef, RefObject, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Leaf } from "lucide-react";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const Products = forwardRef((props, ref: RefObject<HTMLElement>) => {
   const [products, setProducts] = useState([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  Products.displayName = "Products"; 
+  Products.displayName = "Products";
 
   useEffect(() => {
     setMounted(true);
@@ -43,7 +48,12 @@ const Products = forwardRef((props, ref: RefObject<HTMLElement>) => {
   return (
     <section ref={ref} className="py-12 bg-stone-100 relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
-        <h2 className="text-3xl md:text-4xl font-serif text-stone-800 mb-8 text-center">
+        <h2
+          className="text-3xl md:text-4xl font-serif text-stone-800 mb-8 text-center"
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
+        >
           Featured Products
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 sm:px-20 gap-8">

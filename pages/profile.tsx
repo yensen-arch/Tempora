@@ -16,6 +16,11 @@ import {
   FaFeather,
 } from "react-icons/fa";
 import ScrollToTop from "./components/ScrollToTop";
+import localFont from "next/font/local";
+
+const engraversFont = localFont({
+  src: "../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 // Define the Order type to match your model
 interface Order {
@@ -287,7 +292,12 @@ function Profile() {
           {/* Profile Info (Center) */}
           <div className="lg:w-2/4">
             <div className="decorative-border bg-white rounded-lg p-8 shadow-md">
-              <h2 className="text-3xl font-light text-center mb-6 text-[#a67c52]">
+              <h2
+                className="text-3xl font-light text-center mb-6 text-[#a67c52]"
+                style={{
+                  fontFamily: engraversFont.style.fontFamily,
+                }}
+              >
                 My Profile
               </h2>
 
@@ -314,6 +324,9 @@ function Profile() {
                   {/* Show Dashboard button only for admin */}
                   {userType === "admin" && (
                     <button
+                      style={{
+                        fontFamily: engraversFont.style.fontFamily,
+                      }}
                       onClick={() => router.push("/admin/dashboard")}
                       className="mt-6 px-6 py-2 bg-[#a67c52] text-white rounded-md shadow hover:bg-[#8a6642] transition-colors duration-300"
                     >
@@ -356,7 +369,12 @@ function Profile() {
 
         {/* Orders Section */}
         <div className="bg-white shadow-md rounded-lg p-8 decorative-border">
-          <h2 className="text-3xl font-light text-center mb-8 text-[#a67c52]">
+          <h2
+            className="text-3xl font-light text-center mb-8 text-[#a67c52]"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
             <FaShoppingBag className="inline-block mr-2 mb-1" />
             My Orders
           </h2>

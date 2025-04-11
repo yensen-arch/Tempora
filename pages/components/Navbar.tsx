@@ -20,6 +20,15 @@ import {
 } from "lucide-react";
 // Directly import useUser from @auth0/nextjs-auth0/client
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { Assistant } from "next/font/google";
+import localFont from "next/font/local";
+
+const assistant = Assistant({
+  subsets: ["latin"],
+});
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const NavItem = ({
   href,
@@ -54,7 +63,13 @@ const NavItem = ({
         ) : (
           <Icon className="w-5 h-5 mr-2" />
         )}
-        <span className="text-sm font-medium">{text}</span>
+        <span
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
+        >
+          {text}
+        </span>
       </Link>
     </motion.li>
   );
@@ -116,16 +131,22 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
   const pathname = usePathname();
 
   return (
-    <nav className="relative z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="relative z-50 tracking-[0.2rem]">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-20">
           <div className="flex items-center">
-            <Link href="/" className="text-2xl text-black cursor-pointer">
+            <Link
+              href="/"
+              className="text-2xl text-black cursor-pointer uppercase"
+              style={{
+                fontFamily: assistant.style.fontFamily,
+              }}
+            >
               Tempora
             </Link>
           </div>
           <div className="hidden lg:flex lg:items-center">
-            <ul className="flex space-x-4">
+            <ul className="flex space-x-4 mr-6">
               <NavItem href="/" icon={Home} text="Home" />
               <NavItem
                 icon={ShoppingBag}
@@ -155,57 +176,72 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
               <NavItem href="/memories" icon={Disc} text="Memories" />
               {user && <NavItem href="/editor" icon={CloudCog} text="Editor" />}
             </ul>
-          </div>
-          <div className="hidden lg:flex lg:items-center space-x-4">
-            {!isLoading && (
-              <>
-                {user ? (
-                  <span className="text-lg font-medium text-gray-800 mr-4">
-                    Welcome, {user.nickname}
-                  </span>
-                ) : null}
-              </>
-            )}
+            <div className="space-x-4 flex items-center">
+              {!isLoading && (
+                <>
+                  {user ? (
+                    <span
+                      className="mr-4"
+                      style={{ fontFamily: engraversFont.style.fontFamily }}
+                    >
+                      Welcome, {user.nickname}
+                    </span>
+                  ) : null}
+                </>
+              )}
 
-            <Link
-              href="/cart"
-              className={`text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300 ${
-                pathname === "/cart" ? "bg-[#E0B780]" : ""
-              }`}
-            >
-              <ShoppingCart className="w-5 h-5" />
-            </Link>
-            <div className="relative">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300"
+              <Link
+                href="/cart"
+                className={`text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300 ${
+                  pathname === "/cart" ? "bg-[#E0B780]" : ""
+                }`}
               >
-                <User className="w-5 h-5" />
-              </button>
-              {isOpen && (
-                <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg w-48">
-                  <div
-                    className="px-4 py-2 text-gray-800 cursor-pointer hover:bg-gray-100"
-                    onClick={() => {
-                      window.location.href = user
-                        ? "/api/auth/logout"
-                        : "/api/auth/login";
-                    }}
-                  >
-                    <p className="font-medium">{user ? "Logout" : "Login"}</p>
-                  </div>
-                  {user && (
+                <ShoppingCart className="w-5 h-5" />
+              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="text-black hover:text-gray-600 hover:bg-[#F0D29A] px-3 py-2 rounded-full transition-colors duration-300"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+                {isOpen && (
+                  <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg w-48">
                     <div
                       className="px-4 py-2 text-gray-800 cursor-pointer hover:bg-gray-100"
                       onClick={() => {
-                        window.location.href = "/profile";
+                        window.location.href = user
+                          ? "/api/auth/logout"
+                          : "/api/auth/login";
                       }}
                     >
-                      <p className="font-medium">Profile</p>
+                      <p
+                        style={{
+                          fontFamily: engraversFont.style.fontFamily,
+                        }}
+                      >
+                        {user ? "Logout" : "Login"}
+                      </p>
                     </div>
-                  )}
-                </div>
-              )}
+                    {user && (
+                      <div
+                        className="px-4 py-2 text-gray-800 cursor-pointer hover:bg-gray-100"
+                        onClick={() => {
+                          window.location.href = "/profile";
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontFamily: engraversFont.style.fontFamily,
+                          }}
+                        >
+                          Profile
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center lg:hidden">
@@ -244,9 +280,7 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                   </motion.button>
                 </div>
                 {!isLoading && user && typeof user.given_name === "string" && (
-                  <div className="text-lg font-medium text-gray-800 mb-4">
-                    Welcome, {user.given_name}
-                  </div>
+                  <div className="text-lg mb-4">Welcome, {user.given_name}</div>
                 )}
                 <ul className="flex flex-col items-start space-y-2">
                   <NavItem href="/" icon={Home} text="Home" />
@@ -273,7 +307,9 @@ const Navbar: React.FC<{ productsRef: React.RefObject<HTMLDivElement> }> = ({
                     }}
                   />
                   <NavItem href="/memories" icon={Disc} text="Memories" />
-                  {user && <NavItem href="/editor" icon={CloudCog} text="Editor" />}
+                  {user && (
+                    <NavItem href="/editor" icon={CloudCog} text="Editor" />
+                  )}
                   <NavItem href="/cart" icon={ShoppingCart} text="Cart" />
                   <NavItem
                     href={user ? "/api/auth/logout" : "/api/auth/login"}

@@ -1,7 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+import localFont from "next/font/local";
 import Image from "next/image";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const seasons = [
   {
@@ -53,7 +58,12 @@ export default function SeasonsOfLife() {
           transition={{ duration: 1 }}
           className="text-center px-4"
         >
-          <h1 className="text-4xl md:text-6xl text-[#3c3229] mb-6">
+          <h1
+            className="text-4xl md:text-6xl text-[#3c3229] mb-6"
+            style={{
+              fontFamily: engraversFont.style.fontFamily,
+            }}
+          >
             The Seasons of Life
           </h1>
           <p className="text-lg md:text-xl text-[#5c4b3f] max-w-xl mx-auto">
@@ -88,6 +98,9 @@ export default function SeasonsOfLife() {
                     <h2
                       id={`heading-${season.id}`}
                       className="text-3xl md:text-5xl text-[#3c3229]"
+                      style={{
+                        fontFamily: engraversFont.style.fontFamily,
+                      }}
                     >
                       {season.title}
                     </h2>
@@ -140,6 +153,9 @@ export default function SeasonsOfLife() {
                     <h2
                       id={`heading-${season.id}`}
                       className="text-3xl md:text-5xl text-[#3c3229]"
+                      style={{
+                        fontFamily: engraversFont.style.fontFamily,
+                      }}
                     >
                       {season.title}
                     </h2>

@@ -1,8 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
+
+const engraversFont = localFont({
+  src: "../../fonts/engravers_gothic_regular-webfont.woff",
+});
 
 const steps = [
   {
@@ -37,6 +42,9 @@ export default function Help() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
+          style={{
+            fontFamily: engraversFont.style.fontFamily,
+          }}
         >
           In 3 Easy Steps !
         </motion.h2>
@@ -62,7 +70,12 @@ export default function Help() {
                     className="rounded-lg"
                   />
                 </div>
-                <h3 className="text-xl font-semibold text-center mb-2">
+                <h3
+                  className="text-xl font-semibold text-center mb-2"
+                  style={{
+                    fontFamily: engraversFont.style.fontFamily,
+                  }}
+                >
                   {step.title}
                 </h3>
                 <p className="text-gray-600 text-center">{step.description}</p>
